@@ -1,0 +1,128 @@
+@import 'd3-flame-graph/dist/d3-flamegraph.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--background: 0 0% 99%;
+		--foreground: 0 0% 3.9%;
+
+		--card: 0 0% 100%;
+		--card-foreground: 0 0% 3.9%;
+
+		--popover: 0 0% 100%;
+		--popover-foreground: 0 0% 3.9%;
+
+		--primary: 0 0% 9%;
+		--primary-foreground: 0 0% 98%;
+
+		--secondary: 0 0% 96.1%;
+		--secondary-foreground: 0 0% 9%;
+
+		--muted: 0 0% 96.1%;
+		--muted-foreground: 0 0% 45.1%;
+
+		--accent: 0 0% 96.1%;
+		--accent-2: 0 0% 90%;
+		--accent-foreground: 0 0% 9%;
+
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 0 0% 98%;
+
+		--border: 0 0% 89.8%;
+		--input: 0 0% 89.8%;
+		--ring: 0 0% 3.9%;
+
+		--radius: 0.5rem;
+		--select-placeholder-color: hsl(var(--muted-foreground));
+		--variable: #2563eb;
+		--class-green: #16a34a;
+		--function-pink: #ec4899;
+		--function-purple: #9333ea;
+		--text-highlight_yellow: #713f12;
+		--text-result: #c2410c;
+
+		--typeColor: #008080;
+	}
+
+	[data-placeholder] {
+		color: var(--select-placeholder-color) !important;
+	}
+
+	.dark {
+		--background: 0 0% 9%;
+		--foreground: 0 0% 98%;
+
+		--card: 0 0% 12%;
+		--card-foreground: 0 0% 98%;
+
+		--popover: 0 0% 3.9%;
+		--popover-foreground: 0 0% 98%;
+
+		--primary: 0 0% 98%;
+		--primary-foreground: 0 0% 9%;
+
+		--secondary: 0 0% 14.9%;
+		--secondary-foreground: 0 0% 98%;
+
+		--muted: 0 0% 14.9%;
+		--muted-foreground: 0 0% 63.9%;
+
+		--accent: 0 0% 14.9%;
+		--accent-2: 0 0% 25%;
+		--accent-foreground: 0 0% 98%;
+
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 0 0% 98%;
+
+		--border: 0 0% 14.9%;
+		--input: 0 0% 14.9%;
+		--ring: 0 0% 83.1%;
+		--class-green: #4ade80;
+
+		--variable: #569cd6;
+		--function-pink: #ff77a9;
+		--function-purple: #da70d6;
+		--text-highlight_yellow: #ffd700;
+		--text-result: #b5cea8;
+
+		--typeColor: #3dc9b0;
+	}
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
+}
+
+@layer components {
+	.trace-line--selected {
+		margin-bottom: 6px;
+
+		> .trace-line_content {
+			position: relative;
+
+			&:before {
+				/* background-color: theme('colors.white');
+				border-radius: theme('borderRadius.lg');
+				padding: theme('spacing.6');
+				box-shadow: theme('boxShadow.xl'); */
+
+				content: ' ';
+				border-bottom: 7px solid theme('colors.blue.500');
+				border-left: 7px solid transparent;
+				border-right: 7px solid transparent;
+				width: 7px;
+				bottom: -11px;
+				left: 48px;
+				position: absolute;
+			}
+		}
+	}
+}

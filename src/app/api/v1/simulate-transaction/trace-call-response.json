@@ -1,0 +1,165 @@
+{
+	"traceCall": {
+		"type": "CALL",
+		"input": "0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005",
+		"from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+		"to": "0x0392De00445ddD71Ec1BDE05A240dA297E9DE5d7",
+		"gas": 29631,
+		"gasUsed": 50835,
+		"calls": [
+			{
+				"type": "INTERNALCALL",
+				"input": "0x700b09970000000000000000000000000000000000000000000000000000000000000000",
+				"gas": 6322,
+				"gasUsed": 6322,
+				"calls": [
+					{
+						"type": "INTERNALCALL",
+						"input": "0xff64712e0000000000000000000000000000000000000000000000000000000000000000",
+						"gas": 5303,
+						"gasUsed": 5303,
+						"logs": [
+							{
+								"address": "0x0392De00445ddD71Ec1BDE05A240dA297E9DE5d7",
+								"topics": ["0x3cf8b50771c17d723f2cb711ca7dadde485b222e13c84ba0730a14093fad6d5c"],
+								"data": "0x",
+								"position": 0
+							}
+						]
+					}
+				]
+			}
+		],
+		"output": "0x"
+	},
+	"abis": {
+		"0x0392De00445ddD71Ec1BDE05A240dA297E9DE5d7": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "balances",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "a",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "b",
+						"type": "uint256"
+					}
+				],
+				"name": "complexCalculation",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "counter",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "increment",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "increment2",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "increment3",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "memoryTest",
+				"outputs": [
+					{
+						"internalType": "bytes",
+						"name": "",
+						"type": "bytes"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "updateBalance",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		]
+	}
+}

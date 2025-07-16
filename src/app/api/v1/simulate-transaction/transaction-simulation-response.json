@@ -1,0 +1,136 @@
+{
+	"l2TransactionData": {
+		"simulationResult": {
+			"contractCallsMap": {
+				"1": {
+					"callId": 1,
+					"parentCallId": 0,
+					"childrenCallIds": [],
+					"functionCallId": 2,
+					"eventCallIds": [],
+
+					"entryPoint": {
+						"classHash": "",
+						"codeAddress": "0xCCEb79922A29EF520dEE519E358b8b436E06B1E7",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0x7cf5dab0",
+						"calldata": [
+							"0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005"
+						],
+						"storageAddress": "0xCCEb79922A29EF520dEE519E358b8b436E06B1E7",
+						"callerAddress": "0xDefA4230b5cD308E69394e74896Bc3BF5665FEBC",
+						"callType": "Call",
+						"initialGas": 39978796
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": ["amount"],
+					"argumentsTypes": ["uint256"],
+					"calldataDecoded": [
+						{
+							"name": "amount",
+							"typeName": "uint256",
+							"value": "5"
+						}
+					],
+					"resultTypes": [],
+					"decodedResult": [],
+
+					"contractName": "TestContract",
+					"entryPointName": "increment",
+
+					"isErc20Token": false,
+					"classHash": "",
+					"isDeepestPanicResult": false,
+
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": false,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				}
+			},
+			"functionCallsMap": {
+				"2": {
+					"callId": 2,
+					"parentCallId": 0,
+					"childrenCallIds": [3],
+					"contractCallId": 1,
+					"eventCallIds": [],
+					"fnName": "TestContract::increment2",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["5"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["5"],
+							"internalIODecoded": null
+						}
+					],
+					"debuggerDataAvailable": false,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"3": {
+					"callId": 3,
+					"parentCallId": 2,
+					"childrenCallIds": [],
+					"contractCallId": 1,
+					"eventCallIds": [],
+					"fnName": "TestContract::increment3",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["5"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["5"],
+							"internalIODecoded": null
+						}
+					],
+					"debuggerDataAvailable": false,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				}
+			},
+			"eventCallsMap": {},
+			"events": [],
+			"executionResult": { "executionStatus": "SUCCEEDED" },
+			"simulationDebuggerData": {
+				"classesDebuggerData": {},
+				"debuggerTrace": []
+			},
+			"storageChanges": {}
+		},
+		"chainId": "1",
+		"blockNumber": 0,
+		"blockTimestamp": 0,
+		"nonce": 0,
+		"senderAddress": "0x",
+		"calldata": [],
+		"transactionVersion": 1,
+		"transactionType": "eip1559",
+		"transactionIndexInBlock": 0,
+		"totalTransactionsInBlock": 1,
+		"l2TxHash": "0x"
+	}
+}
