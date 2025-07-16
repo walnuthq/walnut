@@ -12,7 +12,7 @@ import {
 	type Hash
 } from 'viem';
 import { type AbiEventParameter } from 'abitype';
-import { type TraceCall, type Contract } from '@/app/api/v1/types';
+import { type TraceCall, type DebugCallContract } from '@/app/api/v1/types';
 import { flattenTraceCall } from '@/app/api/v1/tracing-client';
 import {
 	CallType,
@@ -205,8 +205,8 @@ const getAbiFunction = (params: GetAbiItemParameters) => {
 
 const traceCallResponseToTransactionSimulationResult = ({
 	traceCall,
-	abis,
 	contracts,
+	contractNames,
 	chainId,
 	blockNumber,
 	timestamp,
@@ -218,8 +218,8 @@ const traceCallResponseToTransactionSimulationResult = ({
 	txHash
 }: {
 	traceCall: TraceCall;
-	abis: Record<Address, Abi>;
-	contracts: Contract[];
+	contracts: Record<Address, DebugCallContract>;
+	contractNames: Record<Address, string>;
 	chainId: number;
 	blockNumber: bigint;
 	timestamp: bigint;
@@ -236,10 +236,14 @@ const traceCallResponseToTransactionSimulationResult = ({
 				return undefined;
 			}
 			const callId = index + 1;
-			const contract = contracts.find(({ address }) => address === traceCall.to);
-			console.log(traceCall.to, contracts[0].address);
-			const abi = abis[traceCall.to];
+			const contract = contracts[traceCall.to];
+			const abi = contract.abi;
 			const { functionName, args } = decodeFunctionDataSafe({ abi, data: traceCall.input });
+			const result = decodeFunctionResultSafe({
+				abi,
+				functionName,
+				data: traceCall.output ?? '0x'
+			});
 			const abiFunction = getAbiFunction({ abi, name: functionName, args });
 			//
 			const contractCall: ContractCall = {
@@ -276,10 +280,20 @@ const traceCallResponseToTransactionSimulationResult = ({
 							value: formatAbiParameterValue(args[index], input)
 					  }))
 					: [],
-				resultTypes: [], // TODO
-				decodedResult: [], // TODO
+				resultTypes: abiFunction?.outputs.map((output) => output.type ?? '').filter((type) => type),
+				decodedResult:
+					abiFunction?.outputs.map((output, index) => ({
+						name: output.name ?? '',
+						typeName: output.type,
+						value: [
+							Array.isArray(result)
+								? formatAbiParameterValue(result[index], output)
+								: formatAbiParameterValue(result, output)
+						],
+						internalIODecoded: null
+					})) ?? [],
 
-				contractName: contract?.name,
+				contractName: contractNames[traceCall.to],
 				entryPointName: functionName,
 
 				isErc20Token: false,
@@ -301,8 +315,8 @@ const traceCallResponseToTransactionSimulationResult = ({
 			if (traceCall.type !== 'INTERNALCALL' || traceCall.to === undefined) {
 				return undefined;
 			}
-			const contract = contracts.find(({ address }) => address === traceCall.to);
-			const abi = abis[traceCall.to];
+			const contract = contracts[traceCall.to];
+			const abi = contract.abi;
 			const { functionName, args } = decodeFunctionDataSafe({ abi, data: traceCall.input });
 			const result = decodeFunctionResultSafe({
 				abi,
@@ -317,7 +331,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 				childrenCallIds: traceCall.calls?.map((call) => 3) ?? [], // TODO
 				contractCallId: 1, // TODO
 				eventCallIds: [],
-				fnName: `${contract?.name}::${functionName}`,
+				fnName: `${contractNames[traceCall.to]}::${functionName}`,
 				fp: 0,
 				isDeepestPanicResult: false,
 				results:
@@ -363,7 +377,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 		.filter((functionCall) => functionCall)
 		.reduce((previousValue, currentValue) => ({ ...previousValue, ...currentValue }), {});
 	console.log(functionCallsMap);
-	/* return {
+	return {
 		l2TransactionData: {
 			simulationResult: {
 				contractCallsMap: contractCallsMap!,
@@ -389,8 +403,8 @@ const traceCallResponseToTransactionSimulationResult = ({
 			totalTransactionsInBlock: transactions.length,
 			l2TxHash: txHash
 		}
-	}; */
-	return transactionSimulationResponse as TransactionSimulationResult;
+	};
+	//return transactionSimulationResponse as TransactionSimulationResult;
 };
 
 export default traceCallResponseToTransactionSimulationResult;

@@ -76,7 +76,7 @@ type Step = {
 	traceCallIndex: number;
 };
 
-type DebugCallContract = {
+export type DebugCallContract = {
 	pcToSourceMappings: Record<number, string>;
 	sources: Record<number, string>;
 	abi: Abi;

@@ -55,22 +55,24 @@ export const POST = async (request: NextRequest) => {
 	if (!traceTransactionResult) {
 		throw new Error('ERROR: debug_traceTransaction failed');
 	}
+	// contracts should be verified first
+	// forge verify-contract --rpc-url $RPC_URL --compiler-version 0.8.30 --via-ir $CONTRACT_ADDRESS examples/TestContract.sol:TestContract
 	// FETCH CONTRACTS
 	const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceTransactionResult), 'to');
 	const publicClient = createPublicClient({ transport: http(rpcUrl) });
-	const [{ timestamp, transactions }, contracts] = await Promise.all([
+	const [{ timestamp, transactions }, sourcifyContracts] = await Promise.all([
 		publicClient.getBlock({ blockNumber }),
 		Promise.all(
 			flattenedTraceTransactionResult
 				.filter(({ type, to }) => type === 'CALL' && to)
-				.map(({ to }) => fetchContract(to!, tracingClient, chainId))
+				.map(({ to }) => fetchContract(to!, publicClient, chainId))
 		)
 	]);
 	// COPY SOURCES TO /TMP AND COMPILE EVERY CONTRACTS
 	const tmp = `/tmp/${txHash}`;
 	await rm(tmp, { recursive: true, force: true });
 	await Promise.all(
-		contracts.map(async (contract) => {
+		sourcifyContracts.map(async (contract) => {
 			const metadataFile = contract.sources.find((source) =>
 				source.path?.endsWith('metadata.json')
 			);
@@ -94,16 +96,26 @@ export const POST = async (request: NextRequest) => {
 		})
 	);
 	// RUN WALNUT-CLI
-	const { traceCall, abis } = await walnutCli(rpcUrl, txHash, `${tmp}/${contracts[0].address}`);
-	// console.log(flattenTraceCall(traceCall));
+	const { traceCall, steps, contracts } = await walnutCli(
+		rpcUrl,
+		txHash,
+		`${tmp}/${sourcifyContracts[0].address}`
+	);
 	// const { traceCall, abis } = traceCallResponse as unknown as TraceCallResponse;
+	const contractNames = sourcifyContracts.reduce(
+		(previousValue, currentValue) => ({
+			...previousValue,
+			[currentValue.address]: currentValue.name
+		}),
+		{}
+	);
 	const response = traceCallResponseToTransactionSimulationResult({
 		traceCall,
-		abis,
 		contracts,
+		contractNames,
 		chainId: 1,
 		blockNumber: BigInt(0),
-		timestamp: BigInt(Date.now()),
+		timestamp: BigInt(Math.floor(Date.now() / 1000)),
 		nonce: 1,
 		from: '0x',
 		type: '',
