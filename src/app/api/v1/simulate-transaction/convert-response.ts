@@ -190,7 +190,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 		.filter((functionCall) => functionCall)
 		.reduce((previousValue, currentValue) => ({ ...previousValue, ...currentValue }), {});
 	console.log(functionCallsMap);
-	return {
+	/* return {
 		l2TransactionData: {
 			simulationResult: {
 				contractCallsMap: contractCallsMap!,
@@ -216,8 +216,8 @@ const traceCallResponseToTransactionSimulationResult = ({
 			totalTransactionsInBlock: transactions.length,
 			l2TxHash: txHash
 		}
-	};
-	//return transactionSimulationResponse as TransactionSimulationResult;
+	}; */
+	return transactionSimulationResponse as TransactionSimulationResult;
 };
 
 export default traceCallResponseToTransactionSimulationResult;
