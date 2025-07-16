@@ -12,9 +12,6 @@ import fetchContract from '@/app/api/v1/fetch-contract';
 import solc from '@/app/api/v1/solc';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
-import { CallType, EntryPointType, type TransactionSimulationResult } from '@/lib/simulation';
-import traceCallResponse from '@/app/api/v1/simulate-transaction/trace-call-response.json';
-import { TraceCallResponse } from '@/app/api/v1/types';
 
 export const POST = async (request: NextRequest) => {
 	const body = await request.json();
@@ -32,14 +29,15 @@ export const POST = async (request: NextRequest) => {
 	console.log('ANVIL STARTED'); */
 	// FETCH TRACE CALL
 	console.log('FETCHING TRACE CALL');
-	const tracingClient = createTracingClient();
+	const publicClient = createPublicClient({ transport: http(rpcUrl) });
+	const tracingClient = createTracingClient(rpcUrl);
 	const [
 		chainId,
 		{ to, blockNumber, nonce, from, type, transactionIndex },
 		traceTransactionResult
 	] = await Promise.all([
-		tracingClient.getChainId(),
-		tracingClient.getTransaction({ hash: txHash }),
+		publicClient.getChainId(),
+		publicClient.getTransaction({ hash: txHash }),
 		tracingClient.traceTransaction({
 			transactionHash: txHash,
 			tracer: 'callTracer'
@@ -59,7 +57,6 @@ export const POST = async (request: NextRequest) => {
 	// forge verify-contract --rpc-url $RPC_URL --compiler-version 0.8.30 --via-ir $CONTRACT_ADDRESS examples/TestContract.sol:TestContract
 	// FETCH CONTRACTS
 	const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceTransactionResult), 'to');
-	const publicClient = createPublicClient({ transport: http(rpcUrl) });
 	const [{ timestamp, transactions }, sourcifyContracts] = await Promise.all([
 		publicClient.getBlock({ blockNumber }),
 		Promise.all(
@@ -96,7 +93,7 @@ export const POST = async (request: NextRequest) => {
 		})
 	);
 	// RUN WALNUT-CLI
-	const { traceCall, steps, contracts } = await walnutCli(
+	const { traceCall, contracts } = await walnutCli(
 		rpcUrl,
 		txHash,
 		`${tmp}/${sourcifyContracts[0].address}`

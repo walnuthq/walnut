@@ -1,5 +1,4 @@
-import { createTestClient, http, publicActions } from 'viem';
-import { anvil } from 'viem/chains';
+import { createTestClient, http } from 'viem';
 import { type DebugTraceTransactionParams } from 'tevm/actions';
 import { type RawTraceCall, type TraceCall, rawTraceCallToTraceCall } from '@/app/api/v1/types';
 
@@ -25,31 +24,28 @@ export const flattenTraceCall = (traceCall: TraceCall) => {
 	return result;
 };
 
-const createTracingClient = (rpcUrl = 'http://localhost:8545') =>
+const createTracingClient = (rpcUrl?: string) =>
 	createTestClient({
-		// chain: anvil,
 		mode: 'anvil',
 		transport: http(rpcUrl)
-	})
-		.extend(publicActions)
-		.extend((client) => ({
-			async traceTransaction(args: DebugTraceTransactionParams): Promise<TraceCall | null> {
-				const traceTransactionResult = await client.request({
-					// @ts-ignore
-					method: 'debug_traceTransaction',
-					params: [args.transactionHash, { tracer: args.tracer, tracerConfig: args.tracerConfig }]
-				});
-				if (!traceTransactionResult) {
-					return null;
-				}
-				const rawTraceTransactionResult = traceTransactionResult as unknown as {
-					gas: number;
-				};
-				if (rawTraceTransactionResult.gas === 0) {
-					return null;
-				}
-				return rawTraceCallToTraceCall(traceTransactionResult as unknown as RawTraceCall);
+	}).extend((client) => ({
+		async traceTransaction(args: DebugTraceTransactionParams): Promise<TraceCall | null> {
+			const traceTransactionResult = await client.request({
+				// @ts-ignore
+				method: 'debug_traceTransaction',
+				params: [args.transactionHash, { tracer: args.tracer, tracerConfig: args.tracerConfig }]
+			});
+			if (!traceTransactionResult) {
+				return null;
 			}
-		}));
+			const rawTraceTransactionResult = traceTransactionResult as unknown as {
+				gas: number;
+			};
+			if (rawTraceTransactionResult.gas === 0) {
+				return null;
+			}
+			return rawTraceCallToTraceCall(traceTransactionResult as unknown as RawTraceCall);
+		}
+	}));
 
 export default createTracingClient;

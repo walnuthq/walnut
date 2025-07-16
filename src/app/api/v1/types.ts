@@ -71,7 +71,7 @@ export type TraceCallResponse = {
 	abis: Record<Address, Abi>;
 };
 
-type Step = {
+export type Step = {
 	pc: number;
 	traceCallIndex: number;
 };

@@ -17,8 +17,9 @@ import {
 	TransactionSimulationResult
 } from '@/lib/simulation';
 import { CallTraceContext } from './call-trace-context-provider';
-import { debugTransactionByData, DebuggerPayload, DebuggerInfo } from '@/lib/debugger';
+import { debugCustomNetworkTransactionByHash, DebuggerPayload, DebuggerInfo } from '@/lib/debugger';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
+import { useSearchParams } from 'next/navigation';
 
 interface DebuggerContextProps {
 	functionCallsMap: { [key: number]: FunctionCall };
@@ -84,7 +85,8 @@ export const DebuggerContextProvider = ({
 
 	const { contractCallsMap: callTraceContractCalls, functionCallsMap: callTraceFunctionCalls } =
 		useContext(CallTraceContext);
-	const CACHE_TTL_MS = 15 * 60 * 1000;
+	const CACHE_TTL_MS = 0; //15 * 60 * 1000;
+	const searchParams = useSearchParams();
 
 	function safeStringify(value: any): string {
 		return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() + 'n' : v));
@@ -204,7 +206,10 @@ export const DebuggerContextProvider = ({
 					return;
 				}
 
-				const result = await debugTransactionByData(debuggerPayload);
+				const result = await debugCustomNetworkTransactionByHash({
+					rpcUrl: searchParams.get('rpcUrl')!,
+					txHash: searchParams.get('txHash')!
+				});
 				setDebuggerInfo(result);
 				setCachedDebuggerInfo(cacheKey, result);
 

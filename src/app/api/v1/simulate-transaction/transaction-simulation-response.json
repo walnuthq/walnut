@@ -47,7 +47,7 @@
 					"isDeepestPanicResult": false,
 
 					"nestingLevel": 0,
-					"callDebuggerDataAvailable": false,
+					"callDebuggerDataAvailable": true,
 					"debuggerTraceStepIndex": null,
 					"isHidden": false
 				}
@@ -78,7 +78,7 @@
 							"internalIODecoded": null
 						}
 					],
-					"debuggerDataAvailable": false,
+					"debuggerDataAvailable": true,
 					"debuggerTraceStepIndex": null,
 					"isHidden": false
 				},
@@ -107,7 +107,7 @@
 							"internalIODecoded": null
 						}
 					],
-					"debuggerDataAvailable": false,
+					"debuggerDataAvailable": true,
 					"debuggerTraceStepIndex": null,
 					"isHidden": false
 				}
