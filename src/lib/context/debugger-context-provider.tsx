@@ -486,11 +486,24 @@ function getDebuggerDataForStep(
 	const contractCallId = step?.withLocation
 		? step.withLocation.contractCallId
 		: step?.withContractCall?.contractCallId;
-	const contractCall = contractCallId ? contractCallsMap[contractCallId] : undefined;
+	const contractCall =
+		contractCallId !== undefined && contractCallId !== null
+			? contractCallsMap[String(contractCallId)]
+			: undefined;
 
-	const classDebuggerData = contractCall
-		? simulationDebuggerData?.classesDebuggerData[contractCall.classHash]
-		: undefined;
+	let classHash = contractCall?.classHash;
+	let classDebuggerData: any = undefined;
+	if (classHash && simulationDebuggerData?.classesDebuggerData?.[classHash]) {
+		classDebuggerData = simulationDebuggerData.classesDebuggerData[classHash];
+	} else {
+		// Fallback: take first classDebuggerData from object
+		const allClassData = Object.values(simulationDebuggerData?.classesDebuggerData ?? {});
+		classDebuggerData = allClassData.length > 0 ? allClassData[0] : undefined;
+		classHash =
+			allClassData.length > 0
+				? Object.keys(simulationDebuggerData?.classesDebuggerData ?? {})[0]
+				: undefined;
+	}
 	const classSourceCode = classDebuggerData?.sourceCode ?? {};
 
 	let activeFile: string | undefined;
@@ -498,19 +511,31 @@ function getDebuggerDataForStep(
 	let functionCallId: number | undefined;
 
 	if (step?.withLocation) {
-		const classDebuggerData =
-			contractCall && simulationDebuggerData?.classesDebuggerData[contractCall.classHash];
-		const locations =
-			classDebuggerData?.sierraStatementsToCairoInfo[step?.withLocation.sierraIndex]
-				?.cairoLocations;
-		codeLocation = locations?.[step?.withLocation.locationIndex]!; // TODO
-		activeFile = codeLocation.filePath;
+		const sierraIndex = String(step.withLocation.sierraIndex);
+		const locations = classDebuggerData?.sierraStatementsToCairoInfo?.[sierraIndex]?.cairoLocations;
+		codeLocation = locations?.[step.withLocation.locationIndex];
+		if (!codeLocation) {
+			console.warn('No codeLocation for', {
+				classHash,
+				sierraIndex,
+				locationIndex: step.withLocation.locationIndex,
+				locations
+			});
+		}
+		activeFile = codeLocation?.filePath;
 		functionCallId = step.withLocation.functionCallId;
 	} else {
 		if (classDebuggerData) {
 			const someFile = Object.keys(classDebuggerData.sourceCode)[0];
 			if (someFile) activeFile = someFile;
 		}
+	}
+
+	// Fallback for activeFile if undefined
+	if (!activeFile && simulationDebuggerData) {
+		const allSourceCodes = Object.values(simulationDebuggerData.classesDebuggerData ?? {});
+		const firstSourceCode = allSourceCodes.length > 0 ? allSourceCodes[0].sourceCode : {};
+		activeFile = Object.keys(firstSourceCode)[0];
 	}
 
 	return { contractCall, classSourceCode, activeFile, codeLocation, functionCallId };
