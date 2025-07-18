@@ -2,11 +2,11 @@
 import { Editor as MonacoEditor, Monaco, useMonaco } from '@monaco-editor/react';
 import { editor as Editor } from 'monaco-editor';
 import { cn } from '@/lib/utils';
-import { registerCairoLanguageSupport } from './cairo-lang-config';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { CodeLocation, InternalFnCallIO } from '@/lib/simulation';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { useTheme } from 'next-themes';
+import { registerSolidityLanguageSupport } from './solidity-lang-config';
 
 export function CodeViewer({
 	content,
@@ -125,7 +125,8 @@ export function CodeViewer({
 	const handleEditorDidMount = useCallback(
 		async (editor: Editor.IStandaloneCodeEditor, monaco: Monaco) => {
 			editorRef.current = editor;
-			registerCairoLanguageSupport(monaco as any);
+
+			registerSolidityLanguageSupport(monaco as any);
 
 			editor.onMouseMove((e) => {
 				if (e.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {

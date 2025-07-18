@@ -1,0 +1,133 @@
+import type { Monaco } from '@monaco-editor/react';
+
+export function registerSolidityLanguageSupport(monaco: Monaco) {
+	const languageId = 'solidity';
+	if (!monaco.languages.getLanguages().some((l) => l.id === languageId)) {
+		monaco.languages.register({ id: languageId });
+		monaco.languages.setMonarchTokensProvider(languageId, {
+			keywords: [
+				'pragma',
+				'solidity',
+				'contract',
+				'function',
+				'returns',
+				'public',
+				'private',
+				'view',
+				'pure',
+				'payable',
+				'memory',
+				'storage',
+				'if',
+				'else',
+				'for',
+				'while',
+				'return',
+				'event',
+				'emit',
+				'constructor',
+				'mapping',
+				'address',
+				'uint',
+				'uint256',
+				'bool',
+				'string',
+				'bytes',
+				'import',
+				'as',
+				'from',
+				'modifier',
+				'require',
+				'revert',
+				'assert',
+				'enum',
+				'struct',
+				'break',
+				'continue',
+				'do',
+				'delete',
+				'new',
+				'this',
+				'super',
+				'external',
+				'internal',
+				'calldata',
+				'override',
+				'virtual',
+				'indexed',
+				'library',
+				'using',
+				'assembly',
+				'interface',
+				'type',
+				'is',
+				'abstract',
+				'try',
+				'catch',
+				'error',
+				'fallback',
+				'receive',
+				'anonymous',
+				'constant',
+				'immutable'
+			],
+			operators: [
+				'=',
+				'>',
+				'<',
+				'!',
+				'~',
+				'?',
+				':',
+				'==',
+				'<=',
+				'>=',
+				'!=',
+				'&&',
+				'||',
+				'++',
+				'--',
+				'+',
+				'-',
+				'*',
+				'/',
+				'&',
+				'|',
+				'^',
+				'%',
+				'<<',
+				'>>',
+				'>>>',
+				'+=',
+				'-=',
+				'*=',
+				'/=',
+				'&=',
+				'|=',
+				'^=',
+				'%=',
+				'<<=',
+				'>>=',
+				'>>>='
+			],
+			tokenizer: {
+				root: [
+					[
+						/[a-zA-Z_$][\w$]*/,
+						{
+							cases: {
+								'@keywords': 'keyword',
+								'@default': 'identifier'
+							}
+						}
+					],
+					[/[{}()\[\]]/, '@brackets'],
+					[/\d+/, 'number'],
+					[/".*?"/, 'string'],
+					[/'.*?'/, 'string'],
+					[/\/\/[^"]*$/, 'comment']
+				]
+			}
+		});
+	}
+}

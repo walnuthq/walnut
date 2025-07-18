@@ -155,7 +155,8 @@ export const POST = async (request: NextRequest) => {
 		contracts,
 		sourcifyContracts,
 		contractCallsMap: l2TransactionData.simulationResult.contractCallsMap,
-		functionCallsMap: l2TransactionData.simulationResult.functionCallsMap
+		functionCallsMap: l2TransactionData.simulationResult.functionCallsMap,
+		txHash: parameters.txHash ?? ''
 	});
 	return NextResponse.json(response);
 	//return NextResponse.json(debuggerInfo);

@@ -60,6 +60,7 @@ const FunctionCallViewer = ({
 		start: { line: number; col: number },
 		end: { line: number; col: number }
 	): string {
+		if (typeof sourceCode !== 'string') return '';
 		const lines = sourceCode.split('\n');
 
 		const startLine = start.line;
