@@ -7,7 +7,6 @@ import {
 } from '@/app/api/v1/types';
 import { DebuggerInfo } from '@/lib/debugger';
 import { type ContractCall, type FunctionCall } from '@/lib/simulation';
-// import { whatsabi } from '@shazow/whatsabi'; // Ukloni ovaj import
 
 // Helper function that converts byte offset -> (line, col)
 function offsetToLineCol(source: string, offset: number) {
@@ -75,14 +74,6 @@ const debugCallResponseToTransactionSimulationResult = ({
 	for (const [address, contract] of Object.entries(contracts)) {
 		// 1. Find sourcifyContract for this address;
 		const sourcifyContract = sourcifyContracts.find((c) => c.address === address);
-		console.log('sourcifyContract {}', sourcifyContract?.bytecode);
-		const entryPointSelector = contractCallsMap[1].entryPoint.entryPointSelector;
-		console.log('entryPointSelector {}', entryPointSelector);
-		const push4Offsets =
-			sourcifyContract?.bytecode && entryPointSelector
-				? findPush4SelectorOffsets(sourcifyContract.bytecode, entryPointSelector)
-				: [];
-		console.log('push4Offsets {}', push4Offsets);
 		const contractSources = sourcifyContract?.sources || [];
 		const fileIndexToPath: Record<number, string> = {};
 		const sourceCode: Record<string, string> = {};
@@ -95,7 +86,10 @@ const debugCallResponseToTransactionSimulationResult = ({
 			sources[Number(idx)] = source.content;
 		});
 		const sierraStatementsToCairoInfo: Record<number, { cairoLocations: any[] }> = {};
+		let lastMapping: string | null = null;
 		for (const [pc, mapping] of Object.entries(contract.pcToSourceMappings)) {
+			if (mapping === lastMapping) continue;
+			lastMapping = mapping;
 			sierraStatementsToCairoInfo[Number(pc)] = {
 				cairoLocations: [parsePcToSourceMapping(mapping, fileIndexToPath, sources)]
 			};
@@ -152,26 +146,5 @@ const debugCallResponseToTransactionSimulationResult = ({
 		}
 	} as DebuggerInfo;
 };
-
-/**
- * Find all offsets (PC) where PUSH4 <selector> appears in the bytecode.
- * @param bytecode - hex string (can start with 0x)
- * @param selector - hex string (can start with 0x)
- * @returns array of offsets (PC) in bytes
- */
-export function findPush4SelectorOffsets(bytecode: Hex, selector: string): number[] {
-	// Convert Hex to a regular hex string without 0x
-	const hex = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
-	if (selector.startsWith('0x')) selector = selector.slice(2);
-	const offsets: number[] = [];
-	// PUSH4 = 0x63
-	const pattern = '63' + selector;
-	let idx = hex.indexOf(pattern);
-	while (idx !== -1) {
-		offsets.push(idx / 2);
-		idx = hex.indexOf(pattern, idx + 1);
-	}
-	return offsets;
-}
 
 export default debugCallResponseToTransactionSimulationResult;
