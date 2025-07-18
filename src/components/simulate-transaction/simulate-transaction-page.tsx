@@ -72,7 +72,14 @@ export function SimulateTransactionPage({
 	const [_transactionVersion, _setTransactionVersion] = useState<number>(
 		simulationPayload?.transactionVersion || defaultTransactionVersion
 	);
-	const [_chain, _setChain] = useState<Chain | undefined>(undefined);
+	const defaultChain = {
+		chainId: process.env.NEXT_PUBLIC_CHAIN_ID,
+		network: {
+			rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
+			networkName: process.env.NEXT_PUBLIC_NETWORK_NAME!
+		}
+	};
+	const [_chain, _setChain] = useState<Chain | undefined>(defaultChain);
 
 	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
@@ -240,7 +247,7 @@ export function SimulateTransactionPage({
 		}));
 
 		const allCallsValid = processedCalls.every(
-			(call) => validateHexFormat(call.address) && call.function_name
+			(call) => validateHexFormat(call.address) // && call.function_name
 		);
 
 		const allCalldataValid = processedCalls.every((call) => {
@@ -409,9 +416,9 @@ export function SimulateTransactionPage({
 
 		_setContractCalls(newCalls);
 
-		if (newAddress && validateHexFormat(newAddress) && newAddress !== oldAddress) {
+		/* if (newAddress && validateHexFormat(newAddress) && newAddress !== oldAddress) {
 			await fetchFunctionsForContractAddress(newAddress);
-		}
+		} */
 	};
 
 	const handleFunctionNameChange = (index: number, newFunctionName: string) => {
@@ -482,7 +489,7 @@ export function SimulateTransactionPage({
 
 						<div className="rounded-lg py-4">
 							<div className="grid gap-6">
-								<div className="grid grid-cols-4 items-center gap-4">
+								{/*<div className="grid grid-cols-4 items-center gap-4">
 									<Label htmlFor="chain-id" className="text-right">
 										Network
 									</Label>
@@ -491,7 +498,7 @@ export function SimulateTransactionPage({
 										simulationPayload={simulationPayload}
 										onChainChangedCallback={onChainChangedCallback}
 									/>
-								</div>
+								</div> */}
 
 								<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
 									<Label htmlFor="sender-address" className="text-right">
@@ -519,7 +526,7 @@ export function SimulateTransactionPage({
 									)}
 								</div>
 
-								<div className="grid grid-cols-4 items-center gap-4">
+								{/* <div className="grid grid-cols-4 items-center gap-4">
 									<Label htmlFor="number-contracts" className="text-right">
 										Number of contract calls
 									</Label>
@@ -533,7 +540,7 @@ export function SimulateTransactionPage({
 											alert && _numberOfContracts < 1 && ' border-red-500'
 										}`}
 									/>
-								</div>
+								</div> */}
 
 								{_contractCalls.map((call, index) => {
 									return (
@@ -550,9 +557,8 @@ export function SimulateTransactionPage({
 														onChange={(e) => handleContractAddressChange(index, e.target.value)}
 														className={`col-span-3 font-mono ${
 															alert &&
-															(!call.address ||
-																!validateHexFormat(call.address) ||
-																!_contractCallsFunctions[call.address]) &&
+															(!call.address || !validateHexFormat(call.address)) /*||
+																!_contractCallsFunctions[call.address]*/ &&
 															' border-red-500'
 														}`}
 													/>
@@ -566,32 +572,33 @@ export function SimulateTransactionPage({
 															Contract address must be a hexadecimal number.
 														</p>
 													)}
-													{alert &&
+													{/*alert &&
 														!_contractCallsFunctions[call.address] &&
 														call.address &&
 														validateHexFormat(call.address) && (
 															<p className="text-xs text-red-500 col-span-3 col-start-2">
 																This contract is not deployed on {_chain?.chainId}.
 															</p>
-														)}
+														)*/}
 												</div>
-												<EntryPointSelect
+												{/* <EntryPointSelect
 													chain={_chain}
 													entryPoints={call.address ? _contractCallsFunctions[call.address] : null}
 													value={call.function_name}
 													isLoading={call.address ? isLoadingFunctions[call.address] : false}
 													isError={alert && call.function_name === ''}
 													onChange={(value) => handleFunctionNameChange(index, value)}
-												/>
+												/> */}
 												<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
 													<Label htmlFor={`calldata-${index}`} className="text-right">
 														Calldata
 													</Label>
 													<Textarea
-														disabled={call.function_name === ''}
+														// disabled={call.function_name === ''}
 														id={`calldata-${index}`}
 														value={call.calldata}
-														placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d`}
+														placeholder={`Enter raw calldata here. For example:\n\n0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005`}
+														required
 														className={`col-span-3 font-mono h-32 ${
 															alert &&
 															call.address &&
@@ -607,7 +614,7 @@ export function SimulateTransactionPage({
 														}`}
 														onChange={(e) => handleCalldataChange(index, e.target.value)}
 													/>
-													{(() => {
+													{/*(() => {
 														const calldataLines = call.calldata.trim()
 															? call.calldata
 																	.trim()
@@ -630,7 +637,7 @@ export function SimulateTransactionPage({
 														}
 
 														return null;
-													})()}
+													})()*/}
 												</div>
 											</div>
 										</fieldset>
@@ -655,7 +662,7 @@ export function SimulateTransactionPage({
 									</p>
 								</div>
 
-								<div className="grid grid-cols-4 items-center gap-4">
+								{/* <div className="grid grid-cols-4 items-center gap-4">
 									<Label htmlFor="tx-version" className="text-right">
 										Transaction version
 									</Label>
@@ -673,7 +680,7 @@ export function SimulateTransactionPage({
 											</SelectContent>
 										</Select>
 									</div>
-								</div>
+								</div> */}
 
 								{alert && <FieldAlert />}
 								<div className="flex justify-end mt-4 mb-12">

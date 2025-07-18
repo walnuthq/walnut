@@ -1,5 +1,5 @@
 import { type Abi, type Address, type Hex, getAddress } from 'viem';
-import { type TraceType as RawTraceType } from 'tevm/actions';
+import { type TraceType } from 'tevm/actions';
 import { whatsabi } from '@shazow/whatsabi';
 
 export type Contract = {
@@ -18,33 +18,28 @@ export type RawTraceLog = {
 };
 
 export type RawTraceCall = {
-	type: RawTraceType;
-	from?: Address;
-	to?: Address;
+	type: TraceType;
+	from: Address;
+	to: Address;
 	value?: Hex;
 	gas: Hex;
 	gasUsed: Hex;
 	input: Hex;
 	output?: Hex;
 	error?: string;
+	revertReason?: string;
 	logs?: RawTraceLog[];
 	calls?: RawTraceCall[];
 };
-
-export type TraceType = RawTraceType | 'INTERNALCALL';
 
 export type TraceLog = Omit<RawTraceLog, 'position'> & {
 	position: number;
 };
 
-export type TraceCall = Omit<
-	RawTraceCall,
-	'type' | 'value' | 'gas' | 'gasUsed' | 'logs' | 'calls'
-> & {
-	type: TraceType;
+export type TraceCall = Omit<RawTraceCall, 'value' | 'gas' | 'gasUsed' | 'logs' | 'calls'> & {
 	value?: bigint;
-	gas: number; //bigint;
-	gasUsed: number; //bigint;
+	gas: bigint;
+	gasUsed: bigint;
 	logs?: TraceLog[];
 	calls?: TraceCall[];
 };
@@ -57,18 +52,26 @@ export const rawTraceLogToTraceLog = (traceLog: RawTraceLog): TraceLog => ({
 
 export const rawTraceCallToTraceCall = (traceCall: RawTraceCall): TraceCall => ({
 	...traceCall,
-	from: traceCall.from ? getAddress(traceCall.from) : undefined,
-	to: traceCall.to ? getAddress(traceCall.to) : undefined,
+	from: getAddress(traceCall.from),
+	to: getAddress(traceCall.to),
 	value: traceCall.value ? BigInt(traceCall.value) : undefined,
-	gas: Number(traceCall.gas), //BigInt(traceCall.gas),
-	gasUsed: Number(traceCall.gasUsed), //BigInt(traceCall.gasUsed),
+	gas: BigInt(traceCall.gas),
+	gasUsed: BigInt(traceCall.gasUsed),
 	logs: traceCall.logs?.map(rawTraceLogToTraceLog),
 	calls: traceCall.calls?.map(rawTraceCallToTraceCall)
 });
 
-export type TraceCallResponse = {
-	traceCall: TraceCall;
-	abis: Record<Address, Abi>;
+export type WalnutTraceType = TraceType | 'INTERNALCALL';
+
+export type RawWalnutTraceCall = Omit<TraceCall, 'type'> & {
+	type: WalnutTraceType;
+};
+
+export type WalnutTraceCall = Omit<RawWalnutTraceCall, 'output' | 'logs' | 'calls'> & {
+	type: WalnutTraceType;
+	output: Hex;
+	logs: TraceLog[];
+	calls: WalnutTraceCall[];
 };
 
 export type Step = {
@@ -82,8 +85,12 @@ export type DebugCallContract = {
 	abi: Abi;
 };
 
-export type DebugCallResponse = {
-	traceCall: TraceCall;
+export type RawDebugCallResponse = {
+	traceCall: RawWalnutTraceCall;
 	steps: Step[];
 	contracts: Record<Address, DebugCallContract>;
+};
+
+export type DebugCallResponse = Omit<RawDebugCallResponse, 'traceCall'> & {
+	traceCall: WalnutTraceCall;
 };

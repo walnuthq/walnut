@@ -28,6 +28,24 @@ export const decodeFunctionResultSafe = (params: DecodeFunctionResultParameters)
 	}
 };
 
+const formatAbiParameterType = ({ type, internalType }: AbiParameter) => {
+	const actualType = internalType ?? type;
+	if (actualType.includes('struct')) {
+		const [, structName] = actualType.split(' ');
+		return structName;
+	} else {
+		return actualType;
+	}
+};
+
+const formatAbiParameterName = ({ name }: AbiParameter | AbiEventParameter) =>
+	`${name ? ` ${name}` : ''}`;
+
+const formatAbiParameter = (value: unknown, abiParameter: AbiParameter) =>
+	`${formatAbiParameterType(abiParameter)}${formatAbiParameterName(
+		abiParameter
+	)}: ${formatAbiParameterValue(value, abiParameter)}`;
+
 export const formatAbiParameterValue = (
 	value: unknown,
 	abiParameter: AbiParameter | AbiEventParameter
@@ -145,16 +163,16 @@ export const formatAbiParameterValue = (
 		case 'string': {
 			return `"${value}"`;
 		}
-		/* case 'tuple': {
-      const tuple = value as Record<string, unknown>;
-      const { components } = abiParameter as {
-        components: readonly AbiParameter[];
-      };
-      const [, structName] = abiParameter.internalType ? abiParameter.internalType.split(' ') : [];
-      return `${cyan(structName)}({ ${components
-        .map((component) => formatAbiParameter(tuple[component.name ?? ''], component))
-        .join(', ')} })`;
-    } */
+		case 'tuple': {
+			const tuple = value as Record<string, unknown>;
+			const { components } = abiParameter as {
+				components: readonly AbiParameter[];
+			};
+			const [, structName] = abiParameter.internalType ? abiParameter.internalType.split(' ') : [];
+			return `${structName}({ ${components
+				.map((component) => formatAbiParameter(tuple[component.name ?? ''], component))
+				.join(', ')} })`;
+		}
 		// arrays
 		default: {
 			const array = value as unknown[];

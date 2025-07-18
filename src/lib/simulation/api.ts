@@ -15,7 +15,7 @@ export async function simulateTransactionByData(
 				block_number: simulationPayload.blockNumber,
 				transaction_version: simulationPayload.transactionVersion,
 				nonce: simulationPayload.nonce,
-				rpc_url: simulationPayload.rpcUrl,
+				rpc_url: process.env.NEXT_PUBLIC_RPC_URL,
 				chain_id: simulationPayload.chainId
 			}
 		},

@@ -1,8 +1,13 @@
-import { type Address } from 'viem';
-import { type TraceCall, type Step, type DebugCallContract } from '@/app/api/v1/types';
+import { type Address, type Hex } from 'viem';
+import {
+	type Step,
+	type DebugCallContract,
+	type WalnutTraceCall,
+	type Contract
+} from '@/app/api/v1/types';
 import { DebuggerInfo } from '@/lib/debugger';
-import { flattenTraceCall } from '../tracing-client';
-import { whatsabi } from '@shazow/whatsabi';
+import { type ContractCall, type FunctionCall } from '@/lib/simulation';
+// import { whatsabi } from '@shazow/whatsabi'; // Ukloni ovaj import
 
 // Helper function that converts byte offset -> (line, col)
 function offsetToLineCol(source: string, offset: number) {
@@ -52,28 +57,42 @@ const debugCallResponseToTransactionSimulationResult = ({
 	traceCall,
 	steps,
 	contracts,
-	txHash,
-	contractSourcesMap // { [address]: contractSources[] } where contractSources[] = [{ path, content }]
+	sourcifyContracts,
+	contractCallsMap,
+	functionCallsMap,
+	txHash
 }: {
-	traceCall: TraceCall;
+	traceCall: WalnutTraceCall;
 	steps: Step[];
 	contracts: Record<Address, DebugCallContract>;
 	txHash: string;
-	contractSourcesMap: Record<string, Array<{ path: string; content: string }>>;
+	sourcifyContracts: Contract[];
+	contractCallsMap: Record<string, ContractCall>;
+	functionCallsMap: Record<string, FunctionCall>;
 }) => {
 	// 1. classesDebuggerData
 	const classesDebuggerData: Record<string, any> = {};
 	for (const [address, contract] of Object.entries(contracts)) {
-		// Build fileIndexToPath for the contract
-		const contractSources = contractSourcesMap[address] || [];
+		// 1. Find sourcifyContract for this address;
+		const sourcifyContract = sourcifyContracts.find((c) => c.address === address);
+		console.log('sourcifyContract {}', sourcifyContract?.bytecode);
+		const entryPointSelector = contractCallsMap[1].entryPoint.entryPointSelector;
+		console.log('entryPointSelector {}', entryPointSelector);
+		const push4Offsets =
+			sourcifyContract?.bytecode && entryPointSelector
+				? findPush4SelectorOffsets(sourcifyContract.bytecode, entryPointSelector)
+				: [];
+		console.log('push4Offsets {}', push4Offsets);
+		const contractSources = sourcifyContract?.sources || [];
 		const fileIndexToPath: Record<number, string> = {};
 		const sourceCode: Record<string, string> = {};
 		const sources: Record<number, string> = {};
 		contractSources.forEach((source, idx) => {
-			const cleanPath = whatsabi.loaders.SourcifyABILoader.stripPathPrefix(`/${source.path}`);
-			fileIndexToPath[idx] = cleanPath;
+			if (!source.path || !source.content) return; // skip if missing path or content
+			const cleanPath = source.path;
+			fileIndexToPath[Number(idx)] = cleanPath;
 			sourceCode[cleanPath] = source.content;
-			sources[idx] = source.content;
+			sources[Number(idx)] = source.content;
 		});
 		const sierraStatementsToCairoInfo: Record<number, { cairoLocations: any[] }> = {};
 		for (const [pc, mapping] of Object.entries(contract.pcToSourceMappings)) {
@@ -88,15 +107,16 @@ const debugCallResponseToTransactionSimulationResult = ({
 	}
 
 	// 2. debuggerTrace
-	const flatCalls = flattenTraceCall(traceCall);
+	// const flatCalls = flattenTraceCall(traceCall); // uklonjeno
 	const debuggerTrace: any[] = [];
 	steps.forEach((step) => {
-		const call = flatCalls[step.traceCallIndex];
+		const contractCall = contractCallsMap[step.traceCallIndex];
+		const functionCall = functionCallsMap[step.traceCallIndex];
 		let contractCallId = 0;
 		let functionCallId = 0;
-		if (call?.type === 'CALL') {
+		if (contractCall) {
 			contractCallId = step.traceCallIndex;
-		} else if (call?.type === 'INTERNALCALL') {
+		} else if (functionCall) {
 			functionCallId = step.traceCallIndex;
 		}
 
@@ -123,113 +143,6 @@ const debugCallResponseToTransactionSimulationResult = ({
 		}
 	});
 
-	// MOCK contractCallsMap and functionCallsMap for 0x380A1C6b118036364d84C3ecD305C2C11761A26c TestContract
-	const contractCallsMap = {
-		0: {
-			callId: 0,
-			parentCallId: 0,
-			childrenCallIds: [],
-			functionCallId: 1,
-			eventCallIds: [],
-			entryPoint: {
-				classHash: '0x380A1C6b118036364d84C3ecD305C2C11761A26c',
-				codeAddress: '0x380A1C6b118036364d84C3ecD305C2C11761A26c',
-				entryPointType: 'EXTERNAL',
-				entryPointSelector: '0x7cf5dab0',
-				calldata: ['0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005'],
-				storageAddress: '0x380A1C6b118036364d84C3ecD305C2C11761A26c',
-				callerAddress: '0xDefA4230b5cD308E69394e74896Bc3BF5665FEBC',
-				callType: 'Call',
-				initialGas: 39978796
-			},
-			result: {
-				Success: {
-					retData: []
-				}
-			},
-			argumentsNames: ['amount'],
-			argumentsTypes: ['uint256'],
-			calldataDecoded: [
-				{
-					name: 'amount',
-					typeName: 'uint256',
-					value: '5'
-				}
-			],
-			resultTypes: [],
-			decodedResult: [],
-			contractName: 'TestContract',
-			entryPointName: 'increment',
-			isErc20Token: false,
-			classHash: '0x380A1C6b118036364d84C3ecD305C2C11761A26c',
-			isDeepestPanicResult: false,
-			nestingLevel: 0,
-			callDebuggerDataAvailable: true,
-			debuggerTraceStepIndex: null,
-			isHidden: false
-		}
-	};
-	const functionCallsMap = {
-		1: {
-			callId: 1,
-			parentCallId: 0,
-			childrenCallIds: [2],
-			contractCallId: 0,
-			eventCallIds: [],
-			fnName: 'TestContract::increment2',
-			fp: 0,
-			isDeepestPanicResult: false,
-			results: [],
-			resultsDecoded: [],
-			arguments: [
-				{
-					typeName: 'uint256',
-					value: ['5'],
-					internalIODecoded: null
-				}
-			],
-			argumentsDecoded: [
-				{
-					typeName: 'uint256',
-					value: ['5'],
-					internalIODecoded: null
-				}
-			],
-			debuggerDataAvailable: true,
-			debuggerTraceStepIndex: null,
-			isHidden: false
-		},
-		2: {
-			callId: 2,
-			parentCallId: 1,
-			childrenCallIds: [],
-			contractCallId: 0,
-			eventCallIds: [],
-			fnName: 'TestContract::increment3',
-			fp: 0,
-			isDeepestPanicResult: false,
-			results: [],
-			resultsDecoded: [],
-			arguments: [
-				{
-					typeName: 'uint256',
-					value: ['5'],
-					internalIODecoded: null
-				}
-			],
-			argumentsDecoded: [
-				{
-					typeName: 'uint256',
-					value: ['5'],
-					internalIODecoded: null
-				}
-			],
-			debuggerDataAvailable: true,
-			debuggerTraceStepIndex: null,
-			isHidden: false
-		}
-	};
-
 	return {
 		contractCallsMap,
 		functionCallsMap,
@@ -239,5 +152,26 @@ const debugCallResponseToTransactionSimulationResult = ({
 		}
 	} as DebuggerInfo;
 };
+
+/**
+ * Find all offsets (PC) where PUSH4 <selector> appears in the bytecode.
+ * @param bytecode - hex string (can start with 0x)
+ * @param selector - hex string (can start with 0x)
+ * @returns array of offsets (PC) in bytes
+ */
+export function findPush4SelectorOffsets(bytecode: Hex, selector: string): number[] {
+	// Convert Hex to a regular hex string without 0x
+	const hex = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
+	if (selector.startsWith('0x')) selector = selector.slice(2);
+	const offsets: number[] = [];
+	// PUSH4 = 0x63
+	const pattern = '63' + selector;
+	let idx = hex.indexOf(pattern);
+	while (idx !== -1) {
+		offsets.push(idx / 2);
+		idx = hex.indexOf(pattern, idx + 1);
+	}
+	return offsets;
+}
 
 export default debugCallResponseToTransactionSimulationResult;
