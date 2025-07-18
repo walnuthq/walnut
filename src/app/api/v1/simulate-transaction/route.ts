@@ -1,7 +1,7 @@
 import { rm, mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { NextResponse, type NextRequest } from 'next/server';
-import { createPublicClient, http, type Hash } from 'viem';
+import { createPublicClient, http, type Hash, type Address, type Hex } from 'viem';
 import { type Metadata } from '@ethereum-sourcify/lib-sourcify';
 import { whatsabi } from '@shazow/whatsabi';
 import { uniqBy } from 'lodash';
@@ -12,61 +12,114 @@ import fetchContract from '@/app/api/v1/fetch-contract';
 import solc from '@/app/api/v1/solc';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
+import transactionSimulationResponse from '@/app/api/v1/simulate-transaction/transaction-simulation-response.json';
+
+export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+type WithTxHash = {
+	rpc_url: string;
+	tx_hash: Hash;
+};
+
+type WithCalldata = {
+	sender_address: string;
+	calldata: string[];
+	block_number: number | undefined;
+	transaction_version: number;
+	nonce: number | undefined;
+	rpc_url: string;
+	chain_id: string | undefined;
+};
+
+const getParameters = ({
+	WithTxHash: withTxHash,
+	WithCalldata: withCalldata
+}: {
+	WithTxHash: WithTxHash;
+	WithCalldata: WithCalldata;
+}) => {
+	if (withTxHash) {
+		return { rpcUrl: withTxHash.rpc_url, txHash: withTxHash.tx_hash };
+	}
+	if (withCalldata) {
+		return {
+			rpcUrl: withCalldata.rpc_url,
+			senderAddress: withCalldata.sender_address as Address,
+			to: withCalldata.calldata[1] as Address,
+			calldata: withCalldata.calldata[4] as Hex,
+			blockNumber: withCalldata.block_number ? BigInt(withCalldata.block_number) : undefined,
+			nonce: withCalldata.nonce,
+			chainId: withCalldata.chain_id
+		};
+	}
+	throw new Error('Invalid body');
+};
 
 export const POST = async (request: NextRequest) => {
 	const body = await request.json();
-	const {
-		WithTxHash: { rpc_url: rpcUrl, tx_hash: txHash }
-	} = body as {
-		WithTxHash: {
-			rpc_url: string;
-			tx_hash: Hash;
-		};
-	};
+	const parameters = getParameters(body);
+	console.log(parameters);
 	// SPAWN ANVIL
 	/* console.log('SPAWNING ANVIL');
 	const anvil = await spawnAnvil({ rpcUrl, txHash });
 	console.log('ANVIL STARTED'); */
 	// FETCH TRACE CALL
 	console.log('FETCHING TRACE CALL');
-	const publicClient = createPublicClient({ transport: http(rpcUrl) });
-	const tracingClient = createTracingClient(rpcUrl);
-	const [
-		chainId,
-		{ to, blockNumber, nonce, from, type, transactionIndex },
-		traceTransactionResult
-	] = await Promise.all([
-		publicClient.getChainId(),
-		publicClient.getTransaction({ hash: txHash }),
-		tracingClient.traceTransaction({
-			transactionHash: txHash,
-			tracer: 'callTracer'
-		})
+	const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
+	const tracingClient = createTracingClient(parameters.rpcUrl);
+	const [chainId, transaction, traceResult] = await Promise.all([
+		parameters.chainId ? Number(parameters.chainId) : publicClient.getChainId(),
+		parameters.txHash
+			? publicClient.getTransaction({ hash: parameters.txHash })
+			: {
+					to: parameters.to,
+					blockNumber: parameters.blockNumber,
+					nonce: parameters.nonce,
+					from: parameters.senderAddress,
+					transactionIndex: 0
+			  },
+		parameters.txHash
+			? tracingClient.traceTransaction({
+					transactionHash: parameters.txHash,
+					tracer: 'callTracer'
+					// tracerConfig: { withLog: true }
+			  })
+			: tracingClient.traceCall({
+					from: parameters.senderAddress,
+					to: parameters.to,
+					data: parameters.calldata,
+					blockNrOrHash: parameters.blockNumber
+						? `0x${parameters.blockNumber.toString(16)}`
+						: 'latest',
+					//txIndex: '0x0', //options.txIndex ?? 0,
+					tracer: 'callTracer'
+					// tracerConfig: { withLog: true }
+			  })
 	]);
 	console.log('TRACE CALL FETCHED');
 	console.log({ chainId });
-	console.log({ to });
-	console.log(traceTransactionResult);
-	if (!to) {
+	console.log(transaction.to);
+	console.log(traceResult);
+	if (!transaction.to) {
 		throw new Error('ERROR: eth_getTransactionByHash failed');
 	}
-	if (!traceTransactionResult) {
-		throw new Error('ERROR: debug_traceTransaction failed');
+	if (!traceResult) {
+		throw new Error('ERROR: debug_traceTransaction/debug_traceCall failed');
 	}
 	// contracts should be verified first
 	// forge verify-contract --rpc-url $RPC_URL --compiler-version 0.8.30 --via-ir $CONTRACT_ADDRESS examples/TestContract.sol:TestContract
 	// FETCH CONTRACTS
-	const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceTransactionResult), 'to');
+	const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceResult), 'to');
 	const [{ timestamp, transactions }, sourcifyContracts] = await Promise.all([
-		publicClient.getBlock({ blockNumber }),
+		publicClient.getBlock({ blockNumber: transaction.blockNumber }),
 		Promise.all(
 			flattenedTraceTransactionResult
-				.filter(({ type, to }) => type === 'CALL' && to)
-				.map(({ to }) => fetchContract(to!, publicClient, chainId))
+				.filter(({ type }) => type === 'CALL')
+				.map(({ to }) => fetchContract(to, publicClient, chainId))
 		)
 	]);
 	// COPY SOURCES TO /TMP AND COMPILE EVERY CONTRACTS
-	const tmp = `/tmp/${txHash}`;
+	const tmp = `/tmp/${parameters.txHash ?? parameters.calldata.slice(0, 128)}`;
 	await rm(tmp, { recursive: true, force: true });
 	await Promise.all(
 		sourcifyContracts.map(async (contract) => {
@@ -89,16 +142,21 @@ export const POST = async (request: NextRequest) => {
 						return writeFile(filename, source.content);
 					})
 			);
-			await solc(compilationTarget, `${tmp}/${contract.address}`);
+			await solc({ compilationTarget, cwd: `${tmp}/${contract.address}` });
+			// ugly fix to make sure we wait until solc outputs debug dir for walnut-cli to catchup
+			await sleep(400);
 		})
 	);
 	// RUN WALNUT-CLI
-	const { traceCall, contracts } = await walnutCli(
-		rpcUrl,
-		txHash,
-		`${tmp}/${sourcifyContracts[0].address}`
-	);
-	// const { traceCall, abis } = traceCallResponse as unknown as TraceCallResponse;
+	const { traceCall, contracts } = await walnutCli({
+		command: 'trace', //parameters.txHash ? 'trace' : 'simulate',
+		txHash: parameters.txHash,
+		to: parameters.to,
+		calldata: parameters.calldata,
+		from: parameters.senderAddress,
+		rpcUrl: parameters.rpcUrl,
+		cwd: `${tmp}/${sourcifyContracts[0].address}`
+	});
 	const contractNames = sourcifyContracts.reduce(
 		(previousValue, currentValue) => ({
 			...previousValue,
@@ -106,20 +164,33 @@ export const POST = async (request: NextRequest) => {
 		}),
 		{}
 	);
+	// console.log('walnutTraceCall');
+	// console.log(traceCall);
 	const response = traceCallResponseToTransactionSimulationResult({
 		traceCall,
 		contracts,
 		contractNames,
-		chainId: 1,
+		//
+		chainId,
+		blockNumber: transaction.blockNumber ?? BigInt(0),
+		timestamp,
+		nonce: transaction.nonce ?? 0,
+		from: transaction.from,
+		type: 'INVOKE',
+		transactionIndex: transaction.transactionIndex,
+		transactions,
+		txHash: parameters.txHash
+		/* chainId: 1,
 		blockNumber: BigInt(0),
 		timestamp: BigInt(Math.floor(Date.now() / 1000)),
 		nonce: 1,
 		from: '0x',
-		type: '',
+		type: 'INVOKE',
 		transactionIndex: 0,
 		transactions: ['0x'],
-		txHash: '0x'
+		txHash: '0x' */
 	});
 	// anvil.kill();
 	return NextResponse.json(response);
+	// return NextResponse.json(transactionSimulationResponse);
 };

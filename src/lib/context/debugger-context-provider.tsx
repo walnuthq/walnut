@@ -17,7 +17,12 @@ import {
 	TransactionSimulationResult
 } from '@/lib/simulation';
 import { CallTraceContext } from './call-trace-context-provider';
-import { debugCustomNetworkTransactionByHash, DebuggerPayload, DebuggerInfo } from '@/lib/debugger';
+import {
+	debugTransactionByData,
+	debugCustomNetworkTransactionByHash,
+	DebuggerPayload,
+	DebuggerInfo
+} from '@/lib/debugger';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import { useSearchParams } from 'next/navigation';
 
@@ -206,10 +211,13 @@ export const DebuggerContextProvider = ({
 					return;
 				}
 
-				const result = await debugCustomNetworkTransactionByHash({
-					rpcUrl: searchParams.get('rpcUrl')!,
-					txHash: searchParams.get('txHash')!
-				});
+				const txHash = searchParams.get('txHash');
+				const result = txHash
+					? await debugCustomNetworkTransactionByHash({
+							rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
+							txHash
+					  })
+					: await debugTransactionByData(debuggerPayload);
 				setDebuggerInfo(result);
 				setCachedDebuggerInfo(cacheKey, result);
 

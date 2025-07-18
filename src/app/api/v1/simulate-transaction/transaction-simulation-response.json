@@ -125,10 +125,10 @@
 		"blockNumber": 0,
 		"blockTimestamp": 0,
 		"nonce": 0,
-		"senderAddress": "0x",
+		"senderAddress": "0x0",
 		"calldata": [],
 		"transactionVersion": 1,
-		"transactionType": "eip1559",
+		"transactionType": "INVOKE",
 		"transactionIndexInBlock": 0,
 		"totalTransactionsInBlock": 1,
 		"l2TxHash": "0x"

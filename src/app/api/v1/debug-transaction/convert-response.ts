@@ -1,21 +1,30 @@
 import { type Address } from 'viem';
 import debuggerInfo from '@/app/api/v1/debug-transaction/debugger-info.json';
-import { type TraceCall, type Step, type DebugCallContract } from '@/app/api/v1/types';
+import {
+	type Step,
+	type DebugCallContract,
+	type WalnutTraceCall,
+	type Contract
+} from '@/app/api/v1/types';
 import { DebuggerInfo } from '@/lib/debugger';
-import { flattenTraceCall } from '../tracing-client';
+import { type ContractCall, type FunctionCall } from '@/lib/simulation';
 
 const debugCallResponseToTransactionSimulationResult = ({
 	traceCall,
 	steps,
-	contracts
+	contracts,
+	sourcifyContracts,
+	contractCallsMap,
+	functionCallsMap
 }: {
-	traceCall: TraceCall;
+	traceCall: WalnutTraceCall;
 	steps: Step[];
 	contracts: Record<Address, DebugCallContract>;
+	sourcifyContracts: Contract[];
+	contractCallsMap: Record<string, ContractCall>;
+	functionCallsMap: Record<string, FunctionCall>;
 }) => {
 	// TODO use walnut-cli JSON output to craft the DebuggerInfo data format
-	console.log(flattenTraceCall(traceCall));
-	console.log(steps.length);
 	/*const debuggerInfo: DebuggerInfo = {
 		contractCallsMap: {},
 		functionCallsMap: {},
