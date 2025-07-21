@@ -1,9 +1,8 @@
 import { rm, mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { NextResponse, type NextRequest } from 'next/server';
-import { createPublicClient, http, type Hash, type Address, type Hex } from 'viem';
+import { createPublicClient, http, type Hash, type Address, type Hex, getAddress } from 'viem';
 import { type Metadata } from '@ethereum-sourcify/lib-sourcify';
-import { whatsabi } from '@shazow/whatsabi';
 import { uniqBy } from 'lodash';
 
 import { spawnAnvil } from '@/app/api/v1/anvil';
@@ -14,7 +13,7 @@ import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
 import transactionSimulationResponse from '@/app/api/v1/simulate-transaction/transaction-simulation-response.json';
 
-export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type WithTxHash = {
 	rpc_url: string;
@@ -58,13 +57,12 @@ const getParameters = ({
 export const POST = async (request: NextRequest) => {
 	const body = await request.json();
 	const parameters = getParameters(body);
-	console.log(parameters);
+	// console.log('/simulate-transaction parameters', parameters);
 	// SPAWN ANVIL
 	/* console.log('SPAWNING ANVIL');
 	const anvil = await spawnAnvil({ rpcUrl, txHash });
 	console.log('ANVIL STARTED'); */
 	// FETCH TRACE CALL
-	console.log('FETCHING TRACE CALL');
 	const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
 	const tracingClient = createTracingClient(parameters.rpcUrl);
 	const [chainId, transaction, traceResult] = await Promise.all([
@@ -96,10 +94,10 @@ export const POST = async (request: NextRequest) => {
 					// tracerConfig: { withLog: true }
 			  })
 	]);
-	console.log('TRACE CALL FETCHED');
-	console.log({ chainId });
-	console.log(transaction.to);
-	console.log(traceResult);
+	// console.log('TRACE CALL FETCHED');
+	// console.log({ chainId });
+	// console.log(transaction.to);
+	// console.log(traceResult);
 	if (!transaction.to) {
 		throw new Error('ERROR: eth_getTransactionByHash failed');
 	}
@@ -135,21 +133,22 @@ export const POST = async (request: NextRequest) => {
 				contract.sources
 					.filter((source) => source.path)
 					.map(async (source) => {
-						const path = whatsabi.loaders.SourcifyABILoader.stripPathPrefix(`/${source.path}`);
-						const filename = `${tmp}/${contract.address}/${path}`;
+						const filename = `${tmp}/${contract.address}/${source.path}`;
 						const parentDirectory = dirname(filename);
 						await mkdir(parentDirectory, { recursive: true });
 						return writeFile(filename, source.content);
 					})
 			);
+			// ugly fix to make sure we wait until all files are written on disk
+			await sleep(400);
 			await solc({ compilationTarget, cwd: `${tmp}/${contract.address}` });
 			// ugly fix to make sure we wait until solc outputs debug dir for walnut-cli to catchup
-			await sleep(400);
+			// await sleep(400);
 		})
 	);
 	// RUN WALNUT-CLI
 	const { traceCall, contracts } = await walnutCli({
-		command: 'trace', //parameters.txHash ? 'trace' : 'simulate',
+		command: parameters.txHash ? 'trace' : 'simulate',
 		txHash: parameters.txHash,
 		to: parameters.to,
 		calldata: parameters.calldata,
@@ -157,6 +156,7 @@ export const POST = async (request: NextRequest) => {
 		rpcUrl: parameters.rpcUrl,
 		cwd: `${tmp}/${sourcifyContracts[0].address}`
 	});
+	// console.log(traceCall);
 	const contractNames = sourcifyContracts.reduce(
 		(previousValue, currentValue) => ({
 			...previousValue,
@@ -164,8 +164,6 @@ export const POST = async (request: NextRequest) => {
 		}),
 		{}
 	);
-	// console.log('walnutTraceCall');
-	// console.log(traceCall);
 	const response = traceCallResponseToTransactionSimulationResult({
 		traceCall,
 		contracts,
@@ -175,20 +173,11 @@ export const POST = async (request: NextRequest) => {
 		blockNumber: transaction.blockNumber ?? BigInt(0),
 		timestamp,
 		nonce: transaction.nonce ?? 0,
-		from: transaction.from,
+		from: getAddress(transaction.from),
 		type: 'INVOKE',
 		transactionIndex: transaction.transactionIndex,
 		transactions,
 		txHash: parameters.txHash
-		/* chainId: 1,
-		blockNumber: BigInt(0),
-		timestamp: BigInt(Math.floor(Date.now() / 1000)),
-		nonce: 1,
-		from: '0x',
-		type: 'INVOKE',
-		transactionIndex: 0,
-		transactions: ['0x'],
-		txHash: '0x' */
 	});
 	// anvil.kill();
 	return NextResponse.json(response);

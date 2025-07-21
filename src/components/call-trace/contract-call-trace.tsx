@@ -275,7 +275,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 				 * or exclamation triangle icon in case of error on the line
 				 */}
 				{errorColumn}
-				{!previewMode && (
+				{/*!previewMode && (
 					<DebugButton
 						onDebugClick={() => {
 							debugContractCall(call.callId);
@@ -283,7 +283,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						}}
 						isDebuggable={isDebuggable}
 					/>
-				)}
+				)*/}
 
 				<div
 					style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
@@ -442,12 +442,12 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 		});
 	}
 
-	if (call.entryPointInterfaceName) {
+	/* if (call.entryPointInterfaceName) {
 		details.push({
 			name: 'Interface Name',
 			value: call.entryPointInterfaceName
 		});
-	}
+	} */
 
 	if (call.errorMessage) {
 		details.push({

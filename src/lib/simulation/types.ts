@@ -219,7 +219,7 @@ export interface CodeLocation {
 export interface InternalFnCallIO {
 	typeName: string | null;
 	value: string[];
-	internalIODecoded: DataDecoded | null;
+	internalIODecoded?: DataDecoded | null;
 }
 export type FlameNode = {
 	callId: number;

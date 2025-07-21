@@ -43,7 +43,7 @@ export function Footer() {
 				<div className="flex flex-col md:flex-row md:justify-between md:items-center">
 					<div className="flex space-x-12 mb-4 md:mb-0 text-xs"></div>
 					<div className="flex justify-end space-x-4 items-center">
-						<div className="flex justify-end mb-4 md:mb-0">
+						{/* <div className="flex justify-end mb-4 md:mb-0">
 							<a
 								href="https://docs.walnut.dev"
 								target="_blank"
@@ -53,7 +53,7 @@ export function Footer() {
 								Docs
 							</a>
 						</div>
-						<Separator orientation="vertical" className="h-4 mb-4 md:mb-0" />
+						<Separator orientation="vertical" className="h-4 mb-4 md:mb-0" /> */}
 						<div className="flex justify-center space-x-4 items-center mb-4 md:mb-0">
 							{navigation.map((item) => (
 								<a

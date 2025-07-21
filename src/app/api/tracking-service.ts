@@ -13,6 +13,6 @@ export const isTrackingActive = () => {
 	);
 
 	// Sentry starts only on client if NEXT_PUBLIC_USE_TRACKING is set to 'true'
-	const isProdEnv = process.env.NEXT_PUBLIC_USE_TRACKING === 'true';
+	const isProdEnv = false; //process.env.NEXT_PUBLIC_USE_TRACKING === 'true';
 	return !shouldSkipSentryBasedOnCookie && !shouldSkipSentryBasedOnQueryParam && isProdEnv;
 };

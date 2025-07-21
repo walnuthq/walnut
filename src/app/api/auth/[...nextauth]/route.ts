@@ -24,12 +24,12 @@ const { handlers } = NextAuth({
 		}
 	},
 	session: { strategy: 'jwt' },
-	secret: process.env.NEXTAUTH_SECRET as string,
+	secret: process.env.NEXTAUTH_SECRET ?? '',
 	providers: [
 		CognitoProvider({
-			clientId: process.env.COGNITO_CLIENT_ID as string,
-			clientSecret: process.env.COGNITO_CLIENT_SECRET as string,
-			issuer: process.env.COGNITO_ISSUER
+			clientId: process.env.COGNITO_CLIENT_ID ?? '',
+			clientSecret: process.env.COGNITO_CLIENT_SECRET ?? '',
+			issuer: process.env.COGNITO_ISSUER ?? ''
 		})
 	],
 	callbacks: {

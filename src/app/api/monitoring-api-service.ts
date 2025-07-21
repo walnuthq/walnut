@@ -152,7 +152,7 @@ export const createOrganizationApi = async (): Promise<string | undefined> => {
 };
 
 const callMonitoringApi = async (url: string, method: string, body?: any) => {
-	if (process.env.TEST_USER) {
+	if (process.env.TEST_USER ?? 'Testuser') {
 		console.log(`Using TEST_USER authorization for calling backend URL: ${url}`);
 		return await fetch(url, {
 			method: method,

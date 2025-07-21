@@ -77,10 +77,10 @@ function CallTraceRootContent() {
 			>
 				<TabsList className="flex md:inline-flex md:w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
-					<TabsTrigger value="events-list">Events</TabsTrigger>
+					{/*<TabsTrigger value="events-list">Events</TabsTrigger>*/}
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
-					<TabsTrigger value="storage-changes">Storage</TabsTrigger>
-					<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
+					{/*<TabsTrigger value="storage-changes">Storage</TabsTrigger>
+					<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>*/}
 				</TabsList>
 				<TabsContent
 					value="call-trace"

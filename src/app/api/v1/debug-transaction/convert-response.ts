@@ -64,6 +64,7 @@ const debugCallResponseToTransactionSimulationResult = ({
 			]
 		}
 	};*/
+	// @ts-ignore
 	return debuggerInfo as DebuggerInfo;
 };
 

@@ -37,11 +37,11 @@ export function HeaderNav({
 		<Disclosure as="nav" className={`${!isMainPage && 'bg-background  border-b border-border'}`}>
 			{() => (
 				<>
-					{!trackingActive && (
+					{/* !trackingActive && (
 						<div className=" top-0 left-0 w-full h-5 bg-green-500 text-white flex items-center justify-between px-4 shadow-md z-50">
 							<div className="text-sm font-semibold">NO TRACKING</div>
 						</div>
-					)}
+					) */}
 					<Container>
 						<div className="flex h-16 items-center justify-between">
 							{!isMainPage && (
