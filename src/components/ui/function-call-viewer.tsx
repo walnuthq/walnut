@@ -404,7 +404,6 @@ const FunctionCallViewer = ({
 			</div>
 		);
 	};
-	console.log('data', data);
 
 	return (
 		<div className="font-mono px-2 my-2">

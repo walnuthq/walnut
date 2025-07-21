@@ -61,7 +61,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	events: [],
 	collapsedCalls: {},
 	expandedCalls: {},
-	simulationDebuggerData: { classesDebuggerData: {}, debuggerTrace: [] },
+	simulationDebuggerData: { contractDebuggerData: {}, debuggerTrace: [] },
 	activeTab: 'call-trace',
 	isExecutionFailed: false,
 	l2Flamegraph: {} as FlameNode,

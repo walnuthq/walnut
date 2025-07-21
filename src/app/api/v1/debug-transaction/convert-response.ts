@@ -69,8 +69,8 @@ const debugCallResponseToTransactionSimulationResult = ({
 	contractCallsMap: Record<string, ContractCall>;
 	functionCallsMap: Record<string, FunctionCall>;
 }) => {
-	// 1. classesDebuggerData
-	const classesDebuggerData: Record<string, any> = {};
+	// 1. contractDebuggerData
+	const contractDebuggerData: Record<string, any> = {};
 	for (const [address, contract] of Object.entries(contracts)) {
 		// 1. Find sourcifyContract for this address;
 		const sourcifyContract = sourcifyContracts.find((c) => c.address === address);
@@ -85,17 +85,17 @@ const debugCallResponseToTransactionSimulationResult = ({
 			sourceCode[cleanPath] = source.content;
 			sources[Number(idx)] = source.content;
 		});
-		const sierraStatementsToCairoInfo: Record<number, { cairoLocations: any[] }> = {};
+		const pcToCodeInfo: Record<number, { codeLocations: any[] }> = {};
 		let lastMapping: string | null = null;
 		for (const [pc, mapping] of Object.entries(contract.pcToSourceMappings)) {
 			if (mapping === lastMapping) continue;
 			lastMapping = mapping;
-			sierraStatementsToCairoInfo[Number(pc)] = {
-				cairoLocations: [parsePcToSourceMapping(mapping, fileIndexToPath, sources)]
+			pcToCodeInfo[Number(pc)] = {
+				codeLocations: [parsePcToSourceMapping(mapping, fileIndexToPath, sources)]
 			};
 		}
-		classesDebuggerData[address] = {
-			sierraStatementsToCairoInfo,
+		contractDebuggerData[address] = {
+			pcToCodeInfo,
 			sourceCode
 		};
 	}
@@ -114,19 +114,19 @@ const debugCallResponseToTransactionSimulationResult = ({
 			functionCallId = step.traceCallIndex;
 		}
 
-		// For each contract address check if there is sierraStatementsToCairoInfo for this pc(in code sierraInfo)
-		for (const [address, classData] of Object.entries(classesDebuggerData)) {
-			const sierraInfo = classData.sierraStatementsToCairoInfo[step.pc];
-			if (sierraInfo && Array.isArray(sierraInfo.cairoLocations)) {
-				sierraInfo.cairoLocations.forEach((_: any, locationIndex: number) => {
+		// For each contract address check if there is pcToCodeInfo for this pc
+		for (const [address, classData] of Object.entries(contractDebuggerData)) {
+			const pcInfo = classData.pcToCodeInfo[step.pc];
+			if (pcInfo && Array.isArray(pcInfo.codeLocations)) {
+				pcInfo.codeLocations.forEach((_: any, locationIndex: number) => {
 					debuggerTrace.push({
 						withLocation: {
-							sierraIndex: step.pc,
+							pcIndex: step.pc,
 							locationIndex,
-							results: [],
-							arguments: [],
-							argumentsDecoded: [],
-							resultsDecoded: [],
+							results: functionCall?.results ?? [],
+							arguments: functionCall?.arguments ?? [],
+							argumentsDecoded: functionCall?.argumentsDecoded ?? [],
+							resultsDecoded: functionCall?.resultsDecoded ?? [],
 							contractCallId,
 							fp: 0,
 							functionCallId
@@ -141,7 +141,7 @@ const debugCallResponseToTransactionSimulationResult = ({
 		contractCallsMap,
 		functionCallsMap,
 		simulationDebuggerData: {
-			classesDebuggerData,
+			contractDebuggerData,
 			debuggerTrace
 		}
 	} as DebuggerInfo;

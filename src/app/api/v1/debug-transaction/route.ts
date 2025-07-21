@@ -62,8 +62,7 @@ const getParameters = ({
 export const POST = async (request: NextRequest) => {
 	const body = await request.json();
 	const parameters = getParameters(body);
-	//
-	console.log('FETCHING TRACE CALL');
+
 	const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
 	const tracingClient = createTracingClient(parameters.rpcUrl);
 	const [chainId, transaction, traceResult] = await Promise.all([

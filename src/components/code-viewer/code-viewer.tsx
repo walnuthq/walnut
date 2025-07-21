@@ -287,7 +287,7 @@ export function CodeViewer({
 				lineDecorationsWidth: 15
 			}}
 			value={content}
-			language="cairo"
+			language="solidity"
 			className={cn(
 				'whitespace-pre-wrap overflow-x-scroll p-0 m-0 w-full h-full absolute top-0 left-0'
 			)}

@@ -281,7 +281,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 				events: [],
 				executionResult: { executionStatus: 'SUCCEEDED' },
 				simulationDebuggerData: {
-					classesDebuggerData: {},
+					contractDebuggerData: {},
 					debuggerTrace: []
 				},
 				storageChanges: {}
