@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useState } from 'react';
 import { cn, getContractName } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ChevronRight, ChevronDown } from 'lucide-react';
-import { ClassDebuggerData } from '@/lib/simulation/types';
+import { ContractDebuggerData } from '@/lib/simulation/types';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
@@ -10,7 +10,7 @@ import { FilesExplorer } from './file-explorer';
 
 export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	showTitle = true,
-	classesDebuggerData,
+	contractsDebuggerData,
 	classSourceCode,
 	activeFile,
 	handleFileClick,
@@ -22,8 +22,8 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	classSourceCode: {
 		[key: string]: string;
 	};
-	classesDebuggerData: {
-		[key: string]: ClassDebuggerData;
+	contractsDebuggerData: {
+		[key: string]: ContractDebuggerData;
 	};
 	activeFile?: string;
 	handleFileClick: (filePath: string) => void;
@@ -36,7 +36,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	const debuggerContext = useDebugger();
 	const contractCall = debuggerContext?.contractCall;
 	const setCurrentContractCall = debuggerContext?.setCurrentContractCall ?? (() => {});
-	const contractHashFiles = Object.keys(classesDebuggerData);
+	const contractHashFiles = Object.keys(contractsDebuggerData);
 
 	const contracts = contractHashFiles.map((hash) =>
 		Object.values(contractCallsMap).find((call) => call.classHash === hash)
@@ -46,7 +46,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 		contracts.reduce<Record<string, boolean>>((acc, contract) => {
 			if (
 				contract?.classHash &&
-				classesDebuggerData[contract?.classHash].sourceCode === classSourceCode
+				contractsDebuggerData[contract?.classHash].sourceCode === classSourceCode
 			) {
 				acc[contract?.classHash] = true;
 			} else if (contract?.classHash) {
@@ -61,13 +61,13 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	}, []);
 
 	useEffect(() => {
-		const newContractName = Object.keys(classesDebuggerData).find(
-			(item) => classesDebuggerData[item].sourceCode === classSourceCode
+		const newContractName = Object.keys(contractsDebuggerData).find(
+			(item) => contractsDebuggerData[item].sourceCode === classSourceCode
 		);
 		if (newContractName) {
 			openOneContract(newContractName);
 		}
-	}, [currentStepIndex, classesDebuggerData, classSourceCode]);
+	}, [currentStepIndex, contractsDebuggerData, classSourceCode]);
 
 	const toggleContract = (contract: string) => {
 		setOpenContracts((prev) => ({
@@ -165,7 +165,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 													activeFile={activeFile}
 													contract={contract}
 													contractCall={contractCall}
-													classSourceCode={classesDebuggerData[contract?.classHash].sourceCode}
+													classSourceCode={contractsDebuggerData[contract?.classHash].sourceCode}
 													handleFileClick={(filePath) => {
 														setCurrentContractCall(contract);
 														handleFileClick(filePath);

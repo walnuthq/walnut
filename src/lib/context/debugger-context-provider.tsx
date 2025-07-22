@@ -8,7 +8,7 @@ import {
 	PropsWithChildren
 } from 'react';
 import {
-	ClassDebuggerData,
+	ContractDebuggerData,
 	CodeLocation,
 	ContractCall,
 	DebuggerExecutionTraceEntry,
@@ -28,7 +28,7 @@ import { useSearchParams } from 'next/navigation';
 
 interface DebuggerContextProps {
 	functionCallsMap: { [key: number]: FunctionCall };
-	classesDebuggerData: Record<string, ClassDebuggerData>;
+	contractsDebuggerData: Record<string, ContractDebuggerData>;
 	currentStep?: DebuggerExecutionTraceEntry;
 	totalSteps: number;
 	currentStepIndex: number;
@@ -259,24 +259,20 @@ export const DebuggerContextProvider = ({
 		if (!simulationDebuggerData) return {};
 		const breakpoints: { [key: string]: { [key: string]: number[] } } = {};
 
-		for (const classHash in simulationDebuggerData.classesDebuggerData) {
+		for (const classHash in simulationDebuggerData.contractDebuggerData) {
 			breakpoints[classHash] = {};
-			if (simulationDebuggerData.classesDebuggerData[classHash]) {
-				for (const sierraIndex in simulationDebuggerData.classesDebuggerData[classHash]
-					.sierraStatementsToCairoInfo) {
-					const info =
-						simulationDebuggerData.classesDebuggerData[classHash].sierraStatementsToCairoInfo[
-							sierraIndex
-						];
-					for (const cairoLocation of info.cairoLocations) {
-						if (!breakpoints[classHash][cairoLocation.filePath]) {
-							breakpoints[classHash][cairoLocation.filePath] = [];
+			if (simulationDebuggerData.contractDebuggerData[classHash]) {
+				for (const pcIndex in simulationDebuggerData.contractDebuggerData[classHash].pcToCodeInfo) {
+					const info = simulationDebuggerData.contractDebuggerData[classHash].pcToCodeInfo[pcIndex];
+					for (const codeLocation of info.codeLocations) {
+						if (!breakpoints[classHash][codeLocation.filePath]) {
+							breakpoints[classHash][codeLocation.filePath] = [];
 						}
-						const start = cairoLocation.start.line;
-						const end = cairoLocation.end.line;
+						const start = codeLocation.start.line;
+						const end = codeLocation.end.line;
 						for (let i = start; i <= end; i++) {
-							if (!breakpoints[classHash][cairoLocation.filePath].includes(i)) {
-								breakpoints[classHash][cairoLocation.filePath].push(i);
+							if (!breakpoints[classHash][codeLocation.filePath].includes(i)) {
+								breakpoints[classHash][codeLocation.filePath].push(i);
 							}
 						}
 					}
@@ -399,9 +395,9 @@ export const DebuggerContextProvider = ({
 				const step = simulationDebuggerData.debuggerTrace[i].withLocation!;
 				const contractCall = contractCallsMap[step.contractCallId];
 				const classHash = contractCall.classHash;
-				const classDebuggerData = simulationDebuggerData.classesDebuggerData[classHash];
-				const info = classDebuggerData.sierraStatementsToCairoInfo[step.sierraIndex];
-				const location = info.cairoLocations[step.locationIndex];
+				const contractDebuggerData = simulationDebuggerData.contractDebuggerData[classHash];
+				const info = contractDebuggerData.pcToCodeInfo[step.pcIndex];
+				const location = info.codeLocations[step.locationIndex];
 				const linesRange = Array.from(
 					{ length: location.end.line - location.start.line + 1 },
 					(_, k) => k + location.start.line
@@ -446,7 +442,7 @@ export const DebuggerContextProvider = ({
 		<DebuggerContext.Provider
 			value={{
 				functionCallsMap,
-				classesDebuggerData: simulationDebuggerData?.classesDebuggerData || {},
+				contractsDebuggerData: simulationDebuggerData?.contractDebuggerData || {},
 				currentStep,
 				totalSteps: simulationDebuggerData?.debuggerTrace.length || 0,
 				currentStepIndex,
@@ -494,32 +490,63 @@ function getDebuggerDataForStep(
 	const contractCallId = step?.withLocation
 		? step.withLocation.contractCallId
 		: step?.withContractCall?.contractCallId;
-	const contractCall = contractCallId ? contractCallsMap[contractCallId] : undefined;
+	const contractCall =
+		contractCallId !== undefined && contractCallId !== null
+			? contractCallsMap[String(contractCallId)]
+			: undefined;
 
-	const classDebuggerData = contractCall
-		? simulationDebuggerData?.classesDebuggerData[contractCall.classHash]
-		: undefined;
-	const classSourceCode = classDebuggerData?.sourceCode ?? {};
+	let classHash = contractCall?.classHash;
+	let contractDebuggerData: any = undefined;
+	if (classHash && simulationDebuggerData?.contractDebuggerData?.[classHash]) {
+		contractDebuggerData = simulationDebuggerData.contractDebuggerData[classHash];
+	} else {
+		// Fallback: take first contractDebuggerData from object
+		const allClassData = Object.values(simulationDebuggerData?.contractDebuggerData ?? {});
+		contractDebuggerData = allClassData.length > 0 ? allClassData[0] : undefined;
+		classHash =
+			allClassData.length > 0
+				? Object.keys(simulationDebuggerData?.contractDebuggerData ?? {})[0]
+				: undefined;
+	}
+	const contractSourceCode = contractDebuggerData?.sourceCode ?? {};
 
 	let activeFile: string | undefined;
 	let codeLocation: CodeLocation | undefined;
 	let functionCallId: number | undefined;
 
 	if (step?.withLocation) {
-		const classDebuggerData =
-			contractCall && simulationDebuggerData?.classesDebuggerData[contractCall.classHash];
-		const locations =
-			classDebuggerData?.sierraStatementsToCairoInfo[step?.withLocation.sierraIndex]
-				?.cairoLocations;
-		codeLocation = locations?.[step?.withLocation.locationIndex]!; // TODO
-		activeFile = codeLocation.filePath;
+		const pcIndex = String(step.withLocation.pcIndex);
+		const locations = contractDebuggerData?.pcToCodeInfo?.[pcIndex]?.codeLocations;
+		codeLocation = locations?.[step.withLocation.locationIndex];
+		if (!codeLocation) {
+			console.warn('No codeLocation for', {
+				classHash,
+				pcIndex,
+				locationIndex: step.withLocation.locationIndex,
+				locations
+			});
+		}
+		activeFile = codeLocation?.filePath;
 		functionCallId = step.withLocation.functionCallId;
 	} else {
-		if (classDebuggerData) {
-			const someFile = Object.keys(classDebuggerData.sourceCode)[0];
+		if (contractDebuggerData) {
+			const someFile = Object.keys(contractDebuggerData.sourceCode)[0];
 			if (someFile) activeFile = someFile;
 		}
 	}
 
-	return { contractCall, classSourceCode, activeFile, codeLocation, functionCallId };
+	// Fallback for activeFile if undefined
+	if (!activeFile && simulationDebuggerData) {
+		const allSourceCodes = Object.values(simulationDebuggerData.contractDebuggerData ?? {});
+		const firstSourceCode = allSourceCodes.length > 0 ? allSourceCodes[0].sourceCode : {};
+		activeFile = Object.keys(firstSourceCode)[0];
+	}
+
+	return {
+		contractCall,
+		classSourceCode: contractSourceCode,
+		activeFile,
+		codeLocation,
+		functionCallId
+	};
 }

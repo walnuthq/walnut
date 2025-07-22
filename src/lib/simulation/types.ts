@@ -61,7 +61,7 @@ export interface DebuggerExecutionTraceEntryWithContractCall {
 }
 
 export interface DebuggerExecutionTraceEntryWithLocation {
-	sierraIndex: number;
+	pcIndex: number;
 	locationIndex: number;
 	results: InternalFnCallIO[];
 	arguments: InternalFnCallIO[];
@@ -89,10 +89,10 @@ export interface ExecutionResultReverted {
 	revertReason: string;
 }
 
-export interface ClassDebuggerData {
-	sierraStatementsToCairoInfo: {
+export interface ContractDebuggerData {
+	pcToCodeInfo: {
 		[key: number]: {
-			cairoLocations: CodeLocation[];
+			codeLocations: CodeLocation[];
 		};
 	};
 	sourceCode: {
@@ -101,8 +101,8 @@ export interface ClassDebuggerData {
 }
 
 export interface SimulationDebuggerData {
-	classesDebuggerData: {
-		[key: string]: ClassDebuggerData;
+	contractDebuggerData: {
+		[key: string]: ContractDebuggerData;
 	};
 	debuggerTrace: DebuggerExecutionTraceEntry[];
 }

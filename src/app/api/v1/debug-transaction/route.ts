@@ -62,7 +62,7 @@ const getParameters = ({
 export const POST = async (request: NextRequest) => {
 	const body = await request.json();
 	const parameters = getParameters(body);
-	// console.log('/debug-transaction parameters', parameters);
+
 	const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
 	const tracingClient = createTracingClient(parameters.rpcUrl);
 	const [chainId, transaction, traceResult] = await Promise.all([
@@ -155,7 +155,8 @@ export const POST = async (request: NextRequest) => {
 		contracts,
 		sourcifyContracts,
 		contractCallsMap: l2TransactionData.simulationResult.contractCallsMap,
-		functionCallsMap: l2TransactionData.simulationResult.functionCallsMap
+		functionCallsMap: l2TransactionData.simulationResult.functionCallsMap,
+		txHash: parameters.txHash ?? ''
 	});
 	return NextResponse.json(response);
 	//return NextResponse.json(debuggerInfo);

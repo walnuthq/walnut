@@ -51,11 +51,9 @@ export function DebuggerView() {
 				<Controls
 					nextStep={nextStep}
 					previousStep={prevStep}
-					stepOver={stepOver}
 					stepIndex={currentStepIndex}
 					totalSteps={totalSteps}
 					contractCall={contractCall}
-					runToBreakpoint={runToBreakpoint}
 				/>
 				<div className="flex-grow">
 					{currentStep?.withLocation ? (
@@ -100,19 +98,19 @@ export function DebuggerView() {
 function Controls({
 	nextStep,
 	previousStep,
-	stepOver,
+	// stepOver, // commented out
 	stepIndex,
 	totalSteps,
-	contractCall,
-	runToBreakpoint
-}: {
+	contractCall
+}: // runToBreakpoint // commented out
+{
 	nextStep: () => void;
 	previousStep: () => void;
-	stepOver: () => void;
+	// stepOver: () => void; // commented out
 	stepIndex: number;
 	totalSteps: number;
 	contractCall?: ContractCall;
-	runToBreakpoint: () => void;
+	// runToBreakpoint: () => void; // commented out
 }) {
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -123,16 +121,17 @@ function Controls({
 				previousStep();
 			} else if (event.key.toLowerCase() === 'n') {
 				nextStep();
-			} else if (event.key.toLowerCase() === 'o') {
-				stepOver();
 			}
+			// else if (event.key.toLowerCase() === 'o') {
+			// 	stepOver();
+			// }
 		};
 
 		window.addEventListener('keydown', handleKeyDown);
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [previousStep, nextStep, stepOver]);
+	}, [previousStep, nextStep]); // removed stepOver
 	const { contractCallsMap } = useCallTrace();
 
 	let call = contractCall?.callId && contractCallsMap[contractCall?.callId];
@@ -173,7 +172,7 @@ function Controls({
 								</div>
 							</TooltipTrigger>
 							<TooltipContent className="bg-background border-border text-black dark:text-white border">
-								Step back (b)
+								Previous (b)
 							</TooltipContent>
 						</Tooltip>
 						<Tooltip delayDuration={100}>
@@ -203,12 +202,12 @@ function Controls({
 								</div>
 							</TooltipTrigger>
 							<TooltipContent className="bg-background border-border text-black dark:text-white border">
-								Step (n)
+								Next (n)
 							</TooltipContent>
 						</Tooltip>
+						{/*
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
-								{' '}
 								<div
 									onClick={() => stepOver()}
 									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
@@ -239,7 +238,6 @@ function Controls({
 						</Tooltip>
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
-								{' '}
 								<div
 									onClick={() => runToBreakpoint()}
 									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
@@ -268,6 +266,7 @@ function Controls({
 								Run
 							</TooltipContent>
 						</Tooltip>
+						*/}
 					</div>
 				</TooltipProvider>
 			</div>

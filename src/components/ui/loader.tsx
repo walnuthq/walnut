@@ -1,7 +1,7 @@
 import { useEffect, useState, forwardRef, HTMLAttributes } from 'react';
 
 const Quotes = [
-	'Debugging transactions one walnut at a time.\nPatience, Cairo master!',
+	'Debugging transactions one walnut at a time.\nPatience, Solidity master!',
 	'Just cracking open your transactions like a walnut on a cryptographic mission.',
 	'Loading transactions one walnut at a time.',
 	"Hold tight! We're peeling back the layers of your simulations.",

@@ -60,6 +60,7 @@ const FunctionCallViewer = ({
 		start: { line: number; col: number },
 		end: { line: number; col: number }
 	): string {
+		if (typeof sourceCode !== 'string') return '';
 		const lines = sourceCode.split('\n');
 
 		const startLine = start.line;
@@ -403,7 +404,6 @@ const FunctionCallViewer = ({
 			</div>
 		);
 	};
-	console.log('data', data);
 
 	return (
 		<div className="font-mono px-2 my-2">

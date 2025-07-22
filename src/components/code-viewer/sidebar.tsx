@@ -74,7 +74,7 @@ export default function Sidebar({
 		stepOver,
 		runToBreakpoint,
 		functionCallsMap,
-		classesDebuggerData
+		contractsDebuggerData
 	} = debuggerContext;
 
 	const toggleExpand = (setState: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -127,7 +127,7 @@ export default function Sidebar({
 				<DebuggerFilesExplorer
 					currentStepIndex={currentStepIndex}
 					className="flex h-full"
-					classesDebuggerData={classesDebuggerData}
+					contractsDebuggerData={contractsDebuggerData}
 					classSourceCode={sourceCode}
 					activeFile={activeFile}
 					handleFileClick={handleFileClick}
