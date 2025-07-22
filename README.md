@@ -2,6 +2,10 @@
 
 Transactions traces and step-by-step debugger for any EVM-compatible chain.
 
+## Prerequisites
+
+This project depends on [walnut-cli](https://github.com/walnuthq/walnut-cli), you should carefully follow the installation guide of the CLI before getting started.
+
 ## Getting Started
 
 Copy `.env.example` into `.env.local` at the root of your repository to bootstrap your configuration.

@@ -1,5 +1,5 @@
 import { type Address, type Hash } from 'viem';
-import { type DebugCallContract, type WalnutTraceCall } from '@/app/api/v1/types';
+import { type DebugCallContract, type WalnutTraceCall, type Contract } from '@/app/api/v1/types';
 import { traceCallWithIndexes, flattenTraceCallWithIds } from '@/app/api/v1/walnut-cli';
 import {
 	CallType,
@@ -14,12 +14,11 @@ import {
 	getAbiFunction,
 	formatAbiParameterValue
 } from '@/app/api/v1/abi-utils';
-import transactionSimulationResponse from '@/app/api/v1/simulate-transaction/transaction-simulation-response.json';
 
 const traceCallResponseToTransactionSimulationResult = ({
 	traceCall,
 	contracts,
-	contractNames,
+	sourcifyContracts,
 	chainId,
 	blockNumber,
 	timestamp,
@@ -32,7 +31,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 }: {
 	traceCall: WalnutTraceCall;
 	contracts: Record<Address, DebugCallContract>;
-	contractNames: Record<Address, string>;
+	sourcifyContracts: Contract[];
 	chainId: number;
 	blockNumber: bigint;
 	timestamp: bigint;
@@ -43,6 +42,13 @@ const traceCallResponseToTransactionSimulationResult = ({
 	transactions: string[];
 	txHash?: Hash;
 }): TransactionSimulationResult => {
+	const contractNames = sourcifyContracts.reduce<Record<Address, string>>(
+		(previousValue, currentValue) => ({
+			...previousValue,
+			[currentValue.address]: currentValue.name
+		}),
+		{}
+	);
 	const flattenedTraceCall = flattenTraceCallWithIds(traceCallWithIndexes(traceCall));
 	// console.log(flattenedTraceCall);
 	const flattenedContractCalls = flattenedTraceCall.filter(({ type }) => type === 'CALL');
@@ -227,7 +233,6 @@ const traceCallResponseToTransactionSimulationResult = ({
 			l2TxHash: txHash
 		}
 	};
-	// return transactionSimulationResponse as TransactionSimulationResult;
 };
 
 export default traceCallResponseToTransactionSimulationResult;

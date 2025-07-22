@@ -7,7 +7,6 @@ import fetchContract from '@/app/api/v1/fetch-contract';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
 import debugCallResponseToTransactionSimulationResult from '@/app/api/v1/debug-transaction/convert-response';
-import debuggerInfo from '@/app/api/v1/debug-transaction/debugger-info.json';
 
 type WithTxHash = {
 	rpc_url: string;
@@ -124,17 +123,10 @@ export const POST = async (request: NextRequest) => {
 		rpcUrl: parameters.rpcUrl,
 		cwd: `${tmp}/${sourcifyContracts[0].address}`
 	});
-	const contractNames = sourcifyContracts.reduce(
-		(previousValue, currentValue) => ({
-			...previousValue,
-			[currentValue.address]: currentValue.name
-		}),
-		{}
-	);
 	const { l2TransactionData } = traceCallResponseToTransactionSimulationResult({
 		traceCall,
 		contracts,
-		contractNames,
+		sourcifyContracts,
 		//
 		chainId,
 		blockNumber: transaction.blockNumber ?? BigInt(0),
@@ -159,5 +151,4 @@ export const POST = async (request: NextRequest) => {
 		txHash: parameters.txHash ?? ''
 	});
 	return NextResponse.json(response);
-	//return NextResponse.json(debuggerInfo);
 };

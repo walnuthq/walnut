@@ -5,13 +5,12 @@ import { createPublicClient, http, type Hash, type Address, type Hex, getAddress
 import { type Metadata } from '@ethereum-sourcify/lib-sourcify';
 import { uniqBy } from 'lodash';
 
-import { spawnAnvil } from '@/app/api/v1/anvil';
+// import { spawnAnvil } from '@/app/api/v1/anvil';
 import createTracingClient, { flattenTraceCall } from '@/app/api/v1/tracing-client';
 import fetchContract from '@/app/api/v1/fetch-contract';
 import solc from '@/app/api/v1/solc';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
-import transactionSimulationResponse from '@/app/api/v1/simulate-transaction/transaction-simulation-response.json';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -59,9 +58,9 @@ export const POST = async (request: NextRequest) => {
 	const parameters = getParameters(body);
 	// console.log('/simulate-transaction parameters', parameters);
 	// SPAWN ANVIL
-	/* console.log('SPAWNING ANVIL');
-	const anvil = await spawnAnvil({ rpcUrl, txHash });
-	console.log('ANVIL STARTED'); */
+	// console.log('SPAWNING ANVIL');
+	// const anvil = await spawnAnvil({ rpcUrl, txHash });
+	// console.log('ANVIL STARTED');
 	// FETCH TRACE CALL
 	const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
 	const tracingClient = createTracingClient(parameters.rpcUrl);
@@ -147,7 +146,7 @@ export const POST = async (request: NextRequest) => {
 		})
 	);
 	// RUN WALNUT-CLI
-	const { traceCall, contracts } = await walnutCli({
+	const { traceCall, steps, contracts } = await walnutCli({
 		command: parameters.txHash ? 'trace' : 'simulate',
 		txHash: parameters.txHash,
 		to: parameters.to,
@@ -157,17 +156,10 @@ export const POST = async (request: NextRequest) => {
 		cwd: `${tmp}/${sourcifyContracts[0].address}`
 	});
 	// console.log(traceCall);
-	const contractNames = sourcifyContracts.reduce(
-		(previousValue, currentValue) => ({
-			...previousValue,
-			[currentValue.address]: currentValue.name
-		}),
-		{}
-	);
 	const response = traceCallResponseToTransactionSimulationResult({
 		traceCall,
 		contracts,
-		contractNames,
+		sourcifyContracts,
 		//
 		chainId,
 		blockNumber: transaction.blockNumber ?? BigInt(0),
@@ -181,5 +173,4 @@ export const POST = async (request: NextRequest) => {
 	});
 	// anvil.kill();
 	return NextResponse.json(response);
-	// return NextResponse.json(transactionSimulationResponse);
 };
