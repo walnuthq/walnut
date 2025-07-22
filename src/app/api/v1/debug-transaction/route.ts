@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { type Hash, createPublicClient, http, type Address, type Hex } from 'viem';
+import { type Hash, createPublicClient, http, type Address, type Hex, getAddress } from 'viem';
 import { uniqBy } from 'lodash';
 
 import createTracingClient, { flattenTraceCall } from '@/app/api/v1/tracing-client';
@@ -47,8 +47,8 @@ const getParameters = ({
 			blockTimestamp: withCalldata.block_timestamp,
 			nonce: withCalldata.nonce,
 			senderAddress: withCalldata.sender_address as Address,
-			to: withCalldata.calldata[1] as Address,
-			calldata: withCalldata.calldata[4] as Hex,
+			to: withCalldata.calldata[0] as Address,
+			calldata: withCalldata.calldata[1] as Hex,
 			transactionVersion: withCalldata.transaction_version,
 			transactionType: withCalldata.transaction_type,
 			transactionIndexInBlock: withCalldata.transaction_index_in_block,
@@ -115,11 +115,12 @@ export const POST = async (request: NextRequest) => {
 	const tmp = `/tmp/${parameters.txHash ?? parameters.calldata.slice(0, 128)}`;
 	// RUN WALNUT-CLI
 	const { traceCall, steps, contracts } = await walnutCli({
-		command: 'trace', //parameters.txHash ? 'trace' : 'simulate',
+		command: parameters.txHash ? 'trace' : 'simulate',
 		txHash: parameters.txHash,
 		to: parameters.to,
 		calldata: parameters.calldata,
 		from: parameters.senderAddress,
+		blockNumber: parameters.blockNumber,
 		rpcUrl: parameters.rpcUrl,
 		cwd: `${tmp}/${sourcifyContracts[0].address}`
 	});
@@ -139,7 +140,7 @@ export const POST = async (request: NextRequest) => {
 		blockNumber: transaction.blockNumber ?? BigInt(0),
 		timestamp,
 		nonce: transaction.nonce ?? 0,
-		from: transaction.from,
+		from: getAddress(transaction.from),
 		type: 'INVOKE',
 		transactionIndex: transaction.transactionIndex,
 		transactions,

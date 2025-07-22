@@ -31,7 +31,14 @@ const fetchContract = async (
 			address,
 			bytecode,
 			name: result.contractResult.name ?? address,
-			sources: sources ?? [],
+			sources: sources
+				? sources
+						.filter(({ path }) => path)
+						.map(({ path, content }) => ({
+							path: whatsabi.loaders.SourcifyABILoader.stripPathPrefix(`/${path}`),
+							content
+						}))
+				: [],
 			abi: result.contractResult.abi
 		};
 	}

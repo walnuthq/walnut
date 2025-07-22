@@ -14,8 +14,13 @@ export const decodeFunctionDataSafe = (params: DecodeFunctionDataParameters) => 
 	try {
 		return decodeFunctionData(params);
 	} catch (error) {
-		console.error(error);
-		return { functionName: params.data.slice(0, 10), args: undefined };
+		// console.error(error);
+		const selector = params.data.slice(0, 10);
+		const abiFunction = getAbiFunction({
+			abi: params.abi,
+			name: selector
+		});
+		return { functionName: abiFunction?.name ?? selector, args: ['unknown'] };
 	}
 };
 
@@ -23,7 +28,7 @@ export const decodeFunctionResultSafe = (params: DecodeFunctionResultParameters)
 	try {
 		return decodeFunctionResult(params);
 	} catch (error) {
-		console.error(error);
+		// console.error(error);
 		return undefined;
 	}
 };

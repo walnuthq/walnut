@@ -6,7 +6,7 @@ export type Contract = {
 	address: Address;
 	bytecode: Hex;
 	name: string;
-	sources: whatsabi.loaders.ContractSources;
+	sources: { path: string; content: string }[];
 	abi: Abi;
 };
 

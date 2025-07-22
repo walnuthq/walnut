@@ -31,9 +31,10 @@ export default function Page({
 			}
 
 			if ((chainId || rpcUrl) && senderAddress && calldata && transactionVersion) {
-				const parsedCalldata = calldata.split(',');
+				const [address] = calldata.split(',');
 
-				const calls = parseContractCalls(parsedCalldata);
+				// const calls = parseContractCalls(parsedCalldata);
+				const calls = [{ address, function_name: '', calldata: '' }];
 
 				const payload: SimulationPayload = {
 					senderAddress,

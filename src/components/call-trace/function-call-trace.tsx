@@ -74,7 +74,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 				{!previewMode && CallTypeChip('Function')}
 
 				{isExecutionFailed && <div className="w-5 mr-0.5"></div>}
-				{!previewMode && (
+				{/*!previewMode && (
 					<DebugButton
 						onDebugClick={() => {
 							debugContractCall(functionCall.contractCallId);
@@ -83,7 +83,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 						isDebuggable={isDebuggable}
 						noCodeLocationAvaliable={noCodeLocationAvaliable}
 					/>
-				)}
+				)*/}
 
 				<div
 					style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
@@ -185,11 +185,11 @@ const FunctionCallDetails = memo(function FunctionCallDetails({
 			{
 				name: 'Function Name',
 				value: splittedFnName[splittedFnName.length - 1]
-			},
-			{
+			}
+			/*{
 				name: 'Interface Name',
 				value: call.fnName
-			}
+			}*/
 		);
 	}
 	if (call.arguments) {

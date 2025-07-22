@@ -1,6 +1,6 @@
 import { type Address, type Hash } from 'viem';
 import { type DebugCallContract, type WalnutTraceCall } from '@/app/api/v1/types';
-import { flattenTraceCall } from '@/app/api/v1/walnut-cli';
+import { traceCallWithIndexes, flattenTraceCallWithIds } from '@/app/api/v1/walnut-cli';
 import {
 	CallType,
 	type ContractCall,
@@ -15,82 +15,6 @@ import {
 	formatAbiParameterValue
 } from '@/app/api/v1/abi-utils';
 import transactionSimulationResponse from '@/app/api/v1/simulate-transaction/transaction-simulation-response.json';
-
-type TraceCallWithIndex = Omit<WalnutTraceCall, 'calls'> & {
-	index: number;
-	calls: TraceCallWithIndex[];
-};
-
-const innerTraceCallWithIndexes = (
-	traceCall: WalnutTraceCall,
-	index: number
-): TraceCallWithIndex => ({
-	...traceCall,
-	index,
-	calls: traceCall.calls?.map((traceCall) => innerTraceCallWithIndexes(traceCall, index + 1)) ?? []
-});
-
-const traceCallWithIndexes = (traceCall: WalnutTraceCall): TraceCallWithIndex => ({
-	...traceCall,
-	index: 0,
-	calls: traceCall.calls?.map((traceCall) => innerTraceCallWithIndexes(traceCall, 1)) ?? []
-});
-
-type TraceCallWithIds = TraceCallWithIndex & {
-	id: number;
-	parentId: number;
-	parentContractCallId: number;
-};
-
-const flattenTraceCallsWithIds = (
-	traceCalls: TraceCallWithIndex[],
-	parent: TraceCallWithIds,
-	contractCallId: number,
-	functionCallId: number,
-	parentContractCallId: number
-) =>
-	traceCalls.reduce<TraceCallWithIds[]>((accumulator, currentValue) => {
-		const nextContractCallId =
-			currentValue.type === 'INTERNALCALL' ? contractCallId : contractCallId + 1;
-		const nextFunctionCallId =
-			currentValue.type === 'INTERNALCALL' ? functionCallId + 1 : functionCallId;
-		const traceCall = {
-			...currentValue,
-			id: currentValue.type === 'INTERNALCALL' ? functionCallId : contractCallId,
-			parentId: parent.id,
-			parentContractCallId,
-			from: currentValue.type === 'INTERNALCALL' ? parent.from : currentValue.from,
-			to: currentValue.type === 'INTERNALCALL' ? parent.to : currentValue.to
-		};
-		accumulator.push(traceCall);
-		accumulator.push(
-			...flattenTraceCallsWithIds(
-				currentValue.calls,
-				traceCall,
-				nextContractCallId,
-				nextFunctionCallId,
-				currentValue.type === 'INTERNALCALL' ? parentContractCallId : contractCallId
-			)
-		);
-		return accumulator;
-	}, []);
-
-const flattenTraceCallWithIds = (traceCall: TraceCallWithIndex): TraceCallWithIds[] => {
-	const flattenedTraceCall = flattenTraceCall(traceCall);
-	const contractCallsCount = flattenedTraceCall.filter(({ type }) => type === 'CALL').length;
-	const result = [];
-	const firstTraceCall = {
-		...traceCall,
-		id: 1,
-		parentId: 0,
-		parentContractCallId: 0
-	};
-	result.push(firstTraceCall);
-	result.push(
-		...flattenTraceCallsWithIds(firstTraceCall.calls, firstTraceCall, 2, contractCallsCount + 1, 1)
-	);
-	return result;
-};
 
 const traceCallResponseToTransactionSimulationResult = ({
 	traceCall,
@@ -120,8 +44,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 	txHash?: Hash;
 }): TransactionSimulationResult => {
 	const flattenedTraceCall = flattenTraceCallWithIds(traceCallWithIndexes(traceCall));
-	console.log('flattenedTraceCallWithIndexes');
-	console.log(flattenedTraceCall);
+	// console.log(flattenedTraceCall);
 	const flattenedContractCalls = flattenedTraceCall.filter(({ type }) => type === 'CALL');
 	const contractCallsMap = flattenedContractCalls
 		.map((traceCall) => {
@@ -163,30 +86,39 @@ const traceCallResponseToTransactionSimulationResult = ({
 
 				result: {
 					Success: {
-						retData: [] // TODO
+						// @ts-ignore
+						retData:
+							abiFunction?.outputs.map((output, index) => ({
+								name: output.name ?? '',
+								typeName: output.internalType ?? output.type,
+								value: Array.isArray(result)
+									? formatAbiParameterValue(result[index], output)
+									: formatAbiParameterValue(result, output)
+							})) ?? []
 					}
 				},
 
 				argumentsNames: abiFunction?.inputs.map((input) => input.name ?? '').filter((name) => name),
-				argumentsTypes: abiFunction?.inputs.map((input) => input.type ?? '').filter((type) => type),
+				argumentsTypes: abiFunction?.inputs
+					.map((input) => input.internalType ?? input.type ?? '')
+					.filter((type) => type),
 				calldataDecoded: args
 					? abiFunction?.inputs.map((input, index) => ({
 							name: input.name ?? '',
-							typeName: input.type,
+							typeName: input.internalType ?? input.type,
 							value: formatAbiParameterValue(args[index], input)
 					  }))
 					: [],
-				resultTypes: abiFunction?.outputs.map((output) => output.type ?? '').filter((type) => type),
+				resultTypes: abiFunction?.outputs
+					.map((output) => output.internalType ?? output.type ?? '')
+					.filter((type) => type),
 				decodedResult:
 					abiFunction?.outputs.map((output, index) => ({
 						name: output.name ?? '',
-						typeName: output.type,
-						value: [
-							Array.isArray(result)
-								? formatAbiParameterValue(result[index], output)
-								: formatAbiParameterValue(result, output)
-						],
-						internalIODecoded: null
+						typeName: output.internalType ?? output.type,
+						value: Array.isArray(result)
+							? formatAbiParameterValue(result[index], output)
+							: formatAbiParameterValue(result, output)
 					})) ?? [],
 
 				contractName: contractNames[traceCall.to],
@@ -204,7 +136,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 			return { [traceCall.id.toString()]: contractCall };
 		})
 		.reduce((previousValue, currentValue) => ({ ...previousValue, ...currentValue }), {});
-	console.log(contractCallsMap);
+	// console.log(contractCallsMap);
 	const flattenedFunctionCalls = flattenedTraceCall.filter(({ type }) => type === 'INTERNALCALL');
 	const functionCallsMap = flattenedFunctionCalls
 		.map((traceCall) => {
@@ -214,7 +146,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 			const result = decodeFunctionResultSafe({
 				abi,
 				functionName,
-				data: traceCall.output ?? '0x'
+				data: traceCall.output
 			});
 			const abiFunction = getAbiFunction({ abi, name: functionName, args });
 			//
@@ -232,36 +164,32 @@ const traceCallResponseToTransactionSimulationResult = ({
 				isDeepestPanicResult: false,
 				results:
 					abiFunction?.outputs.map((output, index) => ({
-						typeName: output.type,
+						typeName: output.internalType ?? output.type,
 						value: [
 							Array.isArray(result)
 								? formatAbiParameterValue(result[index], output)
 								: formatAbiParameterValue(result, output)
-						],
-						internalIODecoded: null
+						]
 					})) ?? [],
 				resultsDecoded:
 					abiFunction?.outputs.map((output, index) => ({
-						typeName: output.type,
+						typeName: output.internalType ?? output.type,
 						value: [
 							Array.isArray(result)
 								? formatAbiParameterValue(result[index], output)
 								: formatAbiParameterValue(result, output)
-						],
-						internalIODecoded: null
+						]
 					})) ?? [],
 				arguments: args
 					? abiFunction?.inputs.map((input, index) => ({
-							typeName: input.type,
-							value: [formatAbiParameterValue(args[index], input)],
-							internalIODecoded: null
+							typeName: input.internalType ?? input.type,
+							value: [formatAbiParameterValue(args[index], input)]
 					  })) ?? []
 					: [],
 				argumentsDecoded: args
 					? abiFunction?.inputs.map((input, index) => ({
-							typeName: input.type,
-							value: [formatAbiParameterValue(args[index], input)],
-							internalIODecoded: null
+							typeName: input.internalType ?? input.type,
+							value: [formatAbiParameterValue(args[index], input)]
 					  })) ?? []
 					: [],
 				debuggerDataAvailable: true,
@@ -271,7 +199,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 			return { [traceCall.id.toString()]: functionCall };
 		})
 		.reduce((previousValue, currentValue) => ({ ...previousValue, ...currentValue }), {});
-	console.log(functionCallsMap);
+	// console.log(functionCallsMap);
 	return {
 		l2TransactionData: {
 			simulationResult: {
@@ -291,7 +219,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 			blockTimestamp: Number(timestamp),
 			nonce,
 			senderAddress: from,
-			calldata: [],
+			calldata: [traceCall.to, traceCall.input],
 			transactionVersion: 1,
 			transactionType: type,
 			transactionIndexInBlock: transactionIndex,

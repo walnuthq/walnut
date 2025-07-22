@@ -252,7 +252,7 @@ export function SimulateTransactionPage({
 
 		const allCalldataValid = processedCalls.every((call) => {
 			if (call.calldata.trim() === '') {
-				return true;
+				return false;
 			}
 
 			const calldataLines = call.calldata
@@ -544,8 +544,8 @@ export function SimulateTransactionPage({
 
 								{_contractCalls.map((call, index) => {
 									return (
-										<fieldset key={index} className="border  rounded-md p-4">
-											<legend className="px-2 font-medium text-sm">Call #{index + 1}</legend>
+										<fieldset key={index} /*className="border rounded-md p-4"*/>
+											{/*<legend className="px-2 font-medium text-sm">Call #{index + 1}</legend>*/}
 											<div className="grid gap-4">
 												<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
 													<Label htmlFor={`contract-address-${index}`} className="text-right">
@@ -614,8 +614,8 @@ export function SimulateTransactionPage({
 														}`}
 														onChange={(e) => handleCalldataChange(index, e.target.value)}
 													/>
-													{/*(() => {
-														const calldataLines = call.calldata.trim()
+													{(() => {
+														/* const calldataLines = call.calldata.trim()
 															? call.calldata
 																	.trim()
 																	.split('\n')
@@ -623,21 +623,20 @@ export function SimulateTransactionPage({
 															: [];
 
 														const hasInvalidCalldataFormat =
-															call.calldata !== '' && !validateCalldata(calldataLines);
+															call.calldata !== '' && !validateCalldata(calldataLines); */
 
 														if (alert) {
-															if (hasInvalidCalldataFormat) {
+															if (call.calldata === '') {
 																return (
 																	<p className="text-xs text-red-500 col-span-3 col-start-2">
-																		Calldata must be a list of hexadecimal numbers, each starting
-																		with 0x on a new line.
+																		Calldata cannot be empty.
 																	</p>
 																);
 															}
 														}
 
 														return null;
-													})()*/}
+													})()}
 												</div>
 											</div>
 										</fieldset>

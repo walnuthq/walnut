@@ -36,7 +36,7 @@ export function Search({
 	const [isMac, setIsMac] = useState(true);
 	const { networks } = useSettings();
 	const { isLogged } = useUserContext();
-	const coreNetworks = 'sn_main, sn_sepolia';
+	const coreNetworks = '';
 	const [allAvailableNetworksString, setAllAvailableNetworksString] =
 		useState<string>(coreNetworks);
 
@@ -62,7 +62,7 @@ export function Search({
 	useEffect(() => {
 		if (networks.length > 0) {
 			const networkNames = networks.map((network) => network.networkName);
-			setAllAvailableNetworksString(`${coreNetworks}, ${networkNames.join(', ')}`);
+			setAllAvailableNetworksString(`${networkNames.join(', ')}`);
 		}
 	}, [networks]);
 

@@ -14,13 +14,13 @@ export function TransactionDetails({
 	let details: InfoBoxItem[] = [];
 
 	// 1. Transaction Type (always first)
-	if (transactionData.transactionType) {
+	/* if (transactionData.transactionType) {
 		details.push({
 			name: 'Transaction Type',
 			value: <span className="text-variable">{transactionData.transactionType}</span>,
 			isCopyable: true
 		});
-	}
+	} */
 
 	// 2. Execution Status
 	if (transactionData.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
@@ -130,12 +130,12 @@ export function TransactionDetails({
 	}
 
 	// 9. Transaction version
-	if (transactionData.transactionVersion) {
+	/* if (transactionData.transactionVersion) {
 		details.push({
 			name: 'Transaction Version',
 			value: transactionData.transactionVersion.toString()
 		});
-	}
+	} */
 
 	// 10. Fee
 	if (transactionData.actualFee) {
