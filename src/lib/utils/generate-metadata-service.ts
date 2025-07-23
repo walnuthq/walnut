@@ -3,9 +3,10 @@ export const generateMetadata = (title: string, description: string, pageUrl: st
 		title: title,
 		description: description,
 		keywords: [
-			'Starknet',
+			'Ethereum',
+			'EVM',
 			'Debugger',
-			'Cairo',
+			'Solidity',
 			'Transaction',
 			'Gas profiler',
 			'Stack trace',
@@ -20,7 +21,7 @@ export const generateMetadata = (title: string, description: string, pageUrl: st
 					url: 'https://walnut.dev/seo.png',
 					width: 520,
 					height: 160,
-					alt: 'Walnut logo'
+					alt: 'Walnut Logo'
 				}
 			],
 			locale: 'en_US',
