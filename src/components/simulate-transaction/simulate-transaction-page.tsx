@@ -597,7 +597,7 @@ export function SimulateTransactionPage({
 														// disabled={call.function_name === ''}
 														id={`calldata-${index}`}
 														value={call.calldata}
-														placeholder={`Enter raw calldata here. For example:\n\n0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005`}
+														placeholder="Enter raw calldata here."
 														required
 														className={`col-span-3 font-mono h-32 ${
 															alert &&

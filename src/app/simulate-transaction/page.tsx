@@ -31,10 +31,10 @@ export default function Page({
 			}
 
 			if ((chainId || rpcUrl) && senderAddress && calldata && transactionVersion) {
-				const [address] = calldata.split(',');
+				const [address, initialCalldata] = calldata.split(',');
 
 				// const calls = parseContractCalls(parsedCalldata);
-				const calls = [{ address, function_name: '', calldata: '' }];
+				const calls = [{ address, function_name: '', calldata: initialCalldata }];
 
 				const payload: SimulationPayload = {
 					senderAddress,
