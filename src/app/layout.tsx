@@ -10,9 +10,9 @@ import { AddressProvider } from '@/lib/context/address-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const title = 'Debugger for Starknet smart contract developers | Walnut';
+const title = 'Debugger for smart contract and blockchain developers | Walnut';
 const description =
-	'Delve deeper into Cairo transaction execution with our state-of-the-art debugger. Swiftly identify bugs and pinpoint areas for enhancement.';
+	'Delve deeper into blockchain transaction with the Walnut debugger. Swiftly identify bugs and pinpoint areas for enhancement.';
 export const metadata: Metadata = generateMetadata(
 	title,
 	description,
