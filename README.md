@@ -6,7 +6,7 @@ Transactions traces and step-by-step debugger for any EVM-compatible chain.
 
 This project depends on [walnut-cli](https://github.com/walnuthq/walnut-cli). **You should carefully follow the installation guide of the CLI, making sure to use the _"install from source"_ instructions specifically.** This process will guide you to create a Python Virtual Environment within the CLI folder. 
 
-> **Note:** The Python virtual environment created during the walnut-cli setup will also be important when setting up and running Walnut as described in this guide.
+> **Note:** The Python Virtual Environment created during the walnut-cli setup will also be important when setting up and running Walnut as described in this guide.
 
 ## Set Up Environment Variables
 
