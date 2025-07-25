@@ -28,7 +28,7 @@ Most importantly, your node RPC URL should support `debug_traceTransaction` and 
 
 ## Activate Python Virtual Environment
 
-Before running Walnut, you need to activate the Python virtual environment that was created when you installed walnut-cli as a prerequisite. This ensures that all required Python dependencies are available.
+Before running Walnut, you need to activate the Python Virtual Environment that was created when you installed walnut-cli as a prerequisite. This ensures that all required Python dependencies are available.
 
 From the root of this repository, activate the environment by running:
 
