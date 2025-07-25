@@ -36,7 +36,7 @@ From the root of this repository, activate the environment by running:
 source ../walnut-cli/MyEnv/bin/activate
 ```
 
-Replace `../walnut-cli/MyEnv/bin/activate` with the actual path to your virtual environment if it differs. You should see your shell prompt change, indicating the environment is active. Keep this environment activated for all steps that require interaction with walnut-cli or Python dependencies.
+> **Note:** Replace `../walnut-cli/MyEnv/bin/activate` with the actual path to your virtual environment if it differs. You should see your shell prompt change, indicating the environment is active. Keep this environment activated for all steps that require interaction with walnut-cli or Python dependencies.
 
 ## Run the Debugger
 
