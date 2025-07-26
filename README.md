@@ -2,11 +2,13 @@
 
 Transactions traces and step-by-step debugger for any EVM-compatible chain.
 
-## Prerequisites
+## Install Prerequisites
 
-This project depends on [walnut-cli](https://github.com/walnuthq/walnut-cli), you should carefully follow the installation guide of the CLI before getting started.
+This project depends on [walnut-cli](https://github.com/walnuthq/walnut-cli). **You should carefully follow the installation guide of the CLI, making sure to use the _"install from source"_ instructions specifically.** This process will guide you to create a Python Virtual Environment within the CLI folder. 
 
-## Getting Started
+> **Note:** The Python Virtual Environment created during the walnut-cli setup will also be important when setting up and running Walnut as described in this guide.
+
+## Set Up Environment Variables
 
 Copy `.env.example` into `.env.local` at the root of your repository to bootstrap your configuration.
 
@@ -24,7 +26,19 @@ NEXT_PUBLIC_CHAIN_ID="11155420"
 
 Most importantly, your node RPC URL should support `debug_traceTransaction` and `debug_traceCall` endpoints which are usually not available on public nodes so make sure to provide a dedicated node RPC URL.
 
-## Running the debugger
+## Activate Python Virtual Environment
+
+Before running Walnut, you need to activate the Python Virtual Environment that was created when you installed walnut-cli as a prerequisite. This ensures that all required Python dependencies are available.
+
+From the root of this repository, activate the environment by running:
+
+```sh
+source ../walnut-cli/MyEnv/bin/activate
+```
+
+> **Note:** Replace `../walnut-cli/MyEnv/bin/activate` with the actual path to your virtual environment if it differs. You should see your shell prompt change, indicating the environment is active. Keep this environment activated for all steps that require interaction with walnut-cli or Python dependencies.
+
+## Run the Debugger
 
 After your environment variables are configured, install the dependencies and build the debugger:
 
