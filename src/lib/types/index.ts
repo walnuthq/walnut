@@ -47,7 +47,6 @@ export interface Simulation {
 	transaction_version: number;
 	nonce: number;
 	max_fee: string;
-	cairo_version: string;
 	wallet_address: string;
 	calldata: string[];
 	created_at: number;

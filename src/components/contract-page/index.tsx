@@ -90,11 +90,6 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 			value: contractData.classHash
 		},
 		{
-			name: 'Cairo version',
-			value: contractData.cairoVersion
-		},
-
-		{
 			name: 'Verified on Walnut',
 			value: contractData.verified.toString()
 		}
