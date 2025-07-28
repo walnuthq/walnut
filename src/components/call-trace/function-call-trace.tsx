@@ -37,7 +37,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 	const contractCall = contractCallsMap[functionCall.contractCallId];
 
 	const isDebuggable = functionCall.debuggerDataAvailable;
-	const isParentContractCallDebuggable = contractCall.callDebuggerDataAvailable;
+	const isParentContractCallDebuggable = contractCall?.callDebuggerDataAvailable ?? false;
 
 	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
 	if (!traceLineElementRefs.current[functionCallId]) {

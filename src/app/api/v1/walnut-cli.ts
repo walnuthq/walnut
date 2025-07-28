@@ -80,56 +80,6 @@ type TraceCallWithIds = TraceCallWithIndex & {
 	parentContractCallId: number;
 };
 
-const flattenTraceCallsWithIds = (
-	traceCalls: TraceCallWithIndex[],
-	parent: TraceCallWithIds,
-	contractCallId: number,
-	functionCallId: number,
-	parentContractCallId: number
-) =>
-	traceCalls.reduce<TraceCallWithIds[]>((accumulator, currentValue) => {
-		const nextContractCallId =
-			currentValue.type === 'INTERNALCALL' ? contractCallId : contractCallId + 1;
-		const nextFunctionCallId =
-			currentValue.type === 'INTERNALCALL' ? functionCallId + 1 : functionCallId;
-		const traceCall = {
-			...currentValue,
-			id: currentValue.type === 'INTERNALCALL' ? functionCallId : contractCallId,
-			parentId: parent.id,
-			parentContractCallId,
-			from: currentValue.type === 'INTERNALCALL' ? parent.from : currentValue.from,
-			to: currentValue.type === 'INTERNALCALL' ? parent.to : currentValue.to
-		};
-		accumulator.push(traceCall);
-		accumulator.push(
-			...flattenTraceCallsWithIds(
-				currentValue.calls,
-				traceCall,
-				nextContractCallId,
-				nextFunctionCallId,
-				currentValue.type === 'INTERNALCALL' ? parentContractCallId : contractCallId
-			)
-		);
-		return accumulator;
-	}, []);
-
-export const flattenTraceCallWithIds = (traceCall: TraceCallWithIndex): TraceCallWithIds[] => {
-	const flattenedTraceCall = flattenTraceCall(traceCall);
-	const contractCallsCount = flattenedTraceCall.filter(({ type }) => type === 'CALL').length;
-	const result = [];
-	const firstTraceCall = {
-		...traceCall,
-		id: 1,
-		parentId: 0,
-		parentContractCallId: 0
-	};
-	result.push(firstTraceCall);
-	result.push(
-		...flattenTraceCallsWithIds(firstTraceCall.calls, firstTraceCall, 2, contractCallsCount + 1, 1)
-	);
-	return result;
-};
-
 const walnutCli = async ({
 	command,
 	txHash,
@@ -138,7 +88,8 @@ const walnutCli = async ({
 	from,
 	blockNumber,
 	rpcUrl,
-	cwd = process.env.PWD
+	ethdebugDirs,
+	cwd
 }: {
 	command: 'trace' | 'simulate';
 	txHash?: Hash;
@@ -147,6 +98,7 @@ const walnutCli = async ({
 	from?: Address;
 	blockNumber?: bigint;
 	rpcUrl: string;
+	ethdebugDirs?: string[];
 	cwd?: string;
 }): Promise<DebugCallResponse> => {
 	const args =
@@ -158,7 +110,13 @@ const walnutCli = async ({
 	}
 	const { stdout } = await execFile(
 		'walnut-cli',
-		[...args, '--ethdebug-dir', `${cwd}/debug`, '--rpc', rpcUrl, '--json'],
+		[
+			...args,
+			...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
+			'--rpc',
+			rpcUrl,
+			'--json'
+		],
 		{ cwd }
 	);
 	const rawDebugCallResponse = JSON.parse(stdout) as RawDebugCallResponse;

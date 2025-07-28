@@ -113,6 +113,19 @@ export const POST = async (request: NextRequest) => {
 	// /simulate-transaction endpoint
 	const tmp = `/tmp/${parameters.txHash ?? parameters.calldata.slice(0, 128)}`;
 	// RUN WALNUT-CLI
+	let ethdebugDirs;
+	let cwd = process.env.PWD;
+	if (sourcifyContracts.length === 1) {
+		ethdebugDirs = [`${tmp}/${sourcifyContracts[0].address}/debug`];
+		cwd = `${tmp}/${sourcifyContracts[0].address}`;
+	} else {
+		ethdebugDirs = sourcifyContracts.map((contract) =>
+			contract.name
+				? `${contract.address}:${contract.name}:${tmp}/${contract.address}/debug`
+				: `${contract.address}:${tmp}/${contract.address}/debug`
+		);
+		cwd = `${tmp}/${sourcifyContracts[0].address}`;
+	}
 	const { traceCall, steps, contracts } = await walnutCli({
 		command: parameters.txHash ? 'trace' : 'simulate',
 		txHash: parameters.txHash,
@@ -121,7 +134,8 @@ export const POST = async (request: NextRequest) => {
 		from: parameters.senderAddress,
 		blockNumber: parameters.blockNumber,
 		rpcUrl: parameters.rpcUrl,
-		cwd: `${tmp}/${sourcifyContracts[0].address}`
+		ethdebugDirs,
+		cwd
 	});
 	const { l2TransactionData } = traceCallResponseToTransactionSimulationResult({
 		traceCall,

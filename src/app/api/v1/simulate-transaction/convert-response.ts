@@ -1,6 +1,5 @@
 import { type Address, type Hash } from 'viem';
 import { type DebugCallContract, type WalnutTraceCall, type Contract } from '@/app/api/v1/types';
-import { traceCallWithIndexes, flattenTraceCallWithIds } from '@/app/api/v1/walnut-cli';
 import {
 	CallType,
 	type ContractCall,
@@ -14,6 +13,41 @@ import {
 	getAbiFunction,
 	formatAbiParameterValue
 } from '@/app/api/v1/abi-utils';
+
+function decodeCalldata(abiFunction: any, args: any[]) {
+	try {
+		if (!abiFunction || !abiFunction.inputs || !args) return [];
+		const decoded = abiFunction.inputs.map((input: any, index: number) => ({
+			name: input.name ?? '',
+			typeName: input.internalType ?? input.type,
+			value: formatAbiParameterValue(args[index], input)
+		}));
+		console.log('Decoded calldata:', decoded);
+		return decoded;
+	} catch (err) {
+		console.error('Error decoding calldata:', err);
+		return [];
+	}
+}
+
+// Helper function to flatten the trace to a map by callId
+function flattenTraceToMap(
+	traceCall: any,
+	map: Record<number, any> = {},
+	parentType: string | null = null
+): Record<number, any> {
+	// If parent is ENTRY, override type to 'CALL' for child
+	let node = { ...traceCall };
+	if (parentType === 'ENTRY') {
+		node.type = 'CALL';
+	}
+	if (node.type !== 'ENTRY') {
+		map[node.callId] = node;
+	}
+	(traceCall.calls || []).forEach((child: any) => flattenTraceToMap(child, map, node.type));
+
+	return map;
+}
 
 const traceCallResponseToTransactionSimulationResult = ({
 	traceCall,
@@ -49,47 +83,43 @@ const traceCallResponseToTransactionSimulationResult = ({
 		}),
 		{}
 	);
-	const flattenedTraceCall = flattenTraceCallWithIds(traceCallWithIndexes(traceCall));
-	// console.log(flattenedTraceCall);
-	const flattenedContractCalls = flattenedTraceCall.filter(({ type }) => type === 'CALL');
-	const contractCallsMap = flattenedContractCalls
-		.map((traceCall) => {
-			const contract = contracts[traceCall.to];
+	const traceMap = flattenTraceToMap(traceCall);
+
+	// Contract calls
+	const contractCallsMap = Object.values(traceMap)
+		.filter((tc: any) => tc.type === 'CALL')
+		.map((tc: any) => {
+			const contract = contracts[tc.to];
+			if (!contract) {
+				console.error('Contract not found for address:', tc.to);
+				return {};
+			}
 			const abi = contract.abi;
-			const { functionName, args } = decodeFunctionDataSafe({ abi, data: traceCall.input });
+			const { functionName, args } = decodeFunctionDataSafe({ abi, data: tc.input });
 			const result = decodeFunctionResultSafe({
 				abi,
 				functionName,
-				data: traceCall.output
+				data: tc.output
 			});
 			const abiFunction = getAbiFunction({ abi, name: functionName, args });
-			//
-			const contractCalls = traceCall.calls.filter(({ type }) => type === 'CALL');
-			const contractCallsIds = contractCalls.map(({ index }) => flattenedTraceCall[index].id);
-			//
-			const functionCalls = traceCall.calls.filter(({ type }) => type === 'INTERNALCALL');
-			const functionCallsIds = functionCalls.map(({ index }) => flattenedTraceCall[index].id);
-			const functionCallId = functionCallsIds.length === 0 ? null : functionCallsIds[0];
-			//
 			const contractCall: ContractCall = {
-				callId: traceCall.id,
-				parentCallId: traceCall.parentId,
-				childrenCallIds: contractCallsIds,
-				functionCallId,
+				callId: tc.callId,
+				parentCallId: tc.parentCallId,
+				childrenCallIds: tc.childrenCallIds || [],
+				functionCallId:
+					(tc.calls || []).find((c: any) => c.type === 'INTERNALCALL')?.callId ?? null,
 				eventCallIds: [],
-
 				entryPoint: {
 					classHash: '',
-					codeAddress: traceCall.to,
+					codeAddress: tc.to,
 					entryPointType: EntryPointType.EXTERNAL,
-					entryPointSelector: traceCall.input.slice(0, 10),
-					calldata: [traceCall.input],
-					storageAddress: traceCall.to,
-					callerAddress: traceCall.from,
+					entryPointSelector: tc.input.slice(0, 10),
+					calldata: [tc.input],
+					storageAddress: tc.to,
+					callerAddress: tc.from,
 					callType: CallType.CALL,
 					initialGas: 0
 				},
-
 				result: {
 					Success: {
 						// @ts-ignore
@@ -103,18 +133,11 @@ const traceCallResponseToTransactionSimulationResult = ({
 							})) ?? []
 					}
 				},
-
 				argumentsNames: abiFunction?.inputs.map((input) => input.name ?? '').filter((name) => name),
 				argumentsTypes: abiFunction?.inputs
 					.map((input) => input.internalType ?? input.type ?? '')
 					.filter((type) => type),
-				calldataDecoded: args
-					? abiFunction?.inputs.map((input, index) => ({
-							name: input.name ?? '',
-							typeName: input.internalType ?? input.type,
-							value: formatAbiParameterValue(args[index], input)
-					  }))
-					: [],
+				calldataDecoded: decodeCalldata(abiFunction, Array.from(args ?? [])),
 				resultTypes: abiFunction?.outputs
 					.map((output) => output.internalType ?? output.type ?? '')
 					.filter((type) => type),
@@ -126,46 +149,60 @@ const traceCallResponseToTransactionSimulationResult = ({
 							? formatAbiParameterValue(result[index], output)
 							: formatAbiParameterValue(result, output)
 					})) ?? [],
-
-				contractName: contractNames[traceCall.to],
+				contractName: contractNames[tc.to],
 				entryPointName: functionName,
-
 				isErc20Token: false,
 				classHash: '',
 				isDeepestPanicResult: false,
-
 				nestingLevel: 0,
 				callDebuggerDataAvailable: true,
 				debuggerTraceStepIndex: null,
 				isHidden: false
 			};
-			return { [traceCall.id.toString()]: contractCall };
+			return { [tc.callId]: contractCall };
 		})
-		.reduce((previousValue, currentValue) => ({ ...previousValue, ...currentValue }), {});
-	// console.log(contractCallsMap);
-	const flattenedFunctionCalls = flattenedTraceCall.filter(({ type }) => type === 'INTERNALCALL');
-	const functionCallsMap = flattenedFunctionCalls
-		.map((traceCall) => {
-			const contract = contracts[traceCall.to];
+		.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
+	// Function calls
+	const functionCallsMap = Object.values(traceMap)
+		.filter((tc: any) => tc.type === 'INTERNALCALL')
+		.map((tc: any) => {
+			// Find the nearest parent CALL (can be multiple levels of INTERNALCALL)
+			let parent = traceMap[tc.parentCallId];
+			while (parent && parent.type !== 'CALL') {
+				parent = traceMap[parent.parentCallId];
+			}
+			const to = parent?.to;
+			const from = parent?.from;
+			if (!to || !from) {
+				console.error('Parent CALL not found or missing to/from for INTERNALCALL:', tc, parent);
+				return {};
+			}
+			const contract = contracts[to];
+			if (!contract) {
+				console.error('Contract not found for address:', to);
+				return {};
+			}
 			const abi = contract.abi;
-			const { functionName, args } = decodeFunctionDataSafe({ abi, data: traceCall.input });
+			const { functionName, args } = decodeFunctionDataSafe({ abi, data: tc.input });
 			const result = decodeFunctionResultSafe({
 				abi,
 				functionName,
-				data: traceCall.output
+				data: tc.output
 			});
 			const abiFunction = getAbiFunction({ abi, name: functionName, args });
-			//
-			const functionCalls = traceCall.calls.filter(({ type }) => type === 'INTERNALCALL');
-			const functionCallsIds = functionCalls.map(({ index }) => flattenedTraceCall[index].id);
-			//
+			// childrenCallIds: all INTERNALCALL and CALL nodes where parentCallId == tc.callId
+			const childrenCallIds = (tc.childrenCallIds || []).filter((id: number) => {
+				const child = traceMap[id];
+				return child && (child.type === 'INTERNALCALL' || child.type === 'CALL');
+			});
 			const functionCall: FunctionCall = {
-				callId: traceCall.id,
-				parentCallId: traceCall.parentId,
-				childrenCallIds: functionCallsIds,
-				contractCallId: traceCall.parentContractCallId,
+				callId: tc.callId,
+				parentCallId: tc.parentCallId,
+				childrenCallIds,
+				contractCallId: tc.parentContractCallId,
 				eventCallIds: [],
-				fnName: `${contractNames[traceCall.to]}::${functionName}`,
+				fnName: `${contractNames[to]}::${functionName}`,
 				fp: 0,
 				isDeepestPanicResult: false,
 				results:
@@ -202,10 +239,10 @@ const traceCallResponseToTransactionSimulationResult = ({
 				debuggerTraceStepIndex: null,
 				isHidden: false
 			};
-			return { [traceCall.id.toString()]: functionCall };
+			return { [tc.callId]: functionCall };
 		})
-		.reduce((previousValue, currentValue) => ({ ...previousValue, ...currentValue }), {});
-	// console.log(functionCallsMap);
+		.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
 	return {
 		l2TransactionData: {
 			simulationResult: {
