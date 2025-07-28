@@ -22,7 +22,6 @@ function decodeCalldata(abiFunction: any, args: any[]) {
 			typeName: input.internalType ?? input.type,
 			value: formatAbiParameterValue(args[index], input)
 		}));
-		console.log('Decoded calldata:', decoded);
 		return decoded;
 	} catch (err) {
 		console.error('Error decoding calldata:', err);

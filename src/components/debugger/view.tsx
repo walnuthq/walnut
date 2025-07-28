@@ -54,10 +54,12 @@ export function DebuggerView() {
 					stepIndex={currentStepIndex}
 					totalSteps={totalSteps}
 					contractCall={contractCall}
+					activeFile={activeFile}
 				/>
 				<div className="flex-grow">
 					{currentStep?.withLocation ? (
 						<CodeViewer
+							key={`${contractCall?.classHash}-${activeFile}`} // Force re-render only on contract/file change, not on every step
 							content={activeFile ? sourceCode[activeFile] : ''}
 							codeLocation={codeLocation}
 							highlightClass={`${
@@ -101,7 +103,8 @@ function Controls({
 	// stepOver, // commented out
 	stepIndex,
 	totalSteps,
-	contractCall
+	contractCall,
+	activeFile
 }: // runToBreakpoint // commented out
 {
 	nextStep: () => void;
@@ -110,6 +113,7 @@ function Controls({
 	stepIndex: number;
 	totalSteps: number;
 	contractCall?: ContractCall;
+	activeFile?: string;
 	// runToBreakpoint: () => void; // commented out
 }) {
 	useEffect(() => {
@@ -135,10 +139,9 @@ function Controls({
 	const { contractCallsMap } = useCallTrace();
 
 	let call = contractCall?.callId && contractCallsMap[contractCall?.callId];
-
 	return (
 		<div className="flex flex-row border-b py-1 px-3 justify-between items-center">
-			<div>{contractCall && <ContractCallSignature contractCall={call || contractCall} />}</div>
+			<div>{activeFile && activeFile.split('/').pop()?.split('.')[0]}</div>
 			<div className="flex flex-row gap-3 items-center">
 				<div>
 					Step {stepIndex + 1}/{totalSteps}
