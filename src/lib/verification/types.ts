@@ -4,7 +4,7 @@ export interface VerificationRequestRow {
 	message?: string;
 	createdAt: string;
 	updatedAt: string;
-	cairoVersion?: string;
+	solidityVersion?: string;
 	packageName?: string;
 }
 

@@ -33,6 +33,7 @@ export function CodeViewer({
 	const activeFileRef = useRef<string | undefined>(undefined);
 	const classHashRef = useRef<string | undefined>(undefined);
 	const breakPointsLinesRef = useRef<number[] | undefined>(undefined);
+	const [contractSwitchCount, setContractSwitchCount] = useState(0);
 
 	const debuggerContext = useDebugger();
 	const {
@@ -54,11 +55,15 @@ export function CodeViewer({
 
 	useEffect(() => {
 		activeFileRef.current = activeFile;
-	}, [activeFile]);
+	}, [activeFile, classHash, contractCall?.callId]);
 
 	useEffect(() => {
+		if (classHashRef.current !== classHash) {
+			// Contract changed - trigger smooth transition
+			setContractSwitchCount((prev) => prev + 1);
+		}
 		classHashRef.current = classHash;
-	}, [classHash]);
+	}, [classHash, activeFile, contractCall?.callId]);
 
 	useEffect(() => {
 		if (classAvailableBreakpoints && activeFile && classAvailableBreakpoints[activeFile]) {
@@ -228,14 +233,16 @@ export function CodeViewer({
 	useEffect(() => {
 		if (editorRef.current && monaco) {
 			if (codeLocation) {
-				highlightCodeLocation(codeLocation, editorRef.current, monaco, content === prevCodeValue);
+				// Use smooth scroll when content changes, instant when same content
+				const isSmoothScroll = content !== prevCodeValue;
+				highlightCodeLocation(codeLocation, editorRef.current, monaco, isSmoothScroll);
 			} else {
 				editorRef.current.revealLineNearTop(0, 1);
 			}
 			setPrevCodeValue(content);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [codeLocation, args, results, isExpressionHover]);
+	}, [codeLocation, args, results, isExpressionHover, content, contractSwitchCount]);
 
 	useEffect(() => {
 		const styleId = 'breakpoint-style';

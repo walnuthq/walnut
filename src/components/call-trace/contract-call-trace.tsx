@@ -37,6 +37,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		toggleCallExpand,
 		setActiveTab,
 		contractCallsMap,
+		functionCallsMap,
 		isExecutionFailed,
 		traceLineElementRefs,
 		setChosenCallName
@@ -84,8 +85,6 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		contractName = call.contractName;
 	} else if (call.erc20TokenName || call.erc20TokenSymbol) {
 		contractName = [call.erc20TokenName, `(${call.erc20TokenSymbol})`].join(' ');
-	} else if (call.entryPointInterfaceName) {
-		contractName = call.entryPointInterfaceName.split('::').pop();
 	}
 
 	if (!contractName) {
@@ -368,24 +367,36 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 			{expandedCalls[call.callId] && !previewMode && <ContractCallDetails call={call} />}{' '}
 			{collapsedCalls[call.callId] != true && (
 				<>
-					{call.functionCallId ? (
-						<CommonCallTrace
-							previewMode={previewMode}
-							callId={call.functionCallId}
-							nestingLevel={nestingLevel + 1}
-							callType="function"
-						/>
-					) : (
-						<>
-							{childrenCallIdsArray}
-							{call.isDeepestPanicResult && call.errorMessage && !previewMode && (
-								<ErrorTraceLine
-									executionFailed
-									errorMessage={call.errorMessage}
+					{call.childrenCallIds.map((childId) => {
+						if (contractCallsMap[childId]) {
+							return (
+								<CommonCallTrace
+									previewMode={previewMode}
+									key={childId}
+									callId={childId}
 									nestingLevel={nestingLevel + 1}
+									callType="contract"
 								/>
-							)}
-						</>
+							);
+						} else if (functionCallsMap[childId]) {
+							return (
+								<CommonCallTrace
+									previewMode={previewMode}
+									key={childId}
+									callId={childId}
+									nestingLevel={nestingLevel + 1}
+									callType="function"
+								/>
+							);
+						}
+						return null;
+					})}
+					{call.isDeepestPanicResult && call.errorMessage && !previewMode && (
+						<ErrorTraceLine
+							executionFailed
+							errorMessage={call.errorMessage}
+							nestingLevel={nestingLevel + 1}
+						/>
 					)}
 				</>
 			)}
@@ -456,13 +467,6 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 		});
 	}
 
-	if (call.cairoVersion) {
-		details.push({
-			name: 'Cairo Version',
-			value: call.cairoVersion
-		});
-	}
-
 	if (call.result) {
 		details.unshift({
 			name: 'Raw Result',
@@ -472,12 +476,12 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 	let contractName: string | null = call.contractName ?? null;
 	let entryPointInterfaceName: string | null = call.entryPointInterfaceName ?? null;
 
-	const cairoLocation: CodeLocation | undefined = call.codeLocation ?? undefined;
+	const codeLocation: CodeLocation | undefined = call.codeLocation ?? undefined;
 
 	const findFilePath = useCallback(
 		(terms: string[], files: { [key: string]: string }): string | undefined => {
 			for (const term of terms) {
-				const filePath = Object.keys(files).find((path) => path.includes(`${term}.cairo`));
+				const filePath = Object.keys(files).find((path) => path.includes(`${term}.sol`));
 				if (filePath) return filePath;
 			}
 			return undefined;

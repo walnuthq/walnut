@@ -1,0 +1,322 @@
+{
+  "traceCall": {
+    "type": "ENTRY",
+    "input": "0x6f10e15700000000000000000000000000000000000000000000000000000000000003e8000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000008706879736963616c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000076578707265737300000000000000000000000000000000000000000000000000",
+    "callId": 0,
+    "parentCallId": null,
+    "childrenCallIds": [
+      1
+    ],
+    "gas": 61410,
+    "gasUsed": 82711,
+    "calls": [
+      {
+        "type": "CALL",
+        "input": "0x6f10e15700000000000000000000000000000000000000000000000000000000000003e800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "callId": 1,
+        "parentCallId": 0,
+        "childrenCallIds": [
+          2,
+          4,
+          7,
+          9,
+          12,
+          14,
+          15,
+          17
+        ],
+        "to": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+        "from": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+        "gas": "0xed17",
+        "gasUsed": "0xe988",
+        "calls": [
+          {
+            "type": "CALL",
+            "input": "0x41304fac000000000000000000000000dcdd1dd0ff17043f8bcd1ac9e5be20bbed4fac0a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d7e1",
+            "callId": 2,
+            "parentCallId": 1,
+            "childrenCallIds": [
+              3
+            ],
+            "to": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+            "from": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+            "gas": "0xd7e1",
+            "gasUsed": "0xe60",
+            "calls": [
+              {
+                "type": "INTERNALCALL",
+                "input": "0x51973ec9",
+                "callId": 3,
+                "parentCallId": 2,
+                "childrenCallIds": [],
+                "contractAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "gas": "0xd29d",
+                "gasUsed": "0x91c",
+                "logs": [
+                  {
+                    "address": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+                    "topics": [
+                      "0xdf2f43000ad262ff927c671ed83129f9054af075e5d3add03a2ba7116e719a51"
+                    ],
+                    "data": "0x",
+                    "position": 0
+                  }
+                ],
+                "to": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "from": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "function_name": "log"
+              }
+            ],
+            "function_name": "CALL \u2192 Logger::log(string)"
+          },
+          {
+            "type": "CALL",
+            "input": "0x55ec8a030000000000000000000000006a85ebf0eba5307943bdf27d02d198bc64e9ffed0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c075",
+            "callId": 4,
+            "parentCallId": 1,
+            "childrenCallIds": [
+              5
+            ],
+            "to": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+            "from": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+            "gas": "0xc075",
+            "gasUsed": "0x1d6a",
+            "calls": [
+              {
+                "type": "INTERNALCALL",
+                "input": "0xb9b2735c",
+                "callId": 5,
+                "parentCallId": 4,
+                "childrenCallIds": [
+                  6
+                ],
+                "contractAddress": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+                "gas": "0xb16d",
+                "gasUsed": "0xe62",
+                "calls": [
+                  {
+                    "type": "INTERNALCALL",
+                    "input": "0xb655d0c4",
+                    "callId": 6,
+                    "parentCallId": 5,
+                    "childrenCallIds": [],
+                    "contractAddress": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+                    "gas": "0xb073",
+                    "gasUsed": "0xd68",
+                    "to": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+                    "from": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+                    "function_name": "getBaseRate"
+                  }
+                ],
+                "to": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+                "from": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+                "function_name": "calculateTax"
+              }
+            ],
+            "function_name": "CALL \u2192 TaxCalculator::function_0x55ec8a03"
+          },
+          {
+            "type": "CALL",
+            "input": "0xfc8a475f000000000000000000000000dcdd1dd0ff17043f8bcd1ac9e5be20bbed4fac0a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a12b",
+            "callId": 7,
+            "parentCallId": 1,
+            "childrenCallIds": [
+              8
+            ],
+            "to": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+            "from": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+            "gas": "0xa12b",
+            "gasUsed": "0xacb",
+            "calls": [
+              {
+                "type": "INTERNALCALL",
+                "input": "0x017f425a",
+                "callId": 8,
+                "parentCallId": 7,
+                "childrenCallIds": [],
+                "contractAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "gas": "0x9cd8",
+                "gasUsed": "0x678",
+                "to": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "from": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "function_name": "logValue"
+              }
+            ],
+            "function_name": "CALL \u2192 Logger::function_0xfc8a475f"
+          },
+          {
+            "type": "CALL",
+            "input": "0x01567ce2000000000000000000000000be734ad6434e16f6be04706005faed6fd38eb2b200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008c4b",
+            "callId": 9,
+            "parentCallId": 1,
+            "childrenCallIds": [
+              10
+            ],
+            "to": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+            "from": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+            "gas": "0x8c4b",
+            "gasUsed": "0x1ffe",
+            "calls": [
+              {
+                "type": "INTERNALCALL",
+                "input": "0x7a45aaf3",
+                "callId": 10,
+                "parentCallId": 9,
+                "childrenCallIds": [
+                  11
+                ],
+                "contractAddress": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+                "gas": "0x7de4",
+                "gasUsed": "0x1197",
+                "calls": [
+                  {
+                    "type": "INTERNALCALL",
+                    "input": "0xf24d81b7",
+                    "callId": 11,
+                    "parentCallId": 10,
+                    "childrenCallIds": [],
+                    "contractAddress": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+                    "gas": "0x74ed",
+                    "gasUsed": "0x8a0",
+                    "to": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+                    "from": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+                    "function_name": "estimateShipping"
+                  }
+                ],
+                "to": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+                "from": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+                "function_name": "initiateShipping"
+              }
+            ],
+            "function_name": "CALL \u2192 ShippingManager::function_0x01567ce2"
+          },
+          {
+            "type": "CALL",
+            "input": "0xfc8a475f000000000000000000000000dcdd1dd0ff17043f8bcd1ac9e5be20bbed4fac0a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000699f",
+            "callId": 12,
+            "parentCallId": 1,
+            "childrenCallIds": [
+              13
+            ],
+            "to": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+            "from": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+            "gas": "0x699f",
+            "gasUsed": "0x9ec",
+            "calls": [
+              {
+                "type": "INTERNALCALL",
+                "input": "0x017f425a",
+                "callId": 13,
+                "parentCallId": 12,
+                "childrenCallIds": [],
+                "contractAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "gas": "0x662b",
+                "gasUsed": "0x678",
+                "to": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "from": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "function_name": "logValue"
+              }
+            ],
+            "function_name": "CALL \u2192 Logger::function_0xfc8a475f"
+          },
+          {
+            "type": "INTERNALCALL",
+            "input": "0x422dba52000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "callId": 14,
+            "parentCallId": 1,
+            "childrenCallIds": [],
+            "contractAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+            "gas": "0x6039",
+            "gasUsed": "0x5caa",
+            "logs": [
+              {
+                "address": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+                "topics": [
+                  "0x29c44a39e8532b4217116f0df1e627d35a994882005f6a710764fcefcd4feef4"
+                ],
+                "data": "0x",
+                "position": 1
+              }
+            ],
+            "to": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+            "from": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+            "function_name": "finalizeAmount"
+          },
+          {
+            "type": "CALL",
+            "input": "0x0b63fe95000000000000000000000000f776ff56e2400e31f3070c1ac70ab80433b0182300000000000000000000000000000000000000000000000000000000000004380000000000000000000000000000000000000000000000000000000000004904",
+            "callId": 15,
+            "parentCallId": 14,
+            "childrenCallIds": [
+              16
+            ],
+            "to": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+            "from": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+            "gas": "0x4904",
+            "gasUsed": "0x23e9",
+            "calls": [
+              {
+                "type": "INTERNALCALL",
+                "input": "0x22081c12",
+                "callId": 16,
+                "parentCallId": 15,
+                "childrenCallIds": [],
+                "contractAddress": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+                "gas": "0x2bfd",
+                "gasUsed": "0x6e2",
+                "to": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+                "from": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+                "function_name": "processPayment"
+              }
+            ],
+            "function_name": "CALL \u2192 PaymentProcessor::processPayment(address,uint256)"
+          },
+          {
+            "type": "CALL",
+            "input": "0xe4af64b1000000000000000000000000dcdd1dd0ff17043f8bcd1ac9e5be20bbed4fac0a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020f4",
+            "callId": 17,
+            "parentCallId": 14,
+            "childrenCallIds": [
+              18
+            ],
+            "to": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+            "from": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+            "gas": "0x20f4",
+            "gasUsed": "0x1231",
+            "calls": [
+              {
+                "type": "INTERNALCALL",
+                "input": "0x1840e84b",
+                "callId": 18,
+                "parentCallId": 17,
+                "childrenCallIds": [],
+                "contractAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "gas": "0x1df7",
+                "gasUsed": "0xf34",
+                "logs": [
+                  {
+                    "address": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+                    "topics": [
+                      "0x29c44a39e8532b4217116f0df1e627d35a994882005f6a710764fcefcd4feef4"
+                    ],
+                    "data": "0x",
+                    "position": 1
+                  }
+                ],
+                "to": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "from": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+                "function_name": "logBoth"
+              }
+            ],
+            "function_name": "CALL \u2192 Logger::function_0xe4af64b1"
+          }
+        ],
+        "function_name": "processOrder"
+      }
+    ],
+    "to": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+    "from": "0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29",
+    "function_name": "OrderProcessor::runtime_dispatcher",
+    "output": "0000000000000000000000000000000000000000000000000000000000000438"
+  }
+}

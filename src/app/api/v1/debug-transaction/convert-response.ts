@@ -34,6 +34,12 @@ function parsePcToSourceMapping(
 ) {
 	// mapping: 's:l:f'
 	const [s, l, f] = mapping.split(':').map(Number);
+
+	// Skip invalid or dispatcher-related mappings
+	if (s === 0 && l === 0 && (f === 0 || f === -1)) {
+		return null;
+	}
+
 	const relativePath = fileIndexToPath && fileIndexToPath[f] ? fileIndexToPath[f] : null;
 	let filePath = 'unknown';
 	let start = { line: 0, col: 0 };
@@ -85,13 +91,36 @@ const debugCallResponseToTransactionSimulationResult = ({
 			sourceCode[cleanPath] = source.content;
 			sources[Number(idx)] = source.content;
 		});
+		// Optimized filtering: group PCs by mapping to avoid duplicates
 		const pcToCodeInfo: Record<number, { codeLocations: any[] }> = {};
-		let lastMapping: string | null = null;
+		const mappingToPcs: Record<string, number[]> = {};
+
+		// Group PCs by their source mapping
 		for (const [pc, mapping] of Object.entries(contract.pcToSourceMappings)) {
-			if (mapping === lastMapping) continue;
-			lastMapping = mapping;
-			pcToCodeInfo[Number(pc)] = {
-				codeLocations: [parsePcToSourceMapping(mapping, fileIndexToPath, sources)]
+			// Skip PC mappings that are likely dispatcher-related (empty or invalid mappings)
+			if (!mapping || mapping === '0:0:0' || mapping === '0:0:-1') {
+				continue;
+			}
+
+			if (!mappingToPcs[mapping]) {
+				mappingToPcs[mapping] = [];
+			}
+			mappingToPcs[mapping].push(Number(pc));
+		}
+
+		// Create pcToCodeInfo with only unique mappings
+		for (const [mapping, pcs] of Object.entries(mappingToPcs)) {
+			const codeLocation = parsePcToSourceMapping(mapping, fileIndexToPath, sources);
+
+			// Skip invalid code locations (dispatcher-related)
+			if (!codeLocation) {
+				continue;
+			}
+
+			// Use the first PC as the representative for this mapping
+			const representativePc = pcs[0];
+			pcToCodeInfo[representativePc] = {
+				codeLocations: [codeLocation]
 			};
 		}
 		contractDebuggerData[address] = {
@@ -100,9 +129,10 @@ const debugCallResponseToTransactionSimulationResult = ({
 		};
 	}
 
-	// 2. debuggerTrace
-	// const flatCalls = flattenTraceCall(traceCall); // uklonjeno
+	// 2. debuggerTrace with optimized deduplication
 	const debuggerTrace: any[] = [];
+	const processedLocations = new Set<string>(); // Track processed locations to avoid duplicates
+
 	steps.forEach((step) => {
 		const contractCall = contractCallsMap[step.traceCallIndex];
 		const functionCall = functionCallsMap[step.traceCallIndex];
@@ -114,24 +144,43 @@ const debugCallResponseToTransactionSimulationResult = ({
 			functionCallId = step.traceCallIndex;
 		}
 
+		// Skip steps that map to dispatcher entrypoint (contractCallId: 0) unless they have valid function calls
+		if (contractCallId === 0 && !functionCall) {
+			return;
+		}
+
 		// For each contract address check if there is pcToCodeInfo for this pc
 		for (const [address, classData] of Object.entries(contractDebuggerData)) {
 			const pcInfo = classData.pcToCodeInfo[step.pc];
 			if (pcInfo && Array.isArray(pcInfo.codeLocations)) {
-				pcInfo.codeLocations.forEach((_: any, locationIndex: number) => {
-					debuggerTrace.push({
-						withLocation: {
-							pcIndex: step.pc,
-							locationIndex,
-							results: functionCall?.results ?? [],
-							arguments: functionCall?.arguments ?? [],
-							argumentsDecoded: functionCall?.argumentsDecoded ?? [],
-							resultsDecoded: functionCall?.resultsDecoded ?? [],
-							contractCallId,
-							fp: 0,
-							functionCallId
-						}
-					});
+				pcInfo.codeLocations.forEach((location: any, locationIndex: number) => {
+					// Skip dispatcher-related locations
+					if (
+						location.filePath === 'unknown' ||
+						(location.start.line === 0 && location.end.line === 0)
+					) {
+						return;
+					}
+
+					// Create unique key that includes contractCallId to preserve different call contexts
+					const locationKey = `${address}:${location.filePath}:${location.start.line}:${location.start.col}:${location.end.line}:${location.end.col}:${contractCallId}:${functionCallId}`;
+
+					if (!processedLocations.has(locationKey)) {
+						processedLocations.add(locationKey);
+						debuggerTrace.push({
+							withLocation: {
+								pcIndex: step.pc,
+								locationIndex,
+								results: functionCall?.results ?? [],
+								arguments: functionCall?.arguments ?? [],
+								argumentsDecoded: functionCall?.argumentsDecoded ?? [],
+								resultsDecoded: functionCall?.resultsDecoded ?? [],
+								contractCallId,
+								fp: 0,
+								functionCallId
+							}
+						});
+					}
 				});
 			}
 		}

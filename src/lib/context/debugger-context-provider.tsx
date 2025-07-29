@@ -249,10 +249,24 @@ export const DebuggerContextProvider = ({
 			simulationDebuggerData,
 			step
 		);
+
+		// Auto-switch contract context when step changes
+		const previousContractCall = contractCall;
 		setContractCall(contractCall);
 		setSourceCode(classSourceCode);
 		setActiveFile(activeFile);
 		setCodeLocation(codeLocation);
+
+		if (previousContractCall?.classHash !== contractCall?.classHash) {
+			// Force update activeFile if it's not set or doesn't exist in new contract
+			if (!activeFile || !classSourceCode[activeFile]) {
+				const availableFiles = Object.keys(classSourceCode);
+				if (availableFiles.length > 0) {
+					const newActiveFile = availableFiles[0];
+					setActiveFile(newActiveFile);
+				}
+			}
+		}
 	}, [currentStepIndex, simulationDebuggerData]);
 
 	const availableBreakpoints = useMemo(() => {
@@ -327,10 +341,27 @@ export const DebuggerContextProvider = ({
 		const { contractCall, classSourceCode, activeFile, codeLocation, functionCallId } =
 			getDebuggerDataForStep(contractCallsMap, simulationDebuggerData || null, newStep || null);
 
+		// Optimized contract switching with smooth transition
+		const previousContractCall = contractCall;
+		// Update contract call first
 		setContractCall(contractCall);
+		// Update source code for the new contract
 		setSourceCode(classSourceCode);
+		// Set active file for the new contract context
 		setActiveFile(activeFile);
+		// Update code location for highlighting
 		setCodeLocation(codeLocation);
+
+		if (previousContractCall?.classHash !== contractCall?.classHash) {
+			// Force update activeFile if it's not set or doesn't exist in new contract
+			if (!activeFile || !classSourceCode[activeFile]) {
+				const availableFiles = Object.keys(classSourceCode);
+				if (availableFiles.length > 0) {
+					const newActiveFile = availableFiles[0];
+					setActiveFile(newActiveFile);
+				}
+			}
+		}
 	}
 
 	const setCurrentContractCall = (call: ContractCall) => {
@@ -497,10 +528,23 @@ function getDebuggerDataForStep(
 
 	let classHash = contractCall?.classHash;
 	let contractDebuggerData: any = undefined;
+
+	// Enhanced contract detection logic
 	if (classHash && simulationDebuggerData?.contractDebuggerData?.[classHash]) {
 		contractDebuggerData = simulationDebuggerData.contractDebuggerData[classHash];
-	} else {
-		// Fallback: take first contractDebuggerData from object
+	} else if (step?.withLocation?.pcIndex !== undefined) {
+		// Try to find contract by PC mapping
+		for (const [hash, data] of Object.entries(simulationDebuggerData?.contractDebuggerData ?? {})) {
+			if (data.pcToCodeInfo && data.pcToCodeInfo[step.withLocation!.pcIndex]) {
+				classHash = hash;
+				contractDebuggerData = data;
+				break;
+			}
+		}
+	}
+
+	// Fallback: take first contractDebuggerData from object
+	if (!contractDebuggerData) {
 		const allClassData = Object.values(simulationDebuggerData?.contractDebuggerData ?? {});
 		contractDebuggerData = allClassData.length > 0 ? allClassData[0] : undefined;
 		classHash =
@@ -508,6 +552,7 @@ function getDebuggerDataForStep(
 				? Object.keys(simulationDebuggerData?.contractDebuggerData ?? {})[0]
 				: undefined;
 	}
+
 	const contractSourceCode = contractDebuggerData?.sourceCode ?? {};
 
 	let activeFile: string | undefined;
@@ -535,11 +580,28 @@ function getDebuggerDataForStep(
 		}
 	}
 
-	// Fallback for activeFile if undefined
+	// Enhanced fallback for activeFile with contract context awareness
 	if (!activeFile && simulationDebuggerData) {
-		const allSourceCodes = Object.values(simulationDebuggerData.contractDebuggerData ?? {});
-		const firstSourceCode = allSourceCodes.length > 0 ? allSourceCodes[0].sourceCode : {};
-		activeFile = Object.keys(firstSourceCode)[0];
+		// First try to find file in current contract context
+		if (contractDebuggerData?.sourceCode) {
+			activeFile = Object.keys(contractDebuggerData.sourceCode)[0];
+		}
+
+		// If still no file, fallback to any available source code
+		if (!activeFile) {
+			const allSourceCodes = Object.values(simulationDebuggerData.contractDebuggerData ?? {});
+			const firstSourceCode = allSourceCodes.length > 0 ? allSourceCodes[0].sourceCode : {};
+			activeFile = Object.keys(firstSourceCode)[0];
+		}
+	}
+
+	// Force update activeFile when contract changes and no valid codeLocation
+	if (!activeFile && contractDebuggerData?.sourceCode) {
+		// Get the first available file for this contract
+		const availableFiles = Object.keys(contractDebuggerData.sourceCode);
+		if (availableFiles.length > 0) {
+			activeFile = availableFiles[0];
+		}
 	}
 
 	return {

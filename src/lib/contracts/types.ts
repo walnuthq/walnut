@@ -7,7 +7,7 @@ export interface Source {
 export interface GetContractResponse {
 	verified: boolean;
 	deployedSources: Source[];
-	cairoVersion: string;
+	solidityVersion: string;
 	classHash: string;
 	sourceCode?: Record<string, string>;
 }

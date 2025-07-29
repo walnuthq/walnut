@@ -127,12 +127,9 @@ export interface ContractCall {
 	errorMessage?: string | null;
 	callDebuggerData?: CallDebuggerData | null;
 	classHash: string;
-	sierraVersion?: string | null;
-	cairoVersion?: string | null;
 	isDeepestPanicResult: boolean;
 
 	resultTypes?: string[] | null;
-	sierraGas?: number | null;
 	argumentsNames?: string[] | null;
 	argumentsTypes?: string[] | null;
 	calldataDecoded?: DataDecoded | null;
