@@ -188,7 +188,7 @@ export const DebuggerContextProvider = ({
 
 			try {
 				const hasDebuggableContract_ = Object.values(callTraceContractCalls).some(
-					(call) => call.callDebuggerDataAvailable
+					(call) => call?.callDebuggerDataAvailable
 				);
 				setHasDebuggableContract(hasDebuggableContract_);
 

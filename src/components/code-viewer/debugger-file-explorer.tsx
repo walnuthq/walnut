@@ -2,11 +2,11 @@ import React, { memo, useCallback, useEffect, useState } from 'react';
 import { cn, getContractName } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ChevronRight, ChevronDown } from 'lucide-react';
-import { ContractDebuggerData } from '@/lib/simulation/types';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { FilesExplorer } from './file-explorer';
+import { ContractDebuggerData } from '@/lib/simulation';
 
 export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	showTitle = true,

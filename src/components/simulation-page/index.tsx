@@ -20,7 +20,6 @@ import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { useRouter } from 'next/navigation';
 import { getCacheWithTTL, safeStringify, setCacheWithTTL } from '@/lib/utils/cache-utils';
-
 export function SimulationPage({
 	simulationPayload
 }: {
@@ -150,7 +149,7 @@ export function SimulationPage({
 			<HeaderNav />
 			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
 				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
-					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 mr-2 items-baseline justify-between flex-none">
+					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
 						<h1 className="text-xl font-medium leading-6 mb-2">Transaction simulation</h1>
 						<Button
 							variant="outline"

@@ -50,10 +50,10 @@ export const EventCallTrace = memo(function EventCallTrace({
 					className="flex flex-row items-center trace-line_content"
 				>
 					<div className={`w-5 h-5 p-1 mr-1`}></div>
-					<span className="text-pink-600">{eventCall.name}</span> (
+					<span className="text-function_purple">{eventCall.name}</span> (
 					{(eventCall.members ?? []).map((member, index) => (
 						<span key={index}>
-							<span className="text-classGreen">{member.name}</span>:&nbsp;
+							<span className="">{member.name}</span>:&nbsp;
 							<span className="text-typeColor">{member.type}</span>
 							{index < (eventCall.members?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 						</span>
@@ -125,7 +125,7 @@ const EventCallDetails = memo(function EventCallDetails({
 				<div className="">
 					<InfoBox details={details} />
 				</div>
-				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATAS} />}
+				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATA} />}
 			</div>
 		</div>
 	);

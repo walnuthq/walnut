@@ -20,15 +20,18 @@ const FlameGraph = dynamic(() => import('./flamegraph'), {
 const FLAMEGRAPH_ERRORS = {
 	L2_NOT_SUPPORTED: {
 		title: 'L2 Gas Profiling is not supported',
-		description: ''
+		description:
+			'L2 Gas Profiling is available for the Transaction Version 3 and Sierra version 1.7.0 and above. Please upgrade your contract or transaction to a supported Sierra version to enable L2 Flamegraph visualization.'
 	},
 	L1_DATA_NOT_SUPPORTED: {
 		title: 'L1 Data Gas Profiling is not supported',
-		description: ''
+		description:
+			'L1 Data Gas Profiling is available for Transactions Version 3. Please ensure your transaction meets these requirements to view the L1 Data Flamegraph visualization.'
 	},
 	BOTH_NOT_SUPPORTED: {
 		title: 'Flamegraph is not supported',
-		description: ''
+		description:
+			'Flamegraph is currently supported for Transactions Version 3 and Sierra version 1.7.0 or above.'
 	}
 } as const;
 

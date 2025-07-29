@@ -55,7 +55,9 @@ export function StepDetails({ step, functionCallsMap, className, toggleExpand }:
 						.split('::')
 						.pop()
 				: fullFnName || '';
+		//@ts-ignore
 		args = functionCallDetails?.argumentsDecoded || [];
+		//@ts-ignore
 		result = functionCallDetails?.resultsDecoded || [];
 	}
 

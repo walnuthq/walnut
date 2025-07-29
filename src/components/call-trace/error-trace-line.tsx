@@ -13,10 +13,7 @@ export function ErrorTraceLine({
 	return (
 		<React.Fragment>
 			{
-				<TraceLine
-					className={`border-y-2 border-transparent bg-red-200 hover:bg-red-200`}
-					isUnclickable
-				>
+				<TraceLine className={`bg-error_traceline_bg`} isUnclickable>
 					{CallTypeChip('Error')}
 					{executionFailed && <div className="w-5 mr-0.5"></div>}
 
@@ -28,7 +25,7 @@ export function ErrorTraceLine({
 						className="flex flex-row items-center"
 					>
 						<div className={`w-5 h-5 p-1 mr-1`}></div>
-						<span className="text-red-900">Error message: {errorMessage}</span>
+						<span className="text-red-900 dark:text-white">Error message: {errorMessage}</span>
 					</div>
 				</TraceLine>
 			}

@@ -35,7 +35,7 @@ export enum CallType {
 export enum DataType {
 	CALLDATA = 'CALLDATA',
 	OUTPUT = 'OUTPUT',
-	DATAS = 'DATAS'
+	DATA = 'DATA'
 }
 
 export interface EntryPoint {
