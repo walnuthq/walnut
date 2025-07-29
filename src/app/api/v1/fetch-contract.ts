@@ -27,19 +27,23 @@ const fetchContract = async (
 		if (proxyResult && proxyResult.contractResult) {
 			result.contractResult.abi = proxyResult.contractResult.abi;
 		}
+		const filteredSources = sources
+			? sources
+					.filter(({ path }) => path)
+					.map(({ path, content }) => ({
+						path: whatsabi.loaders.SourcifyABILoader.stripPathPrefix(`/${path}`),
+						content
+					}))
+			: [];
+
+		const isVerified = filteredSources.length > 0;
 		return {
 			address,
 			bytecode,
 			name: result.contractResult.name ?? address,
-			sources: sources
-				? sources
-						.filter(({ path }) => path)
-						.map(({ path, content }) => ({
-							path: whatsabi.loaders.SourcifyABILoader.stripPathPrefix(`/${path}`),
-							content
-						}))
-				: [],
-			abi: result.contractResult.abi
+			sources: filteredSources,
+			abi: result.contractResult.abi,
+			verified: isVerified
 		};
 	}
 	return {
@@ -47,7 +51,8 @@ const fetchContract = async (
 		bytecode,
 		name: address,
 		sources: [],
-		abi: result.abi as Abi
+		abi: result.abi as Abi,
+		verified: false
 	};
 };
 

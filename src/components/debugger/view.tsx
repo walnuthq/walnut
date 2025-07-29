@@ -13,7 +13,7 @@ import { ContractCall } from '@/lib/simulation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import Link from 'next/link';
 import Sidebar from '../code-viewer/sidebar';
-import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
+import { SOURCIFY_VERIFY_DOCS_URL } from '@/lib/config';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 
 export function DebuggerView() {
@@ -51,15 +51,15 @@ export function DebuggerView() {
 				<Controls
 					nextStep={nextStep}
 					previousStep={prevStep}
-					stepOver={stepOver}
 					stepIndex={currentStepIndex}
 					totalSteps={totalSteps}
 					contractCall={contractCall}
-					runToBreakpoint={runToBreakpoint}
+					activeFile={activeFile}
 				/>
 				<div className="flex-grow">
 					{currentStep?.withLocation ? (
 						<CodeViewer
+							key={`${contractCall?.classHash}-${activeFile}`} // Force re-render only on contract/file change, not on every step
 							content={activeFile ? sourceCode[activeFile] : ''}
 							codeLocation={codeLocation}
 							highlightClass={`${
@@ -82,7 +82,7 @@ export function DebuggerView() {
 									verify the contract on Walnut by following{' '}
 									<Link
 										className="underline-offset-4 hover:underline text-blue-500"
-										href={WALNUT_VERIFY_DOCS_URL}
+										href={SOURCIFY_VERIFY_DOCS_URL}
 									>
 										this guide
 									</Link>
@@ -100,19 +100,21 @@ export function DebuggerView() {
 function Controls({
 	nextStep,
 	previousStep,
-	stepOver,
+	// stepOver, // commented out
 	stepIndex,
 	totalSteps,
 	contractCall,
-	runToBreakpoint
-}: {
+	activeFile
+}: // runToBreakpoint // commented out
+{
 	nextStep: () => void;
 	previousStep: () => void;
-	stepOver: () => void;
+	// stepOver: () => void; // commented out
 	stepIndex: number;
 	totalSteps: number;
 	contractCall?: ContractCall;
-	runToBreakpoint: () => void;
+	activeFile?: string;
+	// runToBreakpoint: () => void; // commented out
 }) {
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -123,23 +125,23 @@ function Controls({
 				previousStep();
 			} else if (event.key.toLowerCase() === 'n') {
 				nextStep();
-			} else if (event.key.toLowerCase() === 'o') {
-				stepOver();
 			}
+			// else if (event.key.toLowerCase() === 'o') {
+			// 	stepOver();
+			// }
 		};
 
 		window.addEventListener('keydown', handleKeyDown);
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [previousStep, nextStep, stepOver]);
+	}, [previousStep, nextStep]); // removed stepOver
 	const { contractCallsMap } = useCallTrace();
 
 	let call = contractCall?.callId && contractCallsMap[contractCall?.callId];
-
 	return (
 		<div className="flex flex-row border-b py-1 px-3 justify-between items-center">
-			<div>{contractCall && <ContractCallSignature contractCall={call || contractCall} />}</div>
+			<div>{activeFile && activeFile.split('/').pop()?.split('.')[0]}</div>
 			<div className="flex flex-row gap-3 items-center">
 				<div>
 					Step {stepIndex + 1}/{totalSteps}
@@ -173,7 +175,7 @@ function Controls({
 								</div>
 							</TooltipTrigger>
 							<TooltipContent className="bg-background border-border text-black dark:text-white border">
-								Step back (b)
+								Previous (b)
 							</TooltipContent>
 						</Tooltip>
 						<Tooltip delayDuration={100}>
@@ -203,12 +205,12 @@ function Controls({
 								</div>
 							</TooltipTrigger>
 							<TooltipContent className="bg-background border-border text-black dark:text-white border">
-								Step (n)
+								Next (n)
 							</TooltipContent>
 						</Tooltip>
+						{/*
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
-								{' '}
 								<div
 									onClick={() => stepOver()}
 									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
@@ -239,7 +241,6 @@ function Controls({
 						</Tooltip>
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
-								{' '}
 								<div
 									onClick={() => runToBreakpoint()}
 									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
@@ -268,6 +269,7 @@ function Controls({
 								Run
 							</TooltipContent>
 						</Tooltip>
+						*/}
 					</div>
 				</TooltipProvider>
 			</div>

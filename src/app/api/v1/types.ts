@@ -8,6 +8,7 @@ export type Contract = {
 	name: string;
 	sources: { path: string; content: string }[];
 	abi: Abi;
+	verified: boolean;
 };
 
 export type RawTraceLog = {
@@ -86,6 +87,8 @@ export type DebugCallContract = {
 };
 
 export type RawDebugCallResponse = {
+	status: string;
+	error: string;
 	traceCall: RawWalnutTraceCall;
 	steps: Step[];
 	contracts: Record<Address, DebugCallContract>;
