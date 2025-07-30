@@ -25,7 +25,7 @@ export function ErrorTraceLine({
 						className="flex flex-row items-center"
 					>
 						<div className={`w-5 h-5 p-1 mr-1`}></div>
-						<span className="text-red-900 dark:text-white">Error message: {errorMessage}</span>
+						<span className="text-red-600 dark:text-white">Error message: {errorMessage}</span>
 					</div>
 				</TraceLine>
 			}

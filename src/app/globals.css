@@ -43,6 +43,7 @@
 		--function-purple: #9333ea;
 		--text-highlight_yellow: #713f12;
 		--text-result: #c2410c;
+		--error-traceline-bg: #ffdfdf;
 
 		--typeColor: #008080;
 	}
@@ -87,6 +88,7 @@
 		--function-purple: #da70d6;
 		--text-highlight_yellow: #ffd700;
 		--text-result: #b5cea8;
+		--error-traceline-bg: #570000;
 
 		--typeColor: #3dc9b0;
 	}
