@@ -63,7 +63,8 @@ module.exports = {
 				highlight_yellow: 'var(--text-highlight_yellow)',
 				result: 'var(--text-result)',
 				variable_green: '#3dc9b0',
-				keys: '#7DABF8'
+				keys: '#7DABF8',
+				error_traceline_bg: 'var(--error-traceline-bg)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
