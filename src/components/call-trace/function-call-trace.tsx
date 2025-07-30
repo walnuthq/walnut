@@ -17,6 +17,7 @@ import FunctionCallViewer from '../ui/function-call-viewer';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import AddressLink from '../address-link';
 import ValueWithTooltip from '../ui/value-with-tooltip';
+import { ErrorTooltip } from '../error-tooltip';
 
 interface DataItem {
 	name: string | null;
@@ -58,6 +59,18 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 		traceLineElementRefs.current[functionCallId] = React.createRef<HTMLDivElement>();
 	}
 
+	// The error column doesn't render in case the whole tx is successful
+	// If the tx is reverted, the error column will render for all call lines
+	// Only the error-ed call line will have the error icon
+	let errorColumn = <></>;
+	if (isExecutionFailed) {
+		errorColumn = (
+			<div className="w-5 mr-0.5">
+				{!!functionCall.errorMessage && <ErrorTooltip errorMessage={functionCall.errorMessage} />}
+			</div>
+		);
+	}
+
 	if (!debuggerContext) return null;
 	const { debugContractCall, currentStep } = debuggerContext;
 	return (
@@ -86,7 +99,11 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 			>
 				{!previewMode && CallTypeChip('Function')}
 
-				{isExecutionFailed && <div className="w-5 mr-0.5"></div>}
+				{/* Error column
+				 * Empty in most lines,
+				 * or exclamation triangle icon in case of error on the line
+				 */}
+				{errorColumn}
 				{!previewMode && (
 					<DebugButton
 						onDebugClick={() => {
@@ -143,10 +160,10 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 							nestingLevel={nestingLevel + 1}
 						/>
 					))}
-					{functionCall.isDeepestPanicResult && errorMessage && !previewMode && (
+					{functionCall.isDeepestPanicResult && functionCall.errorMessage && !previewMode && (
 						<ErrorTraceLine
 							executionFailed
-							errorMessage={errorMessage}
+							errorMessage={functionCall.errorMessage}
 							nestingLevel={nestingLevel + 1}
 						/>
 					)}

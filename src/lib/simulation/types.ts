@@ -154,6 +154,7 @@ export interface FunctionCall {
 	fnName: string;
 	fp: number;
 	isDeepestPanicResult: boolean;
+	errorMessage?: string | null;
 	debuggerDataAvailable: boolean;
 	debuggerTraceStepIndex: number | null;
 	codeLocation?: CodeLocation | null;

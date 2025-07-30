@@ -43,6 +43,7 @@ const rawWalnutTraceCallToWalnutTraceCall = (
 			? rawWalnutTraceCall.output
 			: `0x${rawWalnutTraceCall.output}`
 		: '0x',
+	isRevertedFrame: rawWalnutTraceCall.isRevertedFrame ?? false,
 	logs: rawWalnutTraceCall.logs ?? [],
 	calls: rawWalnutTraceCall.calls?.map(rawWalnutTraceCallToWalnutTraceCall) ?? []
 });
@@ -108,14 +109,6 @@ const walnutCli = async ({
 	if (command === 'simulate' && blockNumber) {
 		args.push('--block', blockNumber.toString());
 	}
-	const fullCommand = `walnut-cli ${[
-		...args,
-		...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
-		'--rpc',
-		rpcUrl,
-		'--json'
-	].join(' ')}`;
-	console.log('Executing command:', fullCommand);
 
 	const { stdout } = await execFile(
 		'walnut-cli',

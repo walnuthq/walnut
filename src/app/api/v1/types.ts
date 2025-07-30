@@ -29,6 +29,7 @@ export type RawTraceCall = {
 	output?: Hex;
 	error?: string;
 	revertReason?: string;
+	isRevertedFrame?: boolean;
 	logs?: RawTraceLog[];
 	calls?: RawTraceCall[];
 };
@@ -41,6 +42,7 @@ export type TraceCall = Omit<RawTraceCall, 'value' | 'gas' | 'gasUsed' | 'logs' 
 	value?: bigint;
 	gas: bigint;
 	gasUsed: bigint;
+	isRevertedFrame?: boolean;
 	logs?: TraceLog[];
 	calls?: TraceCall[];
 };
@@ -71,6 +73,7 @@ export type RawWalnutTraceCall = Omit<TraceCall, 'type'> & {
 export type WalnutTraceCall = Omit<RawWalnutTraceCall, 'output' | 'logs' | 'calls'> & {
 	type: WalnutTraceType;
 	output: Hex;
+	isRevertedFrame?: boolean;
 	logs: TraceLog[];
 	calls: WalnutTraceCall[];
 };
