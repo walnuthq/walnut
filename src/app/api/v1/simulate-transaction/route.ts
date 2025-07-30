@@ -11,6 +11,7 @@ import fetchContract from '@/app/api/v1/fetch-contract';
 import solc from '@/app/api/v1/solc';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
+import { type Contract } from '@/app/api/v1/types';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -109,17 +110,30 @@ export const POST = async (request: NextRequest) => {
 	const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceResult), 'to');
 	const [{ timestamp, transactions }, sourcifyContracts] = await Promise.all([
 		publicClient.getBlock({ blockNumber: transaction.blockNumber }),
-		Promise.all(
+		Promise.allSettled(
 			flattenedTraceTransactionResult
-				.filter(({ type }) => type === 'CALL')
+				.filter(({ type }) => type === 'CALL' || type === 'DELEGATECALL')
 				.map(({ to }) => fetchContract(to, publicClient, chainId))
 		)
 	]);
-	// COPY SOURCES TO /TMP AND COMPILE EVERY CONTRACTS
+
+	// Filter out failed contract fetches and get only verified contracts
+	const verifiedContracts = sourcifyContracts
+		.filter(
+			(result): result is PromiseFulfilledResult<Contract> =>
+				result.status === 'fulfilled' && result.value.verified
+		)
+		.map((result) => result.value);
+
+	const allContracts = sourcifyContracts
+		.filter((result): result is PromiseFulfilledResult<Contract> => result.status === 'fulfilled')
+		.map((result) => result.value);
+
+	// COPY SOURCES TO /TMP AND COMPILE ONLY VERIFIED CONTRACTS
 	const tmp = `/tmp/${parameters.txHash ?? parameters.calldata.slice(0, 128)}`;
 	await rm(tmp, { recursive: true, force: true });
 	await Promise.all(
-		sourcifyContracts.map(async (contract) => {
+		verifiedContracts.map(async (contract) => {
 			const metadataFile = contract.sources.find((source) =>
 				source.path?.endsWith('metadata.json')
 			);
@@ -146,20 +160,26 @@ export const POST = async (request: NextRequest) => {
 		})
 	);
 	// RUN WALNUT-CLI
-	let ethdebugDirs;
+	let ethdebugDirs: string[] = [];
 	let cwd = process.env.PWD;
-	if (sourcifyContracts.length === 1) {
-		ethdebugDirs = [`${tmp}/${sourcifyContracts[0].address}/debug`];
-		cwd = `${tmp}/${sourcifyContracts[0].address}`;
-	} else {
-		ethdebugDirs = sourcifyContracts.map((contract) =>
+	if (verifiedContracts.length === 1) {
+		ethdebugDirs = [`${tmp}/${verifiedContracts[0].address}/debug`];
+		cwd = `${tmp}/${verifiedContracts[0].address}`;
+	} else if (verifiedContracts.length > 1) {
+		ethdebugDirs = verifiedContracts.map((contract) =>
 			contract.name
 				? `${contract.address}:${contract.name}:${tmp}/${contract.address}/debug`
 				: `${contract.address}:${tmp}/${contract.address}/debug`
 		);
-		cwd = `${tmp}/${sourcifyContracts[0].address}`;
+		cwd = `${tmp}/${verifiedContracts[0].address}`;
 	}
-	const { traceCall, steps, contracts } = await walnutCli({
+
+	console.log(
+		'Verified contracts:',
+		verifiedContracts.map((c) => ({ address: c.address, name: c.name, verified: c.verified }))
+	);
+	console.log('Ethdebug dirs:', ethdebugDirs);
+	const { traceCall, steps, contracts, status, error } = await walnutCli({
 		command: parameters.txHash ? 'trace' : 'simulate',
 		txHash: parameters.txHash,
 		to: parameters.to,
@@ -171,9 +191,11 @@ export const POST = async (request: NextRequest) => {
 		cwd
 	});
 	const response = traceCallResponseToTransactionSimulationResult({
+		status: status === 'reverted' ? 'REVERTED' : 'SUCCEEDED',
+		error: error ?? '',
 		traceCall,
 		contracts,
-		sourcifyContracts,
+		sourcifyContracts: allContracts,
 		//
 		chainId,
 		blockNumber: transaction.blockNumber ?? BigInt(0),

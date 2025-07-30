@@ -6,7 +6,7 @@ import { DebuggerView } from './view';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
+import { SOURCIFY_VERIFY_DOCS_URL } from '@/lib/config';
 
 export const Debugger = memo(function Debugger({
 	debuggerPayload
@@ -55,8 +55,8 @@ export const Debugger = memo(function Debugger({
 						The source code for the contract is missing. To enable the step-by-step debugger, verify
 						the contract on Walnut by following{' '}
 						<Link
-							className="underline-offset-4 hover:underline text-function_pink"
-							href={WALNUT_VERIFY_DOCS_URL}
+							className="underline-offset-4 hover:underline text-blue-500"
+							href={SOURCIFY_VERIFY_DOCS_URL}
 						>
 							this guide
 						</Link>

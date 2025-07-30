@@ -43,6 +43,7 @@ const rawWalnutTraceCallToWalnutTraceCall = (
 			? rawWalnutTraceCall.output
 			: `0x${rawWalnutTraceCall.output}`
 		: '0x',
+	isRevertedFrame: rawWalnutTraceCall.isRevertedFrame ?? false,
 	logs: rawWalnutTraceCall.logs ?? [],
 	calls: rawWalnutTraceCall.calls?.map(rawWalnutTraceCallToWalnutTraceCall) ?? []
 });
@@ -108,6 +109,7 @@ const walnutCli = async ({
 	if (command === 'simulate' && blockNumber) {
 		args.push('--block', blockNumber.toString());
 	}
+
 	const { stdout } = await execFile(
 		'walnut-cli',
 		[

@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { ContractCall, InternalFnCallIO, FunctionCall } from '@/lib/simulation';
+import { ContractCall, InternalFnCallIO, FunctionCall, DecodedItem } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
@@ -9,6 +9,21 @@ import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { FnName } from '../ui/function-name';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import CopyToClipboardElement from '../ui/copy-to-clipboard';
+import { Copy } from 'lucide-react';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
+import FunctionCallViewer from '../ui/function-call-viewer';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import AddressLink from '../address-link';
+import ValueWithTooltip from '../ui/value-with-tooltip';
+import { ErrorTooltip } from '../error-tooltip';
+
+interface DataItem {
+	name: string | null;
+	typeName: string;
+	value: any;
+}
 
 export const FunctionCallTrace = memo(function FunctionCallTrace({
 	previewMode,
@@ -37,16 +52,27 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 	const contractCall = contractCallsMap[functionCall.contractCallId];
 
 	const isDebuggable = functionCall.debuggerDataAvailable;
-	const isParentContractCallDebuggable = contractCall?.callDebuggerDataAvailable ?? false;
+	const isParentContractCallDebuggable = contractCall?.callDebuggerDataAvailable;
 
 	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
 	if (!traceLineElementRefs.current[functionCallId]) {
 		traceLineElementRefs.current[functionCallId] = React.createRef<HTMLDivElement>();
 	}
 
+	// The error column doesn't render in case the whole tx is successful
+	// If the tx is reverted, the error column will render for all call lines
+	// Only the error-ed call line will have the error icon
+	let errorColumn = <></>;
+	if (isExecutionFailed) {
+		errorColumn = (
+			<div className="w-5 mr-0.5">
+				{!!functionCall.errorMessage && <ErrorTooltip errorMessage={functionCall.errorMessage} />}
+			</div>
+		);
+	}
+
 	if (!debuggerContext) return null;
 	const { debugContractCall, currentStep } = debuggerContext;
-
 	return (
 		<React.Fragment key={functionCallId}>
 			<TraceLine
@@ -73,8 +99,12 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 			>
 				{!previewMode && CallTypeChip('Function')}
 
-				{isExecutionFailed && <div className="w-5 mr-0.5"></div>}
-				{/*!previewMode && (
+				{/* Error column
+				 * Empty in most lines,
+				 * or exclamation triangle icon in case of error on the line
+				 */}
+				{errorColumn}
+				{!previewMode && (
 					<DebugButton
 						onDebugClick={() => {
 							debugContractCall(functionCall.contractCallId);
@@ -83,7 +113,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 						isDebuggable={isDebuggable}
 						noCodeLocationAvaliable={noCodeLocationAvaliable}
 					/>
-				)*/}
+				)}
 
 				<div
 					style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
@@ -112,9 +142,9 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 						)}
 					</div>
 					<FnName fnName={functionCall.fnName} />
-					{!previewMode && <CallIO ios={functionCall.arguments} />}
+					{!previewMode && <CallIO ios={functionCall.argumentsDecoded} />}
 					{!previewMode && <span className="text-variable">&nbsp;{'->'}&nbsp;</span>}
-					{!previewMode && <CallIO ios={functionCall.results} />}
+					{!previewMode && <CallIO ios={functionCall.resultsDecoded} />}
 				</div>
 			</TraceLine>
 			{expandedCalls[functionCallId] && !previewMode && (
@@ -130,10 +160,10 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 							nestingLevel={nestingLevel + 1}
 						/>
 					))}
-					{functionCall.isDeepestPanicResult && errorMessage && !previewMode && (
+					{functionCall.isDeepestPanicResult && functionCall.errorMessage && !previewMode && (
 						<ErrorTraceLine
 							executionFailed
-							errorMessage={errorMessage}
+							errorMessage={functionCall.errorMessage}
 							nestingLevel={nestingLevel + 1}
 						/>
 					)}
@@ -142,30 +172,30 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 		</React.Fragment>
 	);
 });
-const ioToSkip = ['RangeCheck', 'GasBuiltin'];
-const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
-	const iosList = useMemo(() => {
-		return ios.map((io, i) =>
-			ioToSkip.includes(io.typeName ?? '') ? null : (
+
+const CallIO = memo(function CallIO({ ios }: { ios: DecodedItem[] }) {
+	const iosList = useMemo(
+		() =>
+			ios?.map((io, i) => (
 				<React.Fragment key={i}>
-					<span className="text-typeColor">{io.typeName}</span>:&nbsp;
-					<span className="text-result">
-						{io.value.length === 0
-							? 'None'
-							: io.value.length === 1
-							? io.value[0]
-							: `[${io.value.join(', ')}]`}
-					</span>
-					{i < ios.length - 1 ? <>,&nbsp;</> : ''}
+					<span className="text-typeColor">{io.typeName}</span>&nbsp;=&nbsp;
+					<ValueWithTooltip
+						value={io}
+						fullObject={io}
+						typeName={io.typeName}
+						functionName={io.name || ''}
+					/>
+					{i < ios.length - 1 && <>,&nbsp;</>}
 				</React.Fragment>
-			)
-		);
-	}, [ios]);
+			)) || null,
+		[ios]
+	);
+
 	return (
 		<>
-			<span className="text-highlight_yellow">{'('}</span>
+			<span className="text-highlight_yellow">(</span>
 			{iosList}
-			<span className="text-highlight_yellow">{')'}</span>
+			<span className="text-highlight_yellow">)</span>
 		</>
 	);
 });
@@ -185,11 +215,11 @@ const FunctionCallDetails = memo(function FunctionCallDetails({
 			{
 				name: 'Function Name',
 				value: splittedFnName[splittedFnName.length - 1]
-			}
-			/*{
+			},
+			{
 				name: 'Interface Name',
 				value: call.fnName
-			}*/
+			}
 		);
 	}
 	if (call.arguments) {

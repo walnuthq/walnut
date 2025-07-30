@@ -88,10 +88,10 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 			return (
 				<>
 					{functionCallIdsList}
-					{functionCall.isDeepestPanicResult && errorMessage && !previewMode && (
+					{functionCall.isDeepestPanicResult && functionCall.errorMessage && !previewMode && (
 						<ErrorTraceLine
 							executionFailed
-							errorMessage={errorMessage}
+							errorMessage={functionCall.errorMessage}
 							nestingLevel={nestingLevel}
 						/>
 					)}
@@ -112,7 +112,50 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 							nestingLevel={nestingLevel}
 						/>
 					</div>
-					<div className="w-5 mr-0.5"></div>
+					{/* {typeof call.sierraGas === 'number' &&
+					call.sierraGas > 0 &&
+					l2Flamegraph &&
+					!previewMode ? (
+						<span
+							onClick={(e) => {
+								e.stopPropagation();
+								setChosenCallName(
+									`${getContractName({ contractCall: call })}.${
+										call?.entryPointName ?? shortenHash(call.entryPoint.entryPointSelector, 13)
+									}`
+								);
+								setActiveTab('gas-profiler');
+							}}
+							className="sticky right-4 mt-1 -ml-20
+									 min-w-[5rem] px-1.5 py-0.5 hover:bg-blue-200
+									 dark:hover:bg-blue-700
+									 text-center rounded-sm cursor-pointer
+									 bg-blue-100 border border-blue-400 text-blue-900 dark:bg-[#004A7E] dark:text-white z-10"
+						>
+							{formatter.format(call.sierraGas)}
+						</span>
+					) : (
+						!previewMode && (
+							<TooltipProvider>
+								<Tooltip delayDuration={100}>
+									<TooltipTrigger asChild>
+										<span
+											className="sticky right-4 mt-1 -ml-20 flex-shrink-0
+														 min-w-[5rem] px-1.5 py-0.5
+														 text-center rounded-sm cursor-not-allowed
+														 bg-blue-100 border border-blue-400 text-blue-900 z-10 dark:bg-[#004A7E] dark:text-white"
+										>
+											N/A
+										</span>
+									</TooltipTrigger>
+									<TooltipContent className="bg-background border-border text-black dark:text-white border">
+										Gas information available for transactions version 3 and sierra version 1.7.0 or
+										above.
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)
+					)} */}
 				</div>
 			);
 		} else {
@@ -126,10 +169,10 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 			) : (
 				<>
 					{contractCallIdsArray}
-					{contractCall.isDeepestPanicResult && errorMessage && !previewMode && (
+					{contractCall.isDeepestPanicResult && contractCall.errorMessage && !previewMode && (
 						<ErrorTraceLine
 							executionFailed
-							errorMessage={errorMessage}
+							errorMessage={contractCall.errorMessage}
 							nestingLevel={nestingLevel}
 						/>
 					)}

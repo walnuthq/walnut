@@ -5,7 +5,9 @@ import {
 	type ContractCall,
 	EntryPointType,
 	FunctionCall,
-	type TransactionSimulationResult
+	type TransactionSimulationResult,
+	type InternalFnCallIO,
+	type DataDecoded
 } from '@/lib/simulation';
 import {
 	decodeFunctionDataSafe,
@@ -13,6 +15,43 @@ import {
 	getAbiFunction,
 	formatAbiParameterValue
 } from '@/app/api/v1/abi-utils';
+
+// Helper function to parse function names like "ShippingManager::initiateShipping(address,string)"
+// and extract just the part between :: and (
+function parseFunctionName(functionName: string): string {
+	if (!functionName) return functionName;
+
+	// Check if the function name contains ::
+	if (functionName.includes('::')) {
+		// Extract the part after ::
+		const afterDoubleColon = functionName.split('::').pop();
+		if (afterDoubleColon) {
+			// If there's a parenthesis, extract the part before it
+			if (afterDoubleColon.includes('(')) {
+				const beforeParenthesis = afterDoubleColon.split('(')[0];
+				return beforeParenthesis;
+			}
+			// If no parenthesis, return the part after ::
+			return afterDoubleColon;
+		}
+	}
+
+	// If it doesn't match the expected format, return the original name
+	return functionName;
+}
+
+// Helper function to replace null values with "unknown"
+function replaceNullWithUnknown(value: any): any {
+	if (value === null || value === undefined) {
+		return 'unknown';
+	}
+	return value;
+}
+
+// Helper function to process arrays and replace null values
+function processArrayReplaceNulls(arr: any[]): any[] {
+	return arr.map((item) => replaceNullWithUnknown(item));
+}
 
 function decodeCalldata(abiFunction: any, args: any[]) {
 	try {
@@ -29,6 +68,32 @@ function decodeCalldata(abiFunction: any, args: any[]) {
 	}
 }
 
+// Helper function to convert decoded values to InternalFnCallIO format
+function convertToInternalFnCallIO(
+	values: any[],
+	types: string[],
+	names: string[]
+): InternalFnCallIO[] {
+	return values.map((value, index) => ({
+		typeName: replaceNullWithUnknown(types[index]),
+		value: Array.isArray(value)
+			? processArrayReplaceNulls(value).map((v) => String(v))
+			: [String(replaceNullWithUnknown(value))],
+		internalIODecoded: null
+	}));
+}
+
+// Helper function to convert decoded values to DataDecoded format
+function convertToDataDecoded(values: any[], types: string[], names: string[]): DataDecoded {
+	return values.map((value, index) => ({
+		typeName: replaceNullWithUnknown(types[index]) || '',
+		name: replaceNullWithUnknown(names[index]),
+		value: Array.isArray(value)
+			? processArrayReplaceNulls(value).map((v) => String(v))
+			: String(replaceNullWithUnknown(value))
+	}));
+}
+
 // Helper function to flatten the trace to a map by callId
 function flattenTraceToMap(
 	traceCall: any,
@@ -40,15 +105,19 @@ function flattenTraceToMap(
 	if (parentType === 'ENTRY') {
 		node.type = 'CALL';
 	}
-	if (node.type !== 'ENTRY') {
-		map[node.callId] = node;
-	}
+
+	// Add all nodes to the map, including ENTRY
+	map[node.callId] = node;
+
+	// Process children
 	(traceCall.calls || []).forEach((child: any) => flattenTraceToMap(child, map, node.type));
 
 	return map;
 }
 
 const traceCallResponseToTransactionSimulationResult = ({
+	status,
+	error,
 	traceCall,
 	contracts,
 	sourcifyContracts,
@@ -62,6 +131,8 @@ const traceCallResponseToTransactionSimulationResult = ({
 	transactions,
 	txHash
 }: {
+	status: string;
+	error: string;
 	traceCall: WalnutTraceCall;
 	contracts: Record<Address, DebugCallContract>;
 	sourcifyContracts: Contract[];
@@ -83,24 +154,29 @@ const traceCallResponseToTransactionSimulationResult = ({
 		{}
 	);
 	const traceMap = flattenTraceToMap(traceCall);
-
 	// Contract calls
 	const contractCallsMap = Object.values(traceMap)
-		.filter((tc: any) => tc.type === 'CALL')
+		.filter((tc: any) => tc.type === 'CALL' || tc.type === 'DELEGATECALL')
 		.map((tc: any) => {
-			const contract = contracts[tc.to];
-			if (!contract) {
-				console.error('Contract not found for address:', tc.to);
-				return {};
-			}
-			const abi = contract.abi;
-			const { functionName, args } = decodeFunctionDataSafe({ abi, data: tc.input });
-			const result = decodeFunctionResultSafe({
-				abi,
-				functionName,
-				data: tc.output
-			});
-			const abiFunction = getAbiFunction({ abi, name: functionName, args });
+			const sourcifyContract = sourcifyContracts.find((c) => c.address === tc.to);
+			const inputs = tc.inputs || {};
+			const outputs = tc.outputs || {};
+
+			// Process raw data to replace null values with "unknown"
+			const processedInputs = {
+				...inputs,
+				argumentsDecodedValue: processArrayReplaceNulls(inputs.argumentsDecodedValue || []),
+				argumentsType: processArrayReplaceNulls(inputs.argumentsType || []),
+				argumentsName: processArrayReplaceNulls(inputs.argumentsName || [])
+			};
+
+			const processedOutputs = {
+				...outputs,
+				argumentsDecodedValue: processArrayReplaceNulls(outputs.argumentsDecodedValue || []),
+				argumentsType: processArrayReplaceNulls(outputs.argumentsType || []),
+				argumentsName: processArrayReplaceNulls(outputs.argumentsName || [])
+			};
+
 			const contractCall: ContractCall = {
 				callId: tc.callId,
 				parentCallId: tc.parentCallId,
@@ -113,48 +189,44 @@ const traceCallResponseToTransactionSimulationResult = ({
 					codeAddress: tc.to,
 					entryPointType: EntryPointType.EXTERNAL,
 					entryPointSelector: tc.input.slice(0, 10),
-					calldata: [tc.input],
+					calldata: [tc.input || 'unknown'],
 					storageAddress: tc.to,
 					callerAddress: tc.from,
 					callType: CallType.CALL,
-					initialGas: 0
+					initialGas: Number(tc.gas) || 0
 				},
 				result: {
 					Success: {
-						// @ts-ignore
-						retData:
-							abiFunction?.outputs.map((output, index) => ({
-								name: output.name ?? '',
-								typeName: output.internalType ?? output.type,
-								value: Array.isArray(result)
-									? formatAbiParameterValue(result[index], output)
-									: formatAbiParameterValue(result, output)
-							})) ?? []
+						retData: (processedOutputs.argumentsDecodedValue || []).map(
+							(value: any, index: number) => ({
+								value: {
+									val: Array.isArray(value) ? value : [value]
+								}
+							})
+						)
 					}
 				},
-				argumentsNames: abiFunction?.inputs.map((input) => input.name ?? '').filter((name) => name),
-				argumentsTypes: abiFunction?.inputs
-					.map((input) => input.internalType ?? input.type ?? '')
-					.filter((type) => type),
-				calldataDecoded: decodeCalldata(abiFunction, Array.from(args ?? [])),
-				resultTypes: abiFunction?.outputs
-					.map((output) => output.internalType ?? output.type ?? '')
-					.filter((type) => type),
-				decodedResult:
-					abiFunction?.outputs.map((output, index) => ({
-						name: output.name ?? '',
-						typeName: output.internalType ?? output.type,
-						value: Array.isArray(result)
-							? formatAbiParameterValue(result[index], output)
-							: formatAbiParameterValue(result, output)
-					})) ?? [],
-				contractName: contractNames[tc.to],
-				entryPointName: functionName,
+				argumentsNames: processedInputs.argumentsName || [],
+				argumentsTypes: processedInputs.argumentsType || [],
+				calldataDecoded: convertToDataDecoded(
+					processedInputs.argumentsDecodedValue || [],
+					processedInputs.argumentsType || [],
+					processedInputs.argumentsName || []
+				),
+				resultTypes: processedOutputs.argumentsType || [],
+				decodedResult: convertToDataDecoded(
+					processedOutputs.argumentsDecodedValue || [],
+					processedOutputs.argumentsType || [],
+					processedOutputs.argumentsName || []
+				),
+				contractName: sourcifyContract?.name || tc.to,
+				entryPointName: parseFunctionName(tc.functionName),
 				isErc20Token: false,
 				classHash: '',
-				isDeepestPanicResult: false,
+				isDeepestPanicResult: tc.isRevertedFrame ?? false,
+				errorMessage: tc.isRevertedFrame ? error || 'Transaction reverted' : null,
 				nestingLevel: 0,
-				callDebuggerDataAvailable: true,
+				callDebuggerDataAvailable: sourcifyContract?.verified ?? false,
 				debuggerTraceStepIndex: null,
 				isHidden: false
 			};
@@ -168,7 +240,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 		.map((tc: any) => {
 			// Find the nearest parent CALL (can be multiple levels of INTERNALCALL)
 			let parent = traceMap[tc.parentCallId];
-			while (parent && parent.type !== 'CALL') {
+			while (parent && parent.type !== 'CALL' && parent.type !== 'DELEGATECALL') {
 				parent = traceMap[parent.parentCallId];
 			}
 			const to = parent?.to;
@@ -177,23 +249,32 @@ const traceCallResponseToTransactionSimulationResult = ({
 				console.error('Parent CALL not found or missing to/from for INTERNALCALL:', tc, parent);
 				return {};
 			}
-			const contract = contracts[to];
-			if (!contract) {
-				console.error('Contract not found for address:', to);
-				return {};
-			}
-			const abi = contract.abi;
-			const { functionName, args } = decodeFunctionDataSafe({ abi, data: tc.input });
-			const result = decodeFunctionResultSafe({
-				abi,
-				functionName,
-				data: tc.output
-			});
-			const abiFunction = getAbiFunction({ abi, name: functionName, args });
+			const sourcifyContract = sourcifyContracts.find((c) => c.address === to);
+			const inputs = tc.inputs || {};
+			const outputs = tc.outputs || {};
+
+			// Process raw data to replace null values with "unknown"
+			const processedInputs = {
+				...inputs,
+				argumentsDecodedValue: processArrayReplaceNulls(inputs.argumentsDecodedValue || []),
+				argumentsType: processArrayReplaceNulls(inputs.argumentsType || []),
+				argumentsName: processArrayReplaceNulls(inputs.argumentsName || [])
+			};
+
+			const processedOutputs = {
+				...outputs,
+				argumentsDecodedValue: processArrayReplaceNulls(outputs.argumentsDecodedValue || []),
+				argumentsType: processArrayReplaceNulls(outputs.argumentsType || []),
+				argumentsName: processArrayReplaceNulls(outputs.argumentsName || [])
+			};
+
 			// childrenCallIds: all INTERNALCALL and CALL nodes where parentCallId == tc.callId
 			const childrenCallIds = (tc.childrenCallIds || []).filter((id: number) => {
 				const child = traceMap[id];
-				return child && (child.type === 'INTERNALCALL' || child.type === 'CALL');
+				return (
+					child &&
+					(child.type === 'INTERNALCALL' || child.type === 'CALL' || child.type === 'DELEGATECALL')
+				);
 			});
 			const functionCall: FunctionCall = {
 				callId: tc.callId,
@@ -201,39 +282,36 @@ const traceCallResponseToTransactionSimulationResult = ({
 				childrenCallIds,
 				contractCallId: tc.parentContractCallId,
 				eventCallIds: [],
-				fnName: `${contractNames[to]}::${functionName}`,
+				fnName: `${sourcifyContract?.name || to}::${tc.functionName}`,
 				fp: 0,
-				isDeepestPanicResult: false,
-				results:
-					abiFunction?.outputs.map((output, index) => ({
-						typeName: output.internalType ?? output.type,
-						value: [
-							Array.isArray(result)
-								? formatAbiParameterValue(result[index], output)
-								: formatAbiParameterValue(result, output)
-						]
-					})) ?? [],
-				resultsDecoded:
-					abiFunction?.outputs.map((output, index) => ({
-						typeName: output.internalType ?? output.type,
-						value: [
-							Array.isArray(result)
-								? formatAbiParameterValue(result[index], output)
-								: formatAbiParameterValue(result, output)
-						]
-					})) ?? [],
-				arguments: args
-					? abiFunction?.inputs.map((input, index) => ({
-							typeName: input.internalType ?? input.type,
-							value: [formatAbiParameterValue(args[index], input)]
-					  })) ?? []
-					: [],
-				argumentsDecoded: args
-					? abiFunction?.inputs.map((input, index) => ({
-							typeName: input.internalType ?? input.type,
-							value: [formatAbiParameterValue(args[index], input)]
-					  })) ?? []
-					: [],
+				isDeepestPanicResult: tc.isRevertedFrame ?? false,
+				errorMessage: tc.isRevertedFrame ? error || 'Transaction reverted' : null,
+				results: convertToInternalFnCallIO(
+					processedOutputs.argumentsDecodedValue || [],
+					processedOutputs.argumentsType || [],
+					processedOutputs.argumentsName || []
+				),
+				resultsDecoded: convertToInternalFnCallIO(
+					processedOutputs.argumentsDecodedValue || [],
+					processedOutputs.argumentsType || [],
+					processedOutputs.argumentsName || []
+				).map((item) => ({
+					...item,
+					typeName: item.typeName || ''
+				})),
+				arguments: convertToInternalFnCallIO(
+					processedInputs.argumentsDecodedValue || [],
+					processedInputs.argumentsType || [],
+					processedInputs.argumentsName || []
+				),
+				argumentsDecoded: convertToInternalFnCallIO(
+					processedInputs.argumentsDecodedValue || [],
+					processedInputs.argumentsType || [],
+					processedInputs.argumentsName || []
+				).map((item) => ({
+					...item,
+					typeName: item.typeName || ''
+				})),
 				debuggerDataAvailable: true,
 				debuggerTraceStepIndex: null,
 				isHidden: false
@@ -249,7 +327,15 @@ const traceCallResponseToTransactionSimulationResult = ({
 				functionCallsMap,
 				eventCallsMap: {},
 				events: [],
-				executionResult: { executionStatus: 'SUCCEEDED' },
+				executionResult:
+					status === 'REVERTED'
+						? {
+								executionStatus: 'REVERTED' as const,
+								revertReason: error ?? 'Transaction reverted'
+						  }
+						: {
+								executionStatus: 'SUCCEEDED' as const
+						  },
 				simulationDebuggerData: {
 					contractDebuggerData: {},
 					debuggerTrace: []

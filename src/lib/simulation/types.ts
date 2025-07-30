@@ -33,7 +33,7 @@ export enum CallType {
 export enum DataType {
 	CALLDATA = 'CALLDATA',
 	OUTPUT = 'OUTPUT',
-	DATAS = 'DATAS'
+	DATA = 'DATA'
 }
 
 export interface EntryPoint {
@@ -49,7 +49,7 @@ export interface EntryPoint {
 }
 export interface DecodedItem {
 	typeName: string;
-	name: string | null;
+	name?: string | null;
 	value: string | DecodedItem[] | string[];
 }
 
@@ -144,8 +144,8 @@ export interface ContractCall {
 }
 
 export interface FunctionCall {
-	resultsDecoded: InternalFnCallIO[];
-	argumentsDecoded: InternalFnCallIO[];
+	resultsDecoded: DecodedItem[];
+	argumentsDecoded: DecodedItem[];
 	callId: number;
 	parentCallId: number;
 	childrenCallIds: number[];
@@ -154,6 +154,7 @@ export interface FunctionCall {
 	fnName: string;
 	fp: number;
 	isDeepestPanicResult: boolean;
+	errorMessage?: string | null;
 	debuggerDataAvailable: boolean;
 	debuggerTraceStepIndex: number | null;
 	codeLocation?: CodeLocation | null;
