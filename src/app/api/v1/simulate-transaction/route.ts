@@ -99,8 +99,10 @@ export const POST = async (request: NextRequest) => {
 		// console.log({ chainId });
 		// console.log(transaction.to);
 		// console.log(traceResult);
-		if (!transaction.to) {
-			throw new Error('ERROR: eth_getTransactionByHash failed');
+		if (!transaction.to && traceResult && traceResult.type !== 'CREATE') {
+			throw new Error(
+				'ERROR: eth_getTransactionByHash failed - missing to address and not a CREATE transaction'
+			);
 		}
 		if (!traceResult) {
 			throw new Error('ERROR: debug_traceTransaction/debug_traceCall failed');
@@ -133,52 +135,67 @@ export const POST = async (request: NextRequest) => {
 		// COPY SOURCES TO /TMP AND COMPILE ONLY VERIFIED CONTRACTS
 		const tmp = `/tmp/${parameters.txHash ?? parameters.calldata.slice(0, 128)}`;
 		await rm(tmp, { recursive: true, force: true });
-		await Promise.all(
-			verifiedContracts.map(async (contract) => {
-				const metadataFile = contract.sources.find((source) =>
-					source.path?.endsWith('metadata.json')
-				);
-				if (!metadataFile) {
-					throw new Error('ERROR: metadata not found');
-				}
-				const metadata = JSON.parse(metadataFile.content) as Metadata;
-				const [compilationTarget] = Object.keys(metadata.settings.compilationTarget);
-				await Promise.all(
-					contract.sources
-						.filter((source) => source.path)
-						.map(async (source) => {
-							const filename = `${tmp}/${contract.address}/${source.path}`;
-							const parentDirectory = dirname(filename);
-							await mkdir(parentDirectory, { recursive: true });
-							return writeFile(filename, source.content);
-						})
-				);
-				// ugly fix to make sure we wait until all files are written on disk
-				await sleep(400);
-				await solc({ compilationTarget, cwd: `${tmp}/${contract.address}` });
-				// ugly fix to make sure we wait until solc outputs debug dir for walnut-cli to catchup
-				// await sleep(400);
-			})
-		);
-		// RUN WALNUT-CLI
+
 		let ethdebugDirs: string[] = [];
 		let cwd = process.env.PWD;
-		if (verifiedContracts.length === 1) {
-			ethdebugDirs = [`${tmp}/${verifiedContracts[0].address}/debug`];
-			cwd = `${tmp}/${verifiedContracts[0].address}`;
-		} else if (verifiedContracts.length > 1) {
-			ethdebugDirs = verifiedContracts.map((contract) =>
-				contract.name
-					? `${contract.address}:${contract.name}:${tmp}/${contract.address}/debug`
-					: `${contract.address}:${tmp}/${contract.address}/debug`
-			);
-			cwd = `${tmp}/${verifiedContracts[0].address}`;
+		let compilationFailed = false;
+
+		// Try to compile all verified contracts
+		if (verifiedContracts.length > 0) {
+			try {
+				await Promise.all(
+					verifiedContracts.map(async (contract) => {
+						const metadataFile = contract.sources.find((source) =>
+							source.path?.endsWith('metadata.json')
+						);
+						if (!metadataFile) {
+							throw new Error(`No metadata found for ${contract.address}`);
+						}
+
+						const metadata = JSON.parse(metadataFile.content) as Metadata;
+						const [compilationTarget] = Object.keys(metadata.settings.compilationTarget);
+						await Promise.all(
+							contract.sources
+								.filter((source) => source.path)
+								.map(async (source) => {
+									const filename = `${tmp}/${contract.address}/${source.path}`;
+									const parentDirectory = dirname(filename);
+									await mkdir(parentDirectory, { recursive: true });
+									return writeFile(filename, source.content);
+								})
+						);
+						// ugly fix to make sure we wait until all files are written on disk
+						await sleep(400);
+						await solc({ compilationTarget, cwd: `${tmp}/${contract.address}` });
+						console.log(`Successfully compiled ${contract.address}`);
+					})
+				);
+
+				// If all compilations succeeded, set up ethdebugDirs
+				if (verifiedContracts.length === 1) {
+					ethdebugDirs = [`${tmp}/${verifiedContracts[0].address}/debug`];
+					cwd = `${tmp}/${verifiedContracts[0].address}`;
+				} else if (verifiedContracts.length > 1) {
+					ethdebugDirs = verifiedContracts.map((contract) =>
+						contract.name
+							? `${contract.address}:${contract.name}:${tmp}/${contract.address}/debug`
+							: `${contract.address}:${tmp}/${contract.address}/debug`
+					);
+					cwd = `${tmp}/${verifiedContracts[0].address}`;
+				}
+			} catch (error) {
+				console.error('Compilation failed for one or more contracts:', error);
+				console.log('Treating all contracts as unverified due to compilation failure');
+				compilationFailed = true;
+				// Keep ethdebugDirs empty and cwd as process.env.PWD
+			}
 		}
 
+		// RUN WALNUT-CLI
 		const { traceCall, steps, contracts, status, error } = await walnutCli({
 			command: parameters.txHash ? 'trace' : 'simulate',
 			txHash: parameters.txHash,
-			to: parameters.to,
+			to: transaction.to || undefined,
 			calldata: parameters.calldata,
 			from: parameters.senderAddress,
 			blockNumber: parameters.blockNumber,
@@ -198,7 +215,7 @@ export const POST = async (request: NextRequest) => {
 			timestamp,
 			nonce: transaction.nonce ?? 0,
 			from: getAddress(transaction.from),
-			type: 'INVOKE',
+			type: traceResult.type || 'INVOKE',
 			transactionIndex: transaction.transactionIndex,
 			transactions,
 			txHash: parameters.txHash

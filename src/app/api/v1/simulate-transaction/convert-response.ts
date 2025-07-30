@@ -154,11 +154,21 @@ const traceCallResponseToTransactionSimulationResult = ({
 		{}
 	);
 	const traceMap = flattenTraceToMap(traceCall);
+
 	// Contract calls
 	const contractCallsMap = Object.values(traceMap)
-		.filter((tc: any) => tc.type === 'CALL' || tc.type === 'DELEGATECALL')
+		.filter(
+			(tc: any) =>
+				tc.type === 'CALL' ||
+				tc.type === 'DELEGATECALL' ||
+				tc.type === 'ENTRY' ||
+				tc.type === 'CREATE'
+		)
 		.map((tc: any) => {
-			const sourcifyContract = sourcifyContracts.find((c) => c.address === tc.to);
+			// For CREATE transactions, use deployedContractAddress if available, otherwise use 'to'
+			const contractAddress =
+				tc.type === 'CREATE' && tc.deployedContractAddress ? tc.deployedContractAddress : tc.to;
+			const sourcifyContract = sourcifyContracts.find((c) => c.address === contractAddress);
 			const inputs = tc.inputs || {};
 			const outputs = tc.outputs || {};
 
@@ -186,11 +196,11 @@ const traceCallResponseToTransactionSimulationResult = ({
 				eventCallIds: [],
 				entryPoint: {
 					classHash: '',
-					codeAddress: tc.to,
-					entryPointType: EntryPointType.EXTERNAL,
-					entryPointSelector: tc.input.slice(0, 10),
+					codeAddress: contractAddress,
+					entryPointType: tc.type === 'ENTRY' ? EntryPointType.EXTERNAL : EntryPointType.EXTERNAL,
+					entryPointSelector: tc.input?.slice(0, 10) || '',
 					calldata: [tc.input || 'unknown'],
-					storageAddress: tc.to,
+					storageAddress: contractAddress,
 					callerAddress: tc.from,
 					callType: CallType.CALL,
 					initialGas: Number(tc.gas) || 0
@@ -219,8 +229,11 @@ const traceCallResponseToTransactionSimulationResult = ({
 					processedOutputs.argumentsType || [],
 					processedOutputs.argumentsName || []
 				),
-				contractName: sourcifyContract?.name || tc.to,
-				entryPointName: parseFunctionName(tc.functionName),
+				contractName: sourcifyContract?.name || contractAddress,
+				entryPointName:
+					parseFunctionName(tc.functionName) === 'runtime_dispatcher'
+						? tc.input?.slice(0, 10) || ''
+						: parseFunctionName(tc.functionName),
 				isErc20Token: false,
 				classHash: '',
 				isDeepestPanicResult: tc.isRevertedFrame ?? false,
@@ -233,20 +246,27 @@ const traceCallResponseToTransactionSimulationResult = ({
 			return { [tc.callId]: contractCall };
 		})
 		.reduce((acc, curr) => ({ ...acc, ...curr }), {});
-
-	// Function calls
 	const functionCallsMap = Object.values(traceMap)
 		.filter((tc: any) => tc.type === 'INTERNALCALL')
 		.map((tc: any) => {
-			// Find the nearest parent CALL (can be multiple levels of INTERNALCALL)
 			let parent = traceMap[tc.parentCallId];
-			while (parent && parent.type !== 'CALL' && parent.type !== 'DELEGATECALL') {
+			while (
+				parent &&
+				parent.type !== 'CALL' &&
+				parent.type !== 'DELEGATECALL' &&
+				parent.type !== 'ENTRY' &&
+				parent.type !== 'CREATE'
+			) {
 				parent = traceMap[parent.parentCallId];
 			}
 			const to = parent?.to;
 			const from = parent?.from;
 			if (!to || !from) {
-				console.error('Parent CALL not found or missing to/from for INTERNALCALL:', tc, parent);
+				console.error(
+					'Parent CALL/ENTRY/CREATE not found or missing to/from for INTERNALCALL:',
+					tc,
+					parent
+				);
 				return {};
 			}
 			const sourcifyContract = sourcifyContracts.find((c) => c.address === to);

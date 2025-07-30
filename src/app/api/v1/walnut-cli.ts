@@ -110,6 +110,20 @@ const walnutCli = async ({
 		args.push('--block', blockNumber.toString());
 	}
 
+	const fullCommand = [
+		'walnut-cli',
+		...args,
+		...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
+		'--rpc',
+		rpcUrl,
+		'--json'
+	];
+
+	console.log('Executing walnut-cli command:', fullCommand.join(' '));
+	if (cwd) {
+		console.log('Working directory:', cwd);
+	}
+
 	try {
 		const { stdout } = await execFile(
 			'walnut-cli',
@@ -122,9 +136,11 @@ const walnutCli = async ({
 			],
 			{ cwd }
 		);
+		console.log('walnut-cli stdout:', stdout.substring(0, 500) + '...');
 		const rawDebugCallResponse = JSON.parse(stdout) as RawDebugCallResponse;
 		return rawDebugCallResponseToDebugCallResponse(rawDebugCallResponse);
 	} catch (err: any) {
+		console.error('walnut-cli error:', err);
 		throw new Error('Failed to fetch debugger call trace');
 	}
 };

@@ -6,11 +6,13 @@ import { SOURCIFY_VERIFY_DOCS_URL } from '@/lib/config';
 export const DebugButton = memo(function DebugButton({
 	onDebugClick,
 	noCodeLocationAvaliable,
-	isDebuggable
+	isDebuggable,
+	debuggerError
 }: {
 	onDebugClick: React.MouseEventHandler<HTMLDivElement>;
 	noCodeLocationAvaliable?: boolean;
 	isDebuggable?: boolean;
+	debuggerError?: string | null;
 }) {
 	const [tooltipOpen, setPopoverOpen] = useState(false);
 
@@ -47,14 +49,21 @@ export const DebugButton = memo(function DebugButton({
 		</>
 	);
 
+	const DebuggerErrorMessage = () => (
+		<>
+			Debugger failed to load due to compilation issues. The transaction trace is still available
+			without debug information.
+		</>
+	);
+
 	const handleDebugClick = useCallback(
 		(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 			event.stopPropagation();
-			if (isDebuggable) {
+			if (isDebuggable && !debuggerError) {
 				onDebugClick(event);
 			}
 		},
-		[isDebuggable, onDebugClick]
+		[isDebuggable, debuggerError, onDebugClick]
 	);
 
 	return (
@@ -62,7 +71,7 @@ export const DebugButton = memo(function DebugButton({
 			onClick={handleDebugClick}
 			className="w-5 h-5 p-0.5 rounded-sm cursor-pointer hover:bg-accent_2"
 		>
-			{isDebuggable ? (
+			{isDebuggable && !debuggerError ? (
 				<BugAntIcon className={`${bugIconClassName} text-green-700`} />
 			) : (
 				<Popover open={tooltipOpen} onOpenChange={setPopoverOpen}>
@@ -77,7 +86,13 @@ export const DebugButton = memo(function DebugButton({
 						</div>
 					</PopoverTrigger>
 					<PopoverContent className="text-sm text-muted-foreground">
-						{noCodeLocationAvaliable ? <NoCodeLocationMessage /> : <NoCodeMessage />}
+						{debuggerError ? (
+							<DebuggerErrorMessage />
+						) : noCodeLocationAvaliable ? (
+							<NoCodeLocationMessage />
+						) : (
+							<NoCodeMessage />
+						)}
 					</PopoverContent>
 				</Popover>
 			)}

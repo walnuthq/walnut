@@ -61,7 +61,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	}, [call.childrenCallIds, nestingLevel, previewMode]);
 
 	if (!debuggerContext) return null;
-	const { debugContractCall, currentStep } = debuggerContext;
+	const { debugContractCall, currentStep, error: debuggerError } = debuggerContext;
 
 	// The error column doesn't render in case the whole tx is successful
 	// If the tx is reverted, the error column will render for all call lines
@@ -186,6 +186,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 							setActiveTab('debugger');
 						}}
 						isDebuggable={isDebuggable}
+						debuggerError={debuggerError}
 					/>
 				)}
 
@@ -215,14 +216,51 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 
 					<ContractCallSignature contractCall={call} />
 					{!previewMode && <span className="text-highlight_yellow">{'('}</span>}
-					{!previewMode && call.argumentsNames ? <ArgsWithTooltips /> : <></>}
+					{!previewMode && call.argumentsNames && call.argumentsNames.length > 0 ? (
+						<ArgsWithTooltips />
+					) : !previewMode && call.entryPoint.calldata && call.entryPoint.calldata.length > 0 ? (
+						<ValueWithTooltip
+							value={{ typeName: 'bytes', name: 'calldata', value: call.entryPoint.calldata[0] }}
+							fullObject={call.entryPoint.calldata[0]}
+							typeName="bytes"
+							functionName="calldata"
+							isContract
+						/>
+					) : (
+						<></>
+					)}
 					{!previewMode && <span className="text-highlight_yellow">{')'}</span>}
-					{!previewMode && call.result && call.resultTypes ? (
+					{!previewMode && call.result && call.resultTypes && call.resultTypes.length > 0 ? (
 						<>
 							<span className="text-variable">&nbsp;{'->'}&nbsp;</span>
 							<span className="text-highlight_yellow">{`(`}</span>
 							<span className="text-typeColor">
 								<ResultsWithTooltips />
+							</span>
+							<span className="text-highlight_yellow">{`)`}</span>
+						</>
+					) : !previewMode &&
+					  call.result &&
+					  'Success' in call.result &&
+					  call.result.Success.retData &&
+					  call.result.Success.retData.length > 0 ? (
+						<>
+							<span className="text-variable">&nbsp;{'->'}&nbsp;</span>
+							<span className="text-highlight_yellow">{`(`}</span>
+							<span className="text-typeColor">
+								{(call.result as any).Success.retData.map((retData: any, index: number) => (
+									<ValueWithTooltip
+										key={index}
+										value={{
+											typeName: 'bytes',
+											name: `result_${index}`,
+											value: retData.value.val.join(', ')
+										}}
+										fullObject={retData.value.val}
+										typeName="bytes"
+										isContract
+									/>
+								))}
 							</span>
 							<span className="text-highlight_yellow">{`)`}</span>
 						</>
