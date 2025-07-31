@@ -50,10 +50,10 @@ export default function Sidebar({
 		// 	];
 		// if (expandedPanels === 3) sizes = [33, 33, 33];
 		// if (expandedPanels === 0) sizes = [5, 5, 90];
-		let sizes = [47.5, 47.5];
-		if (expandedPanels === 1) sizes = [isCallTraceExpanded ? 90 : 5, isFilesExpanded ? 90 : 5];
+		let sizes = [50, 50];
+		if (expandedPanels === 1) sizes = [isCallTraceExpanded ? 95 : 5, isFilesExpanded ? 95 : 5];
 		if (expandedPanels === 2) sizes = [50, 50];
-		if (expandedPanels === 0) sizes = [5, 90];
+		if (expandedPanels === 0) sizes = [5, 95];
 
 		//inspectorStepDetailsPanelRef.current?.resize(sizes[0]);
 		inspectorCallTracePanelRef.current?.resize(sizes[0]);
@@ -111,11 +111,11 @@ export default function Sidebar({
 
 			<ResizablePanel
 				ref={inspectorCallTracePanelRef}
-				defaultSize={47.5}
+				defaultSize={50}
 				minSize={5}
 				collapsedSize={5}
 				className="min-h-[32px]"
-				maxSize={isCallTraceExpanded ? 90 : 5}
+				maxSize={isCallTraceExpanded ? 95 : 5}
 			>
 				<CallTracePreview toggleExpand={() => toggleExpand(setCallTraceExpanded)} />
 			</ResizablePanel>
