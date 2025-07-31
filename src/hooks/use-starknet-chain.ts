@@ -1,9 +1,9 @@
 import { usePathname } from 'next/navigation';
 import { ChainId } from '@/lib/types';
 
-export function useStarknetChain(): { chainId: ChainId; chainName: string } {
+export function useEthereumChain(): { chainId: ChainId; chainName: string } {
 	const path = usePathname();
-	const isSepolia = path.includes('SN_SEPOLIA');
-	const chainId = isSepolia ? ChainId.SN_SEPOLIA : ChainId.SN_MAIN;
+	const isSepolia = path.includes('SEPOLIA');
+	const chainId = isSepolia ? ChainId.ETH_SEPOLIA : ChainId.ETH_MAIN;
 	return { chainId, chainName: isSepolia ? 'Sepolia' : 'Mainnet' };
 }
