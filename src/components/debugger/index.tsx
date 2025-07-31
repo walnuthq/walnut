@@ -42,7 +42,18 @@ export const Debugger = memo(function Debugger({
 	}
 
 	if (error) {
-		throw new Error('Failed to fetch debugger data');
+		return (
+			<Alert className="m-4 w-fit">
+				<ExclamationTriangleIcon className="h-5 w-5" />
+				<AlertTitle>Debugger Error</AlertTitle>
+				<AlertDescription>
+					<p className="mt-2">
+						This might be due to compilation issues. The transaction trace will still be available
+						without debug information.
+					</p>
+				</AlertDescription>
+			</Alert>
+		);
 	}
 
 	if (!hasDebuggableContract) {

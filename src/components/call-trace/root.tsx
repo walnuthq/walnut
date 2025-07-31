@@ -128,7 +128,7 @@ function CallTraceRootContent() {
 
 						<ScrollArea className="flex-1 overflow-auto">
 							<div className="text-xs px-0 py-2">
-								<CommonCallTrace callId={1} nestingLevel={0} callType="contract" />
+								<CommonCallTrace callId={0} nestingLevel={0} callType="contract" />
 								<ScrollBar orientation="horizontal" />
 							</div>
 						</ScrollArea>

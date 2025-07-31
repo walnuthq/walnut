@@ -36,7 +36,7 @@ function parsePcToSourceMapping(
 	const [s, l, f] = mapping.split(':').map(Number);
 
 	// Skip invalid or dispatcher-related mappings
-	if (s === 0 && l === 0 && (f === 0 || f === -1)) {
+	if ((s === 0 && l === 0 && (f === 0 || f === -1)) || s === -1) {
 		return null;
 	}
 
@@ -77,56 +77,64 @@ const debugCallResponseToTransactionSimulationResult = ({
 }) => {
 	// 1. contractDebuggerData
 	const contractDebuggerData: Record<string, any> = {};
-	for (const [address, contract] of Object.entries(contracts)) {
-		// 1. Find sourcifyContract for this address;
-		const sourcifyContract = sourcifyContracts.find((c) => c.address === address);
-		const contractSources = sourcifyContract?.sources || [];
-		const fileIndexToPath: Record<number, string> = {};
-		const sourceCode: Record<string, string> = {};
-		const sources: Record<number, string> = {};
-		contractSources.forEach((source, idx) => {
-			if (!source.path || !source.content) return; // skip if missing path or content
-			const cleanPath = source.path;
-			fileIndexToPath[Number(idx)] = cleanPath;
-			sourceCode[cleanPath] = source.content;
-			sources[Number(idx)] = source.content;
-		});
-		// Optimized filtering: group PCs by mapping to avoid duplicates
-		const pcToCodeInfo: Record<number, { codeLocations: any[] }> = {};
-		const mappingToPcs: Record<string, number[]> = {};
 
-		// Group PCs by their source mapping
-		for (const [pc, mapping] of Object.entries(contract.pcToSourceMappings)) {
-			// Skip PC mappings that are likely dispatcher-related (empty or invalid mappings)
-			if (!mapping || mapping === '0:0:0' || mapping === '0:0:-1') {
-				continue;
+	// Add null check for contracts
+	if (contracts && typeof contracts === 'object') {
+		for (const [address, contract] of Object.entries(contracts)) {
+			// 1. Find sourcifyContract for this address;
+			const sourcifyContract = sourcifyContracts.find((c) => c.address === address);
+			const contractSources = sourcifyContract?.sources || [];
+			const fileIndexToPath: Record<number, string> = {};
+			const sourceCode: Record<string, string> = {};
+			const sources: Record<number, string> = {};
+			contractSources.forEach((source, idx) => {
+				if (!source.path || !source.content) return; // skip if missing path or content
+				const cleanPath = source.path;
+				fileIndexToPath[Number(idx)] = cleanPath;
+				sourceCode[cleanPath] = source.content;
+				sources[Number(idx)] = source.content;
+			});
+			// Optimized filtering: group PCs by mapping to avoid duplicates
+			const pcToCodeInfo: Record<number, { codeLocations: any[] }> = {};
+			const mappingToPcs: Record<string, number[]> = {};
+
+			// Group PCs by their source mapping
+			if (contract.pcToSourceMappings && typeof contract.pcToSourceMappings === 'object') {
+				for (const [pc, mapping] of Object.entries(contract.pcToSourceMappings)) {
+					// Skip PC mappings that are likely dispatcher-related (empty or invalid mappings)
+					if (!mapping || mapping === '0:0:0' || mapping.includes('-1')) {
+						continue;
+					}
+
+					if (!mappingToPcs[mapping]) {
+						mappingToPcs[mapping] = [];
+					}
+					mappingToPcs[mapping].push(Number(pc));
+				}
 			}
 
-			if (!mappingToPcs[mapping]) {
-				mappingToPcs[mapping] = [];
+			// Create pcToCodeInfo with only unique mappings
+			if (Object.keys(mappingToPcs).length > 0) {
+				for (const [mapping, pcs] of Object.entries(mappingToPcs)) {
+					const codeLocation = parsePcToSourceMapping(mapping, fileIndexToPath, sources);
+
+					// Skip invalid code locations (dispatcher-related)
+					if (!codeLocation) {
+						continue;
+					}
+
+					// Use the first PC as the representative for this mapping
+					const representativePc = pcs[0];
+					pcToCodeInfo[representativePc] = {
+						codeLocations: [codeLocation]
+					};
+				}
 			}
-			mappingToPcs[mapping].push(Number(pc));
-		}
-
-		// Create pcToCodeInfo with only unique mappings
-		for (const [mapping, pcs] of Object.entries(mappingToPcs)) {
-			const codeLocation = parsePcToSourceMapping(mapping, fileIndexToPath, sources);
-
-			// Skip invalid code locations (dispatcher-related)
-			if (!codeLocation) {
-				continue;
-			}
-
-			// Use the first PC as the representative for this mapping
-			const representativePc = pcs[0];
-			pcToCodeInfo[representativePc] = {
-				codeLocations: [codeLocation]
+			contractDebuggerData[address] = {
+				pcToCodeInfo,
+				sourceCode
 			};
 		}
-		contractDebuggerData[address] = {
-			pcToCodeInfo,
-			sourceCode
-		};
 	}
 
 	// 2. debuggerTrace with optimized deduplication

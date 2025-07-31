@@ -45,8 +45,14 @@ export async function fetchApi<ResponseDataType>(
 	params?: FetchApiParams
 ): Promise<ResponseDataType> {
 	const response = await makeApiRequest(input, params);
-	if (!response.ok) throw Error(await response.text());
-	else {
+	if (!response.ok) {
+		let errorMsg = await response.text();
+		try {
+			const json = JSON.parse(errorMsg);
+			if (json.error) errorMsg = json.error;
+		} catch {}
+		throw Error(errorMsg);
+	} else {
 		if (params?.renameToCamelCase)
 			return camelcaseKeys(await response.json(), {
 				deep: true,

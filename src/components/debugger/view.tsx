@@ -79,7 +79,7 @@ export function DebuggerView() {
 								</p>
 								<p>
 									The source code for this contract is missing. To enable the step-by-step debugger,
-									verify the contract on Walnut by following{' '}
+									verify the contract on Sourcify by following{' '}
 									<Link
 										className="underline-offset-4 hover:underline text-blue-500"
 										href={SOURCIFY_VERIFY_DOCS_URL}

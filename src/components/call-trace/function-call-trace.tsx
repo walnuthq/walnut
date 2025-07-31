@@ -72,7 +72,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 	}
 
 	if (!debuggerContext) return null;
-	const { debugContractCall, currentStep } = debuggerContext;
+	const { debugContractCall, currentStep, error: debuggerError } = debuggerContext;
 	return (
 		<React.Fragment key={functionCallId}>
 			<TraceLine
@@ -112,6 +112,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 						}}
 						isDebuggable={isDebuggable}
 						noCodeLocationAvaliable={noCodeLocationAvaliable}
+						debuggerError={debuggerError}
 					/>
 				)}
 
