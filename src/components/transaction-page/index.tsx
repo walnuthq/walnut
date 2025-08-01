@@ -28,6 +28,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getCacheWithTTL, setCacheWithTTL } from '@/lib/utils/cache-utils';
 import AddressLink from '../address-link';
+import { NetworkBadge } from '../ui/network-badge';
 
 export function TransactionPage({
 	txHash,
@@ -51,6 +52,7 @@ export function TransactionPage({
 	const [l2TxHashShort, setL2TxHashShort] = useState<string>();
 	const router = useRouter();
 	const [showIO, setShowIO] = useState(false);
+	const { getNetworkByRpcUrl } = useSettings();
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -169,7 +171,8 @@ export function TransactionPage({
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};
-
+	const network = rpcUrl ? getNetworkByRpcUrl(rpcUrl) : null;
+	console.log(network?.networkName);
 	return (
 		<>
 			<HeaderNav />
@@ -197,6 +200,7 @@ export function TransactionPage({
 											>
 												<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 											</CopyToClipboardElement>
+											{network && <NetworkBadge network={{ networkName: 'Other Network' }} />}
 										</h1>
 									)}
 									{l1TxHash && (
@@ -216,6 +220,7 @@ export function TransactionPage({
 											>
 												{l1TxHashShort}
 											</CopyToClipboardElement>
+											{network && <NetworkBadge network={network} />}
 										</h2>
 									)}
 								</div>

@@ -11,13 +11,9 @@ import { AddressProvider } from '@/lib/context/address-context';
 const inter = Inter({ subsets: ['latin'] });
 
 const title = 'Walnut: Transaction Debugger and Simulator for EVM';
-const description =
-	'Open source transaction debugger for any EVM chain. Perfect for rollups who need customizations or ability to self-host.';
-export const metadata: Metadata = generateMetadata(
-	title,
-	description,
-	'https://www.walnut.network/debugger'
-);
+const description = 'Open source transaction debugger for any EVM chain. Perfect for rollups who need customizations or ability to self-host.';
+export const metadata: Metadata = generateMetadata(title, description, 'https://app.walnut.dev/');
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
