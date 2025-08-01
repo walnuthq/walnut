@@ -1,13 +1,18 @@
-<img width="2110" height="1462" alt="frame_chrome_mac_dark (1)" src="https://github.com/user-attachments/assets/6db44fc1-8685-433b-85fc-bd374992933d" />
-
-<br>
+<p align="center">
+  <h1 align="center">Walnut</h1>
+</p>
+<p align="center">
+  <strong>Open-source, self-hostable transaction debugger and simulator for the Ethereum ecosystem.</strong>
+  <br><br>
+  <img width="2110" height="1462" alt="walnut web app screenshot" src="https://github.com/user-attachments/assets/6db44fc1-8685-433b-85fc-bd374992933d" />
+</p>
 
 ![BSL License](https://img.shields.io/badge/license-BSL%201.1-purple)
 ![Built for EVM](https://img.shields.io/badge/EVM-compatible-brightgreen)
 ![Self-Hostable](https://img.shields.io/badge/self--hosted-yes-orange)
 ![Docker Support](https://img.shields.io/badge/docker-ready-2496ED?logo=docker)
 
-**Walnut** is a fully open-source, self-hostable transaction debugger and simulator for the Ethereum ecosystem.
+## Key features
 
 - Full transaction traces, simulations, and step-by-step debugging
 - Can be self-hosted and connected to any RPC—ideal for rollups and Rollup-as-a-Service platforms
