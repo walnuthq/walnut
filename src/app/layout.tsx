@@ -13,11 +13,7 @@ const inter = Inter({ subsets: ['latin'] });
 const title = 'Debugger for smart contract and blockchain developers | Walnut';
 const description =
 	'Delve deeper into blockchain transaction with the Walnut debugger. Swiftly identify bugs and pinpoint areas for enhancement.';
-export const metadata: Metadata = generateMetadata(
-	title,
-	description,
-	'https://www.walnut.network/debugger'
-);
+export const metadata: Metadata = generateMetadata(title, description, 'https://app.walnut.dev/');
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
