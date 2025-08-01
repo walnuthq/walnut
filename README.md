@@ -41,6 +41,8 @@
 
 ## Live Demo
 
+https://github.com/user-attachments/assets/c58884e5-a6b8-49fe-8f3f-08246d3139fd
+
 Try Walnut live at [evm.walnut.dev](https://evm.walnut.dev)
 
 
@@ -130,11 +132,11 @@ The debugger will be available at [http://localhost:3000](http://localhost:3000)
 
 You can search for a transaction by hash or try an example simulation from the homepage.
 
-![screenshot](transaction.png)
+<img width="2052" height="1820" alt="walnut evm transaction page" src="https://github.com/user-attachments/assets/86591559-ebee-4ee7-b778-202a2a43275d" />
 
 On the transaction screen, click "Re-simulate" to run a simulation with custom calldata.
 
-![screenshot](simulation.png)
+<img width="2052" height="1596" alt="walnut evm simulation page" src="https://github.com/user-attachments/assets/c5e5e69b-e249-4116-ac85-e95db2c04df3" />
 
 ## Contributing
 
