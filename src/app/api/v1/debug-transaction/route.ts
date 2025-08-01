@@ -214,7 +214,7 @@ export const POST = async (request: NextRequest) => {
 		timestamp,
 		nonce: transaction.nonce ?? 0,
 		from: getAddress(transaction.from),
-		type: traceResult.type || 'INVOKE',
+		type: 'INVOKE',
 		transactionIndex: transaction.transactionIndex,
 		transactions,
 		txHash: parameters.txHash
