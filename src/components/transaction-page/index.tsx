@@ -225,11 +225,7 @@ export function TransactionPage({
 									)}
 								</div>
 								{isLogged ? (
-									<Button
-										onClick={handleReSimulateClick}
-										variant="outline"
-										disabled={l2TransactionData.transactionType !== 'INVOKE'}
-									>
+									<Button onClick={handleReSimulateClick} variant="outline">
 										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 									</Button>
 								) : (
