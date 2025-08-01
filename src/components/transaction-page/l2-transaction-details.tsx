@@ -45,19 +45,19 @@ export function TransactionDetails({
 	}
 
 	// 3. Network details
-	if (rpcUrl) {
-		const network = getNetworkByRpcUrl(rpcUrl);
-		if (network) {
-			details.push({
-				name: 'Custom Network',
-				value: network.networkName
-			});
-		}
-		details.push({
-			name: 'RPC URL',
-			value: rpcUrl
-		});
-	}
+	// if (rpcUrl) {
+	// 	const network = getNetworkByRpcUrl(rpcUrl);
+	// 	if (network) {
+	// 		details.push({
+	// 			name: 'Custom Network',
+	// 			value: network.networkName
+	// 		});
+	// 	}
+	// 	details.push({
+	// 		name: 'RPC URL',
+	// 		value: rpcUrl
+	// 	});
+	// }
 
 	// 4. Chain and Block info
 	if (transactionData.chainId) {
