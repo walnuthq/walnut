@@ -200,7 +200,7 @@ export function TransactionPage({
 											>
 												<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 											</CopyToClipboardElement>
-											{network && <NetworkBadge network={{ networkName: 'Other Network' }} />}
+											{network && <NetworkBadge network={network} />}
 										</h1>
 									)}
 									{l1TxHash && (
