@@ -9,7 +9,6 @@ export function L1TransactionDetails({
 	transactionData: L1TransactionData;
 	rpcUrl?: string;
 }) {
-	const { getNetworkByRpcUrl } = useSettings();
 	let details: InfoBoxItem[] = [];
 
 	// 1. Transaction Type (always first)
@@ -36,19 +35,19 @@ export function L1TransactionDetails({
 	}
 
 	// 3. Network details
-	if (rpcUrl) {
-		const network = getNetworkByRpcUrl(rpcUrl);
-		if (network) {
-			details.push({
-				name: 'Custom Network',
-				value: network.networkName
-			});
-		}
-		details.push({
-			name: 'RPC URL',
-			value: rpcUrl
-		});
-	}
+	// if (rpcUrl) {
+	// 	const network = getNetworkByRpcUrl(rpcUrl);
+	// 	if (network) {
+	// 		details.push({
+	// 			name: 'Custom Network',
+	// 			value: network.networkName
+	// 		});
+	// 	}
+	// 	details.push({
+	// 		name: 'RPC URL',
+	// 		value: rpcUrl
+	// 	});
+	// }
 
 	// 4. Chain and Block info
 	if (transactionData.chainId) {
