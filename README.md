@@ -1,10 +1,6 @@
-```
-██     ██  █████  ██      ███    ██ ██    ██ ████████
-██     ██ ██   ██ ██      ████   ██ ██    ██    ██   
-██  █  ██ ███████ ██      ██ ██  ██ ██    ██    ██   
-██ ███ ██ ██   ██ ██      ██  ██ ██ ██    ██    ██   
- ███ ███  ██   ██ ███████ ██   ████  ██████     ██   
-```
+<img width="2110" height="1462" alt="frame_chrome_mac_dark (1)" src="https://github.com/user-attachments/assets/6db44fc1-8685-433b-85fc-bd374992933d" />
+
+<br>
 
 ![BSL License](https://img.shields.io/badge/license-BSL%201.1-purple)
 ![Built for EVM](https://img.shields.io/badge/EVM-compatible-brightgreen)
@@ -13,10 +9,9 @@
 
 **Walnut** is a fully open-source, self-hostable transaction debugger and simulator for the Ethereum ecosystem.
 
-- ✅ Inspect, simulate, and debug on-chain execution for smart contracts.
-- ✅ Self-host anywhere with support for custom RPCs—ideal for appchains and Rollup-as-a-Service platforms.
-- ✅ Enterprise-grade privacy: zero telemetry, full data control, and on-premises hosting.
-- ✅ Modular and extensible—starting with EVM, with support for Cairo, Stylus, and more languages coming soon.
+- Full transaction traces, simulations, and step-by-step debugging
+- Can be self-hosted and connected to any RPC—ideal for rollups and Rollup-as-a-Service platforms
+- Enterprise-grade privacy: zero telemetry, full data control, and on-premises hosting
 
 ## Table of Contents
 
@@ -34,8 +29,8 @@
 
 ## Who is Walnut for?
 
-- **Appchains and rollups** seeking a robust transaction debugger for their own chains—simply self-host Walnut or [contact us](https://walnut.dev/contact) for assistance.
-- **Rollup-as-a-Service providers** looking to offer advanced transaction debugging as part of their platform.
+- **Rollups** seeking a robust transaction debugger for their own chains—simply self-host Walnut or [contact us](https://walnut.dev/contact) for assistance.
+- **Rollup-as-a-Service Platforms** looking to offer advanced transaction debugging as part of their platform.
 - **Smart contract developers** who want to trace, simulate, and understand on-chain code execution.
 - **Enterprises** that require privacy, data protection, and self-hosting—[get in touch](https://walnut.dev/contact) for custom support or deployment help.
 
