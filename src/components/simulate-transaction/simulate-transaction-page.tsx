@@ -73,7 +73,6 @@ export function SimulateTransactionPage({
 		simulationPayload?.transactionVersion || defaultTransactionVersion
 	);
 	const defaultChain = {
-		chainId: process.env.NEXT_PUBLIC_CHAIN_ID,
 		network: {
 			rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
 			networkName: process.env.NEXT_PUBLIC_NETWORK_NAME!

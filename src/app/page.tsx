@@ -7,6 +7,7 @@ import { Search } from '@/components/ui/search';
 import Link from 'next/link';
 import { HeaderNav } from '@/components/header';
 import logoWalnutWhite from '@/assets/walnut-logo-beta-white.svg';
+import { mapChainIdNumberToEnum } from '@/lib/utils';
 
 export const runtime = 'edge';
 
@@ -26,7 +27,7 @@ export default function Page() {
 					<Search placeholder={`Search for transaction or contract`}></Search>
 					<Link
 						href={`/transactions?${new URLSearchParams({
-							rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
+							chainId: mapChainIdNumberToEnum(Number(process.env.NEXT_PUBLIC_CHAIN_ID!)) || '',
 							txHash: '0x1362ee26050935178c2f491dbe2a5f0d277903cb5d77fa9e6e30d8b2db31a541'
 						}).toString()}`}
 						className="hover:underline text-sm inline-block mt-4 text-gray-500"

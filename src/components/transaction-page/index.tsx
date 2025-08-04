@@ -97,17 +97,12 @@ export function TransactionPage({
 
 				let simulation: TransactionSimulationResult;
 
-				if (chainId) {
-					simulation = await simulateTransactionByHash({ chainId, txHash, skipTracking });
-				} else if (rpcUrl) {
-					simulation = await simulateCustomNetworkTransactionByHash({
-						txHash,
-						rpcUrl,
-						skipTracking
-					});
-				} else {
-					simulation = {};
-				}
+				// Always use custom network with RPC URL from .env
+				simulation = await simulateCustomNetworkTransactionByHash({
+					txHash,
+					rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
+					skipTracking
+				});
 
 				setCacheWithTTL(cacheKey, simulation);
 				setTransactionSimulation(simulation);
@@ -167,7 +162,6 @@ export function TransactionPage({
 			if (l2TransactionData.blockNumber)
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (chainId) params.set('chainId', chainId);
-			else if (rpcUrl) params.set('rpcUrl', rpcUrl);
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};

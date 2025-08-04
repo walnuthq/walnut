@@ -11,18 +11,18 @@ export default function Page() {
 
 	const txHash = searchParams.get('txHash');
 	const chainIdStr = searchParams.get('chainId');
-	let rpcUrl = searchParams.get('rpcUrl');
-
-	// TODO: Fix this on Dojo side and remove this
-	if (rpcUrl && !isValidUrl(rpcUrl)) {
-		rpcUrl = decodeURIComponent(rpcUrl);
-	}
 
 	if (txHash && chainIdStr) {
 		const chainId = extractChainId(chainIdStr);
-		return <TransactionPage txHash={txHash} chainId={chainId} />;
-	} else if (txHash && rpcUrl) {
-		return <TransactionPage txHash={txHash} rpcUrl={rpcUrl} />;
+		return (
+			<TransactionPage
+				txHash={txHash}
+				chainId={chainId}
+				rpcUrl={process.env.NEXT_PUBLIC_RPC_URL!}
+			/>
+		);
+	} else if (txHash) {
+		return <TransactionPage txHash={txHash} rpcUrl={process.env.NEXT_PUBLIC_RPC_URL!} />;
 	} else {
 		return <div>Page not found</div>;
 	}

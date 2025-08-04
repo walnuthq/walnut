@@ -22,7 +22,6 @@ export default function Page({
 			const blockNumber = searchParams.blockNumber as string;
 			const transactionVersion = searchParams.transactionVersion as string;
 			const chainId = searchParams.chainId as string;
-			const rpcUrl = searchParams.rpcUrl as string;
 			const nonce = searchParams.nonce as string;
 			const txHashParams = searchParams.txHash as string;
 
@@ -30,7 +29,7 @@ export default function Page({
 				setTxHash(txHashParams);
 			}
 
-			if ((chainId || rpcUrl) && senderAddress && calldata && transactionVersion) {
+			if (senderAddress && calldata && transactionVersion) {
 				const [address, initialCalldata] = calldata.split(',');
 
 				// const calls = parseContractCalls(parsedCalldata);
@@ -40,8 +39,7 @@ export default function Page({
 					senderAddress,
 					calls,
 					transactionVersion: parseInt(transactionVersion),
-					chainId: chainId || undefined,
-					rpcUrl: rpcUrl || undefined
+					chainId: chainId || undefined
 				};
 
 				if (blockNumber && !isNaN(+blockNumber)) {

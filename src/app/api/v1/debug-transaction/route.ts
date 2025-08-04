@@ -16,12 +16,10 @@ import { type Contract } from '@/app/api/v1/types';
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type WithTxHash = {
-	rpc_url: string;
 	tx_hash: Hash;
 };
 
 type WithCalldata = {
-	rpc_url: string;
 	chain_id: string;
 	block_number: number;
 	block_timestamp: number;
@@ -43,11 +41,11 @@ const getParameters = ({
 	WithCalldata: WithCalldata;
 }) => {
 	if (withTxHash) {
-		return { rpcUrl: withTxHash.rpc_url, txHash: withTxHash.tx_hash };
+		return { rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!, txHash: withTxHash.tx_hash };
 	}
 	if (withCalldata) {
 		return {
-			rpcUrl: withCalldata.rpc_url,
+			rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
 			chainId: withCalldata.chain_id,
 			blockNumber: withCalldata.block_number ? BigInt(withCalldata.block_number) : undefined,
 			blockTimestamp: withCalldata.block_timestamp,
