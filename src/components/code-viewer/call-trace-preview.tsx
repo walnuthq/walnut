@@ -50,7 +50,7 @@ export const CallTracePreview = memo(function FilesExplorer({
 
 				<ScrollArea className="flex-1">
 					<div className="min-w-full pb-2 whitespace-nowrap">
-						<CommonCallTrace previewMode callId={1} nestingLevel={0} callType="contract" />
+						<CommonCallTrace previewMode callId={0} nestingLevel={0} callType="contract" />
 					</div>
 					<ScrollBar orientation="horizontal" />
 				</ScrollArea>
