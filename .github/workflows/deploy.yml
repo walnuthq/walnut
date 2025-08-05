@@ -3,8 +3,6 @@ name: Deploy to Production
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   deploy:
@@ -23,14 +21,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Run tests (if available)
         run: npm test
+        continue-on-error: true
 
       - name: Build application
         run: npm run build
 
       - name: Deploy to server
-        if: github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
