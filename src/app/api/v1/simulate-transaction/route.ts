@@ -12,11 +12,11 @@ import solc from '@/app/api/v1/solc';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
 import { type Contract } from '@/app/api/v1/types';
+import { mapChainIdStringToNumber } from '@/lib/utils';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type WithTxHash = {
-	rpc_url: string;
 	tx_hash: Hash;
 };
 
@@ -26,7 +26,6 @@ type WithCalldata = {
 	block_number: number | undefined;
 	transaction_version: number;
 	nonce: number | undefined;
-	rpc_url: string;
 	chain_id: string | undefined;
 };
 
@@ -38,11 +37,11 @@ const getParameters = ({
 	WithCalldata: WithCalldata;
 }) => {
 	if (withTxHash) {
-		return { rpcUrl: withTxHash.rpc_url, txHash: withTxHash.tx_hash };
+		return { rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!, txHash: withTxHash.tx_hash };
 	}
 	if (withCalldata) {
 		return {
-			rpcUrl: withCalldata.rpc_url,
+			rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
 			senderAddress: withCalldata.sender_address as Address,
 			to: withCalldata.calldata[1] as Address,
 			calldata: withCalldata.calldata[4] as Hex,
@@ -67,7 +66,9 @@ export const POST = async (request: NextRequest) => {
 		const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
 		const tracingClient = createTracingClient(parameters.rpcUrl);
 		const [chainId, transaction, traceResult] = await Promise.all([
-			parameters.chainId ? Number(parameters.chainId) : publicClient.getChainId(),
+			parameters.chainId
+				? mapChainIdStringToNumber(parameters.chainId) || publicClient.getChainId()
+				: publicClient.getChainId(),
 			parameters.txHash
 				? publicClient.getTransaction({ hash: parameters.txHash })
 				: {

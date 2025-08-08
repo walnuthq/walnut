@@ -113,7 +113,7 @@ export function SimulationPage({
 			<>
 				<TransactionDetails
 					transactionData={l2TransactionData}
-					rpcUrl={simulationPayload?.rpcUrl}
+					rpcUrl={process.env.NEXT_PUBLIC_RPC_URL!}
 				/>
 				<CallTraceRoot
 					simulationResult={l2TransactionData.simulationResult}
@@ -139,7 +139,6 @@ export function SimulationPage({
 			if (l2TransactionData.blockNumber)
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (simulationPayload?.chainId) params.set('chainId', simulationPayload.chainId);
-			else if (simulationPayload?.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl || '');
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};

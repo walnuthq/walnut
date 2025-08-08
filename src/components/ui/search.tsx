@@ -224,14 +224,12 @@ const SearchItem = ({
 }) => {
 	const handleSearchItem = useCallback(() => {
 		if (type === 'transactions') {
-			if (data.source.rpcUrl) {
-				window.location.href = `/transactions?rpcUrl=${encodeURIComponent(
-					data.source.rpcUrl
-				)}&txHash=${data.hash}`;
-			} else if (data.source.chainId) {
+			if (data.source.chainId) {
 				window.location.href = `/transactions?chainId=${data.source.chainId.toUpperCase()}&txHash=${
 					data.hash
 				}`;
+			} else {
+				console.log('The chainId is not defined');
 			}
 		} else if (type === 'contracts') {
 			window.location.href = `/contracts/${data.hash}`;
