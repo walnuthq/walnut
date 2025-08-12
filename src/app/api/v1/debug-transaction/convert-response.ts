@@ -152,8 +152,13 @@ const debugCallResponseToTransactionSimulationResult = ({
 			functionCallId = step.traceCallIndex;
 		}
 
-		// Skip steps that map to dispatcher entrypoint (contractCallId: 0) unless they have valid function calls
-		if (contractCallId === 0 && !functionCall) {
+		// Only skip 0th call trace if it has no meaningful debugger data
+		// Check if this step has valid PC mapping and source code information
+		const hasValidDebuggerData = Object.values(contractDebuggerData).some(
+			(classData) => classData.pcToCodeInfo && classData.pcToCodeInfo[step.pc]
+		);
+
+		if (contractCallId === 0 && !functionCall && !hasValidDebuggerData) {
 			return;
 		}
 
