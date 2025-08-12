@@ -97,10 +97,11 @@ export function TransactionPage({
 
 				let simulation: TransactionSimulationResult;
 
-				// Always use custom network with RPC URL from .env
+				// Prefer chain-based resolution; fallback to explicit rpcUrl if provided
 				simulation = await simulateCustomNetworkTransactionByHash({
 					txHash,
-					rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
+					chainKey: chainId,
+					rpcUrl: rpcUrl,
 					skipTracking
 				});
 
@@ -166,7 +167,6 @@ export function TransactionPage({
 		}
 	};
 	const network = rpcUrl ? getNetworkByRpcUrl(rpcUrl) : null;
-	console.log(network?.networkName);
 	return (
 		<>
 			<HeaderNav />

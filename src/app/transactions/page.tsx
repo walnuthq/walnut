@@ -1,7 +1,7 @@
 'use client';
 
 import { TransactionPage } from '@/components/transaction-page';
-import { extractChainId } from '@/lib/utils';
+// import { extractChainId } from '@/lib/utils';
 import { useSearchParams } from 'next/navigation';
 
 export const runtime = 'edge';
@@ -13,15 +13,10 @@ export default function Page() {
 	const chainIdStr = searchParams.get('chainId');
 
 	if (txHash && chainIdStr) {
-		const chainId = extractChainId(chainIdStr);
-		return (
-			<TransactionPage
-				txHash={txHash}
-				chainId={chainId}
-				rpcUrl={process.env.NEXT_PUBLIC_RPC_URL!}
-			/>
-		);
+		// Pass through chain key as-is to support custom chains (no env RPC override here)
+		return <TransactionPage txHash={txHash} chainId={chainIdStr as any} />;
 	} else if (txHash) {
+		// Fallback legacy behavior if only txHash is present
 		return <TransactionPage txHash={txHash} rpcUrl={process.env.NEXT_PUBLIC_RPC_URL!} />;
 	} else {
 		return <div>Page not found</div>;

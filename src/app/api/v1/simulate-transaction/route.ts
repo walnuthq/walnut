@@ -1,23 +1,21 @@
-import { rm, mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { rm } from 'node:fs/promises';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createPublicClient, http, type Hash, type Address, type Hex, getAddress } from 'viem';
-import { type Metadata } from '@ethereum-sourcify/lib-sourcify';
 import { uniqBy } from 'lodash';
 
 // import { spawnAnvil } from '@/app/api/v1/anvil';
 import createTracingClient, { flattenTraceCall } from '@/app/api/v1/tracing-client';
 import fetchContract from '@/app/api/v1/fetch-contract';
-import solc from '@/app/api/v1/solc';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
 import { type Contract } from '@/app/api/v1/types';
 import { mapChainIdStringToNumber } from '@/lib/utils';
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { getRpcUrlForChainSafe } from '@/lib/networks';
+import { compileContracts } from '@/app/api/v1/utils/contract-compiler';
 
 type WithTxHash = {
 	tx_hash: Hash;
+	chain_id?: string;
 };
 
 type WithCalldata = {
@@ -37,11 +35,34 @@ const getParameters = ({
 	WithCalldata: WithCalldata;
 }) => {
 	if (withTxHash) {
-		return { rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!, txHash: withTxHash.tx_hash };
+		// Prefer chain-based RPC resolution if provided
+		let rpcUrl: string;
+		if (withTxHash?.chain_id) {
+			try {
+				rpcUrl = getRpcUrlForChainSafe(withTxHash.chain_id, process.env.NEXT_PUBLIC_RPC_URL);
+			} catch (e) {
+				console.warn('Failed to resolve chain_id, using fallback RPC:', withTxHash.chain_id);
+				rpcUrl = process.env.NEXT_PUBLIC_RPC_URL!;
+			}
+		} else {
+			rpcUrl = process.env.NEXT_PUBLIC_RPC_URL!;
+		}
+		return { rpcUrl, txHash: withTxHash.tx_hash, chainId: withTxHash?.chain_id };
 	}
 	if (withCalldata) {
+		let rpcUrl: string;
+		if (withCalldata.chain_id) {
+			try {
+				rpcUrl = getRpcUrlForChainSafe(withCalldata.chain_id, process.env.NEXT_PUBLIC_RPC_URL);
+			} catch (e) {
+				console.warn('Failed to resolve chain_id, using fallback RPC:', withCalldata.chain_id);
+				rpcUrl = process.env.NEXT_PUBLIC_RPC_URL!;
+			}
+		} else {
+			rpcUrl = process.env.NEXT_PUBLIC_RPC_URL!;
+		}
 		return {
-			rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
+			rpcUrl,
 			senderAddress: withCalldata.sender_address as Address,
 			to: withCalldata.calldata[1] as Address,
 			calldata: withCalldata.calldata[4] as Hex,
@@ -63,6 +84,11 @@ export const POST = async (request: NextRequest) => {
 		// const anvil = await spawnAnvil({ rpcUrl, txHash });
 		// console.log('ANVIL STARTED');
 		// FETCH TRACE CALL
+		// Avoid leaking RPC URL in logs
+		console.log('FETCHING TRACE CALL {}', {
+			...parameters,
+			rpcUrl: parameters.rpcUrl
+		});
 		const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
 		const tracingClient = createTracingClient(parameters.rpcUrl);
 		const [chainId, transaction, traceResult] = await Promise.all([
@@ -137,73 +163,102 @@ export const POST = async (request: NextRequest) => {
 		const tmp = `/tmp/${parameters.txHash ?? parameters.calldata.slice(0, 128)}`;
 		await rm(tmp, { recursive: true, force: true });
 
-		let ethdebugDirs: string[] = [];
-		let cwd = process.env.PWD;
-		let compilationFailed = false;
+		// Use the utility module for contract compilation
+		const { compiled, ethdebugDirs, cwd, compilationErrors } = await compileContracts(
+			verifiedContracts,
+			tmp
+		);
 
-		// Try to compile all verified contracts
-		if (verifiedContracts.length > 0) {
-			try {
-				await Promise.all(
-					verifiedContracts.map(async (contract) => {
-						const metadataFile = contract.sources.find((source) =>
-							source.path?.endsWith('metadata.json')
-						);
-						if (!metadataFile) {
-							throw new Error(`No metadata found for ${contract.address}`);
-						}
-
-						const metadata = JSON.parse(metadataFile.content) as Metadata;
-						const [compilationTarget] = Object.keys(metadata.settings.compilationTarget);
-						await Promise.all(
-							contract.sources
-								.filter((source) => source.path)
-								.map(async (source) => {
-									const filename = `${tmp}/${contract.address}/${source.path}`;
-									const parentDirectory = dirname(filename);
-									await mkdir(parentDirectory, { recursive: true });
-									return writeFile(filename, source.content);
-								})
-						);
-						// ugly fix to make sure we wait until all files are written on disk
-						await sleep(400);
-						await solc({ compilationTarget, cwd: `${tmp}/${contract.address}` });
-						console.log(`Successfully compiled ${contract.address}`);
-					})
-				);
-
-				// If all compilations succeeded, set up ethdebugDirs
-				if (verifiedContracts.length === 1) {
-					ethdebugDirs = [`${tmp}/${verifiedContracts[0].address}/debug`];
-					cwd = `${tmp}/${verifiedContracts[0].address}`;
-				} else if (verifiedContracts.length > 1) {
-					ethdebugDirs = verifiedContracts.map((contract) =>
-						contract.name
-							? `${contract.address}:${contract.name}:${tmp}/${contract.address}/debug`
-							: `${contract.address}:${tmp}/${contract.address}/debug`
-					);
-					cwd = `${tmp}/${verifiedContracts[0].address}`;
-				}
-			} catch (error) {
-				console.error('Compilation failed for one or more contracts:', error);
-				console.log('Treating all contracts as unverified due to compilation failure');
-				compilationFailed = true;
-				// Keep ethdebugDirs empty and cwd as process.env.PWD
-			}
-		}
+		console.log('ETHDEBUG dirs:', ethdebugDirs);
+		console.log('ETHDEBUG cwd:', cwd);
+		console.log('Compiled contracts count:', compiled.length);
+		console.log(
+			'Compiled contracts:',
+			compiled.map((c: { address: Address; name?: string }) => ({
+				address: c.address,
+				name: c.name
+			}))
+		);
 
 		// RUN WALNUT-CLI
-		const { traceCall, steps, contracts, status, error } = await walnutCli({
-			command: parameters.txHash ? 'trace' : 'simulate',
-			txHash: parameters.txHash,
-			to: transaction.to || undefined,
-			calldata: parameters.calldata,
-			from: parameters.senderAddress,
-			blockNumber: parameters.blockNumber,
-			rpcUrl: parameters.rpcUrl,
-			ethdebugDirs,
-			cwd
-		});
+		if (ethdebugDirs.length === 0) {
+			console.warn('No debug directories available - running walnut-cli without debug data');
+			console.warn('Compilation errors that prevented debug data:', compilationErrors);
+
+			// If we have verified contracts but none compiled, this is a significant issue
+			if (verifiedContracts.length > 0) {
+				console.error(
+					'CRITICAL: All verified contracts failed to compile. Debug data will not be available.'
+				);
+			}
+		} else {
+			console.log(`Debug directories available for ${ethdebugDirs.length} contracts`);
+			console.log('Debug directory paths:');
+			ethdebugDirs.forEach((dir, index) => {
+				console.log(`  ${index + 1}. ${dir}`);
+			});
+		}
+
+		// Verify debug directories actually exist and have content
+		if (ethdebugDirs.length > 0) {
+			console.log('\n--- Verifying debug directories ---');
+			console.log('ethdebugDirs', ethdebugDirs);
+			for (const debugDir of ethdebugDirs) {
+				try {
+					const fs = await import('node:fs/promises');
+					const exists = await fs
+						.access(debugDir)
+						.then(() => true)
+						.catch(() => false);
+					if (exists) {
+						const files = await fs.readdir(debugDir);
+						console.log(`✅ Debug dir exists: ${debugDir} (${files.length} files)`);
+					} else {
+						console.error(`❌ Debug dir does not exist: ${debugDir}`);
+					}
+				} catch (error) {
+					console.error(`❌ Error checking debug dir ${debugDir}:`, error);
+				}
+			}
+			console.log('--- End debug directory verification ---\n');
+		}
+
+		let walnutCliResult;
+		try {
+			const walnutParams = {
+				command: (parameters.txHash ? 'trace' : 'simulate') as 'trace' | 'simulate',
+				txHash: parameters.txHash,
+				to: transaction.to || undefined,
+				calldata: parameters.calldata,
+				from: parameters.senderAddress,
+				blockNumber: parameters.blockNumber,
+				rpcUrl: parameters.rpcUrl,
+				ethdebugDirs,
+				cwd
+			};
+
+			walnutCliResult = await walnutCli(walnutParams);
+		} catch (walnutError: any) {
+			// Handle walnut-cli errors with limited logging to avoid call traces
+			console.error('WALNUT-CLI execution failed:', walnutError?.message || String(walnutError));
+
+			// If we have compilation errors, include them in the error message
+			if (compilationErrors.length > 0) {
+				const errorMsg = `WALNUT-CLI failed. Compilation errors prevented debug data: ${compilationErrors.join(
+					'; '
+				)}. Execution error: ${walnutError?.message || String(walnutError)}`;
+				return NextResponse.json({ error: errorMsg }, { status: 400 });
+			}
+
+			// Don't log the full error object to avoid call traces
+			if (walnutError?.stack) {
+				console.error('Walnut-cli error stack trace available (not logged for brevity)');
+			}
+
+			throw walnutError; // Re-throw if it's not related to compilation
+		}
+
+		const { traceCall, steps, contracts, status, error } = walnutCliResult;
 		const response = traceCallResponseToTransactionSimulationResult({
 			status: status === 'reverted' ? 'REVERTED' : 'SUCCEEDED',
 			error: error ?? '',
@@ -224,6 +279,34 @@ export const POST = async (request: NextRequest) => {
 		// anvil.kill();
 		return NextResponse.json(response);
 	} catch (err: any) {
-		return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 400 });
+		// Handle SourcifyABILoader errors specifically to avoid logging full call traces
+		if (
+			err?.message?.includes('SourcifyABILoaderError') ||
+			err?.message?.includes('SourcifyABILoader')
+		) {
+			console.error('SOURCIFY ABI LOADER ERROR:', err.message);
+			return NextResponse.json(
+				{
+					error: 'Failed to load contract ABI from Sourcify',
+					details: 'Contract verification or ABI loading failed'
+				},
+				{ status: 400 }
+			);
+		}
+
+		// Handle other errors with limited logging
+		console.error('SIMULATE TRANSACTION ERROR:', err?.message || String(err));
+
+		// Don't log the full error object to avoid call traces
+		if (err?.stack) {
+			console.error('Error stack trace available (not logged for brevity)');
+		}
+
+		return NextResponse.json(
+			{
+				error: err?.message || 'Unknown error occurred during transaction simulation'
+			},
+			{ status: 400 }
+		);
 	}
 };

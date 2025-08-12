@@ -239,13 +239,14 @@ const traceCallResponseToTransactionSimulationResult = ({
 				isDeepestPanicResult: tc.isRevertedFrame ?? false,
 				errorMessage: tc.isRevertedFrame ? error || 'Transaction reverted' : null,
 				nestingLevel: 0,
-				callDebuggerDataAvailable: sourcifyContract?.verified ?? false,
+				callDebuggerDataAvailable: tc.isVerified ?? false,
 				debuggerTraceStepIndex: null,
 				isHidden: false
 			};
 			return { [tc.callId]: contractCall };
 		})
 		.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
 	const functionCallsMap = Object.values(traceMap)
 		.filter((tc: any) => tc.type === 'INTERNALCALL')
 		.map((tc: any) => {

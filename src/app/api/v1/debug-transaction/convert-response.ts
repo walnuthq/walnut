@@ -153,9 +153,9 @@ const debugCallResponseToTransactionSimulationResult = ({
 		}
 
 		// Skip steps that map to dispatcher entrypoint (contractCallId: 0) unless they have valid function calls
-		if (contractCallId === 0 && !functionCall) {
-			return;
-		}
+		// if (contractCallId === 0 && !functionCall) {
+		// 	return;
+		// }
 
 		// For each contract address check if there is pcToCodeInfo for this pc
 		for (const [address, classData] of Object.entries(contractDebuggerData)) {

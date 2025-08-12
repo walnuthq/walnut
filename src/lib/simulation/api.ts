@@ -45,10 +45,12 @@ export async function simulateTransactionByHash({
 
 export async function simulateCustomNetworkTransactionByHash({
 	rpcUrl,
+	chainKey,
 	txHash,
 	skipTracking
 }: {
-	rpcUrl: string;
+	rpcUrl?: string;
+	chainKey?: string;
 	txHash: string;
 	skipTracking?: boolean;
 }): Promise<TransactionSimulationResult> {
@@ -57,7 +59,8 @@ export async function simulateCustomNetworkTransactionByHash({
 		renameToCamelCase: true,
 		data: {
 			WithTxHash: {
-				tx_hash: txHash
+				tx_hash: txHash,
+				chain_id: chainKey
 			}
 		},
 		queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
