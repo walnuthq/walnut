@@ -23,9 +23,9 @@ export function UserAvatar() {
 							</AvatarFallback>
 						</Avatar>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent>
+					{/* <DropdownMenuContent>
 						<DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
-					</DropdownMenuContent>
+					</DropdownMenuContent> */}
 				</DropdownMenu>
 			) : session.status === 'unauthenticated' ? (
 				// <Button onClick={() => signIn('cognito')} variant="outline">

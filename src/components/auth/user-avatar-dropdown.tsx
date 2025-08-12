@@ -65,10 +65,10 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 						<div>System theme</div>
 					</DropdownMenuItem>
 
-					<DropdownMenuItem onClick={() => githubSignOut()} className="cursor-pointer">
+					{/* <DropdownMenuItem onClick={() => githubSignOut()} className="cursor-pointer">
 						<ArrowRightEndOnRectangleIcon className="mr-1 h-4 w-4"></ArrowRightEndOnRectangleIcon>
 						<span>Log out</span>
-					</DropdownMenuItem>
+					</DropdownMenuItem> */}
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</div>
