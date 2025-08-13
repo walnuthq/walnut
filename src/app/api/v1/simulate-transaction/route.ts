@@ -1,26 +1,14 @@
-import { rm } from 'node:fs/promises';
 import { NextResponse, type NextRequest } from 'next/server';
-import { createPublicClient, http, type Hash, type Address, type Hex, getAddress } from 'viem';
-import { uniqBy } from 'lodash';
-
-// import { spawnAnvil } from '@/app/api/v1/anvil';
-import createTracingClient, { flattenTraceCall } from '@/app/api/v1/tracing-client';
-import fetchContract from '@/app/api/v1/fetch-contract';
+import { type Hash, type Address, type Hex, getAddress } from 'viem';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
-import { type Contract } from '@/app/api/v1/types';
-import { mapChainIdStringToNumber } from '@/lib/utils';
 import { getRpcUrlForChainSafe } from '@/lib/networks';
-import { compileContracts } from '@/app/api/v1/utils/contract-compiler';
-import {
-	verifyDebugDirectories,
-	logCompilationStatus
-} from '@/app/api/v1/utils/debug-directory-utils';
 import { createCompilationSummary } from '@/app/api/v1/utils/compilation-status-utils';
+import { processTransactionRequest } from '@/app/api/v1/utils/transaction-processing';
 
 type WithTxHash = {
 	tx_hash: Hash;
-	chain_id?: string;
+	chain_id: string;
 };
 
 type WithCalldata = {
@@ -29,7 +17,7 @@ type WithCalldata = {
 	block_number: number | undefined;
 	transaction_version: number;
 	nonce: number | undefined;
-	chain_id: string | undefined;
+	chain_id: string;
 };
 
 const getParameters = ({
@@ -40,32 +28,25 @@ const getParameters = ({
 	WithCalldata: WithCalldata;
 }) => {
 	if (withTxHash) {
-		// Prefer chain-based RPC resolution if provided
-		let rpcUrl: string;
-		if (withTxHash?.chain_id) {
-			try {
-				rpcUrl = getRpcUrlForChainSafe(withTxHash.chain_id, process.env.NEXT_PUBLIC_RPC_URL);
-			} catch (e) {
-				console.warn('Failed to resolve chain_id, using fallback RPC:', withTxHash.chain_id);
-				rpcUrl = process.env.NEXT_PUBLIC_RPC_URL!;
-			}
-		} else {
-			rpcUrl = process.env.NEXT_PUBLIC_RPC_URL!;
+		// Validate chain_id is not undefined
+		if (!withTxHash.chain_id) {
+			throw new Error(
+				'chain_id is required for transaction simulation. Every chain must have a valid RPC URL with debug options.'
+			);
 		}
-		return { rpcUrl, txHash: withTxHash.tx_hash, chainId: withTxHash?.chain_id };
+
+		const rpcUrl = getRpcUrlForChainSafe(withTxHash.chain_id);
+		return { rpcUrl, txHash: withTxHash.tx_hash, chainId: withTxHash.chain_id };
 	}
 	if (withCalldata) {
-		let rpcUrl: string;
-		if (withCalldata.chain_id) {
-			try {
-				rpcUrl = getRpcUrlForChainSafe(withCalldata.chain_id, process.env.NEXT_PUBLIC_RPC_URL);
-			} catch (e) {
-				console.warn('Failed to resolve chain_id, using fallback RPC:', withCalldata.chain_id);
-				rpcUrl = process.env.NEXT_PUBLIC_RPC_URL!;
-			}
-		} else {
-			rpcUrl = process.env.NEXT_PUBLIC_RPC_URL!;
+		// Validate chain_id is not undefined
+		if (!withCalldata.chain_id) {
+			throw new Error(
+				'chain_id is required for calldata simulation. Every chain must have a valid RPC URL with debug options.'
+			);
 		}
+
+		const rpcUrl = getRpcUrlForChainSafe(withCalldata.chain_id);
 		return {
 			rpcUrl,
 			senderAddress: withCalldata.sender_address as Address,
@@ -83,96 +64,30 @@ export const POST = async (request: NextRequest) => {
 	try {
 		const body = await request.json();
 		const parameters = getParameters(body);
-		// console.log('/simulate-transaction parameters', parameters);
-		// SPAWN ANVIL
-		// console.log('SPAWNING ANVIL');
-		// const anvil = await spawnAnvil({ rpcUrl, txHash });
-		// console.log('ANVIL STARTED');
-		// FETCH TRACE CALL
-		// Avoid leaking RPC URL in logs
-		console.log('FETCHING TRACE CALL {}', {
-			...parameters,
-			rpcUrl: parameters.rpcUrl
-		});
-		const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
-		const tracingClient = createTracingClient(parameters.rpcUrl);
-		const [chainId, transaction, traceResult] = await Promise.all([
-			parameters.chainId
-				? mapChainIdStringToNumber(parameters.chainId) || publicClient.getChainId()
-				: publicClient.getChainId(),
-			parameters.txHash
-				? publicClient.getTransaction({ hash: parameters.txHash })
-				: {
-						to: parameters.to,
-						blockNumber: parameters.blockNumber,
-						nonce: parameters.nonce,
-						from: parameters.senderAddress,
-						transactionIndex: 0
-				  },
-			parameters.txHash
-				? tracingClient.traceTransaction({
-						transactionHash: parameters.txHash,
-						tracer: 'callTracer'
-						// tracerConfig: { withLog: true }
-				  })
-				: tracingClient.traceCall({
-						from: parameters.senderAddress,
-						to: parameters.to,
-						data: parameters.calldata,
-						blockNrOrHash: parameters.blockNumber
-							? `0x${parameters.blockNumber.toString(16)}`
-							: 'latest',
-						//txIndex: '0x0', //options.txIndex ?? 0,
-						tracer: 'callTracer'
-						// tracerConfig: { withLog: true }
-				  })
-		]);
-		// console.log('TRACE CALL FETCHED');
-		// console.log({ chainId });
-		// console.log(transaction.to);
-		// console.log(traceResult);
-		if (!transaction.to && traceResult && traceResult.type !== 'CREATE') {
-			throw new Error(
-				'ERROR: eth_getTransactionByHash failed - missing to address and not a CREATE transaction'
-			);
-		}
-		if (!traceResult) {
-			throw new Error('ERROR: debug_traceTransaction/debug_traceCall failed');
-		}
-		// contracts should be verified first
-		// forge verify-contract --rpc-url $RPC_URL --compiler-version 0.8.30 --via-ir $CONTRACT_ADDRESS examples/TestContract.sol:TestContract
-		// FETCH CONTRACTS
-		const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceResult), 'to');
-		const [{ timestamp, transactions }, sourcifyContracts] = await Promise.all([
-			publicClient.getBlock({ blockNumber: transaction.blockNumber }),
-			Promise.allSettled(
-				flattenedTraceTransactionResult
-					.filter(({ type }) => type === 'CALL' || type === 'DELEGATECALL')
-					.map(({ to }) => fetchContract(to, publicClient, chainId))
-			)
-		]);
 
-		// Filter out failed contract fetches and get only verified contracts
-		const verifiedContracts = sourcifyContracts
-			.filter(
-				(result): result is PromiseFulfilledResult<Contract> =>
-					result.status === 'fulfilled' && result.value.verified
-			)
-			.map((result) => result.value);
-
-		const allContracts = sourcifyContracts
-			.filter((result): result is PromiseFulfilledResult<Contract> => result.status === 'fulfilled')
-			.map((result) => result.value);
-
-		// COPY SOURCES TO /TMP AND COMPILE ONLY VERIFIED CONTRACTS
-		const tmp = `/tmp/${parameters.txHash ?? parameters.calldata.slice(0, 128)}`;
-		await rm(tmp, { recursive: true, force: true });
-
-		// Use the utility module for contract compilation
-		const { compiled, ethdebugDirs, cwd, compilationErrors } = await compileContracts(
+		// Use shared transaction processing utility
+		const {
+			chainId,
+			transaction,
+			traceResult,
 			verifiedContracts,
-			tmp
-		);
+			allContracts,
+			compiled,
+			ethdebugDirs,
+			cwd,
+			compilationErrors,
+			timestamp,
+			transactions
+		} = await processTransactionRequest({
+			rpcUrl: parameters.rpcUrl,
+			txHash: parameters.txHash,
+			to: parameters.to,
+			calldata: parameters.calldata,
+			from: parameters.senderAddress,
+			blockNumber: parameters.blockNumber,
+			nonce: parameters.nonce,
+			chainId: parameters.chainId
+		});
 
 		let walnutCliResult;
 		try {
@@ -190,20 +105,17 @@ export const POST = async (request: NextRequest) => {
 
 			walnutCliResult = await walnutCli(walnutParams);
 		} catch (walnutError: any) {
-			// Handle walnut-cli errors with limited logging to avoid call traces
-			console.error('WALNUT-CLI execution failed:', walnutError?.message || String(walnutError));
-
+			console.error(
+				`WALNUT-CLI failed. Compilation errors prevented debug data: ${compilationErrors.join(
+					'; '
+				)}. Execution error: ${walnutError?.message || String(walnutError)}`
+			);
 			// If we have compilation errors, include them in the error message
 			if (compilationErrors.length > 0) {
-				const errorMsg = `WALNUT-CLI failed. Compilation errors prevented debug data: ${compilationErrors.join(
-					'; '
-				)}. Execution error: ${walnutError?.message || String(walnutError)}`;
+				const errorMsg = `WALNUT-CLI execution failed: ${
+					walnutError?.message || String(walnutError)
+				}`;
 				return NextResponse.json({ error: errorMsg }, { status: 400 });
-			}
-
-			// Don't log the full error object to avoid call traces
-			if (walnutError?.stack) {
-				console.error('Walnut-cli error stack trace available (not logged for brevity)');
 			}
 
 			throw walnutError; // Re-throw if it's not related to compilation
@@ -232,7 +144,7 @@ export const POST = async (request: NextRequest) => {
 			from: getAddress(transaction.from),
 			type: 'INVOKE',
 			transactionIndex: transaction.transactionIndex,
-			transactions,
+			transactions: [transactions.toString()], // Convert bigint to string array
 			txHash: parameters.txHash,
 			compilationSummary
 		});

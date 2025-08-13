@@ -15,9 +15,6 @@ export default function Page() {
 	if (txHash && chainIdStr) {
 		// Pass through chain key as-is to support custom chains (no env RPC override here)
 		return <TransactionPage txHash={txHash} chainId={chainIdStr as any} />;
-	} else if (txHash) {
-		// Fallback legacy behavior if only txHash is present
-		return <TransactionPage txHash={txHash} rpcUrl={process.env.NEXT_PUBLIC_RPC_URL!} />;
 	} else {
 		return <div>Page not found</div>;
 	}

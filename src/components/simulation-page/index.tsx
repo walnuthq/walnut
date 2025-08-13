@@ -111,10 +111,7 @@ export function SimulationPage({
 	} else if (l2TransactionData) {
 		content = (
 			<>
-				<TransactionDetails
-					transactionData={l2TransactionData}
-					rpcUrl={process.env.NEXT_PUBLIC_RPC_URL!}
-				/>
+				<TransactionDetails transactionData={l2TransactionData} />
 				<CallTraceRoot
 					simulationResult={l2TransactionData.simulationResult}
 					l2Flamegraph={l2TransactionData?.flamechart}

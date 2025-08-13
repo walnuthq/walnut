@@ -1,8 +1,5 @@
 export enum ChainKey {
 	OP_SEPOLIA = 'OP_SEPOLIA',
-	OP_MAINNET = 'OP_MAINNET',
-	ETH_MAINNET = 'ETH_MAINNET',
-	ETH_SEPOLIA = 'ETH_SEPOLIA',
 	POWERLOOM_DEVNET = 'POWERLOOM_DEVNET',
 	POWERLOOM_MAINNET = 'POWERLOOM_MAINNET'
 }
@@ -28,27 +25,6 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		displayName: 'OP Sepolia',
 		chainId: 11155420,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_SEPOLIA',
-		verificationType: 'sourcify'
-	},
-	[ChainKey.OP_MAINNET]: {
-		key: ChainKey.OP_MAINNET,
-		displayName: 'OP Mainnet',
-		chainId: 10,
-		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_MAINNET',
-		verificationType: 'sourcify'
-	},
-	[ChainKey.ETH_MAINNET]: {
-		key: ChainKey.ETH_MAINNET,
-		displayName: 'Ethereum Mainnet',
-		chainId: 1,
-		rpcEnvVar: 'NEXT_PUBLIC_RPC_ETH_MAINNET',
-		verificationType: 'sourcify'
-	},
-	[ChainKey.ETH_SEPOLIA]: {
-		key: ChainKey.ETH_SEPOLIA,
-		displayName: 'Ethereum Sepolia',
-		chainId: 11155111,
-		rpcEnvVar: 'NEXT_PUBLIC_RPC_ETH_SEPOLIA',
 		verificationType: 'sourcify'
 	},
 	[ChainKey.POWERLOOM_DEVNET]: {
@@ -98,10 +74,9 @@ export function getDisplayNameForChain(key: ChainKey): string {
 
 export function mapChainIdToChainKey(chainId: string): ChainKey | undefined {
 	const mapping: Record<string, ChainKey> = {
-		OP_MAIN: ChainKey.OP_MAINNET,
 		OP_SEPOLIA: ChainKey.OP_SEPOLIA,
-		ETH_MAIN: ChainKey.ETH_MAINNET,
-		ETH_SEPOLIA: ChainKey.ETH_SEPOLIA
+		POWERLOOM_DEVNET: ChainKey.POWERLOOM_DEVNET,
+		POWERLOOM_MAINNET: ChainKey.POWERLOOM_MAINNET
 	};
 	return mapping[chainId];
 }
@@ -166,27 +141,23 @@ export function resolveChainKey(chainIdentifier: string | number | ChainKey): Ch
 }
 
 /**
- * Gets the RPC URL for a chain identifier, with fallback to the default RPC
+ * Gets the RPC URL for a chain identifier, throws error if not found
  * @param chainIdentifier - Can be a chain ID number, string representation, or ChainKey enum value
- * @param fallbackRpcUrl - Fallback RPC URL if chain resolution fails
- * @returns The RPC URL for the chain or the fallback URL
+ * @returns The RPC URL for the chain
+ * @throws Error if no RPC URL is found for the chain
  */
-export function getRpcUrlForChainSafe(
-	chainIdentifier: string | number | ChainKey,
-	fallbackRpcUrl?: string
-): string {
+export function getRpcUrlForChainSafe(chainIdentifier: string | number | ChainKey): string {
 	const chainKey = resolveChainKey(chainIdentifier);
-	if (chainKey) {
-		const rpcUrl = getRpcUrlForChain(chainKey);
-		if (rpcUrl) {
-			return rpcUrl;
-		}
+	if (!chainKey) {
+		throw new Error(`Invalid chain identifier: ${chainIdentifier}`);
 	}
 
-	// Log warning about fallback usage
-	console.warn(
-		`Chain identifier "${chainIdentifier}" could not be resolved to a valid RPC URL, using fallback`
-	);
+	const rpcUrl = getRpcUrlForChain(chainKey);
+	if (!rpcUrl) {
+		throw new Error(
+			`No RPC URL found for chain ${chainKey}. Every chain must have a valid RPC URL with debug options.`
+		);
+	}
 
-	return fallbackRpcUrl || process.env.NEXT_PUBLIC_RPC_URL || '';
+	return rpcUrl;
 }

@@ -21,8 +21,15 @@ export const GET = async (
 			.filter(Boolean);
 		const built: Pair[] = [];
 		for (const k of keys) {
-			const url = getRpcUrlForChainSafe(k);
-			if (url) built.push({ key: k, rpcUrl: url });
+			try {
+				const url = getRpcUrlForChainSafe(k);
+				built.push({ key: k, rpcUrl: url });
+			} catch (error) {
+				console.warn(
+					`Skipping chain ${k}: ${error instanceof Error ? error.message : 'No RPC URL available'}`
+				);
+				continue;
+			}
 		}
 	} else {
 		const rpcParam = request.nextUrl.searchParams.get('rpc_urls');
@@ -41,8 +48,15 @@ export const GET = async (
 		const keys = getEnabledChainKeys();
 		const built: Pair[] = [];
 		for (const k of keys) {
-			const url = getRpcUrlForChainSafe(k);
-			if (url) built.push({ key: String(k), rpcUrl: url });
+			try {
+				const url = getRpcUrlForChainSafe(k);
+				built.push({ key: String(k), rpcUrl: url });
+			} catch (error) {
+				console.warn(
+					`Skipping chain ${k}: ${error instanceof Error ? error.message : 'No RPC URL available'}`
+				);
+				continue;
+			}
 		}
 		pairs = built;
 	}
@@ -99,16 +113,34 @@ export const POST = async (
 		if (chains.length > 0) {
 			const built: Pair[] = [];
 			for (const k of chains) {
-				const url = getRpcUrlForChainSafe(k);
-				if (url) built.push({ key: k, rpcUrl: url });
+				try {
+					const url = getRpcUrlForChainSafe(k);
+					built.push({ key: k, rpcUrl: url });
+				} catch (error) {
+					console.warn(
+						`Skipping chain ${k}: ${
+							error instanceof Error ? error.message : 'No RPC URL available'
+						}`
+					);
+					continue;
+				}
 			}
 			pairs = built;
 		} else {
 			const keys = getEnabledChainKeys();
 			const built: Pair[] = [];
 			for (const k of keys) {
-				const url = getRpcUrlForChainSafe(k);
-				if (url) built.push({ key: String(k), rpcUrl: url });
+				try {
+					const url = getRpcUrlForChainSafe(k);
+					built.push({ key: String(k), rpcUrl: url });
+				} catch (error) {
+					console.warn(
+						`Skipping chain ${k}: ${
+							error instanceof Error ? error.message : 'No RPC URL available'
+						}`
+					);
+					continue;
+				}
 			}
 			pairs = built;
 		}

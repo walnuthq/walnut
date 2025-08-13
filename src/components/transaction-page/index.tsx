@@ -96,6 +96,11 @@ export function TransactionPage({
 					return;
 				}
 
+				if (!chainId) {
+					setError('ChainId must be provided to simulate transaction');
+					return;
+				}
+
 				let simulation: TransactionSimulationResult;
 
 				// Prefer chain-based resolution; fallback to explicit rpcUrl if provided
