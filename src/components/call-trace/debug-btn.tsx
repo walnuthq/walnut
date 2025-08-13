@@ -7,12 +7,14 @@ export const DebugButton = memo(function DebugButton({
 	onDebugClick,
 	noCodeLocationAvaliable,
 	isDebuggable,
-	debuggerError
+	debuggerError,
+	compilationError
 }: {
 	onDebugClick: React.MouseEventHandler<HTMLDivElement>;
 	noCodeLocationAvaliable?: boolean;
 	isDebuggable?: boolean;
 	debuggerError?: string | null;
+	compilationError?: string | null;
 }) {
 	const [tooltipOpen, setPopoverOpen] = useState(false);
 
@@ -49,7 +51,7 @@ export const DebugButton = memo(function DebugButton({
 		</>
 	);
 
-	const DebuggerErrorMessage = () => (
+	const CompilationErrorMessage = () => (
 		<>
 			Debugger failed to load due to compilation issues. The transaction trace is still available
 			without debug information.
@@ -59,11 +61,11 @@ export const DebugButton = memo(function DebugButton({
 	const handleDebugClick = useCallback(
 		(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 			event.stopPropagation();
-			if (isDebuggable && !debuggerError) {
+			if (isDebuggable && !debuggerError && !compilationError) {
 				onDebugClick(event);
 			}
 		},
-		[isDebuggable, debuggerError, onDebugClick]
+		[isDebuggable, debuggerError, compilationError, onDebugClick]
 	);
 
 	return (
@@ -71,7 +73,7 @@ export const DebugButton = memo(function DebugButton({
 			onClick={handleDebugClick}
 			className="w-5 h-5 p-0.5 rounded-sm cursor-pointer hover:bg-accent_2"
 		>
-			{isDebuggable && !debuggerError ? (
+			{isDebuggable && !debuggerError && !compilationError ? (
 				<BugAntIcon className={`${bugIconClassName} text-green-700`} />
 			) : (
 				<Popover open={tooltipOpen} onOpenChange={setPopoverOpen}>
@@ -86,8 +88,8 @@ export const DebugButton = memo(function DebugButton({
 						</div>
 					</PopoverTrigger>
 					<PopoverContent className="text-sm text-muted-foreground">
-						{debuggerError ? (
-							<DebuggerErrorMessage />
+						{debuggerError || compilationError ? (
+							<CompilationErrorMessage />
 						) : noCodeLocationAvaliable ? (
 							<NoCodeLocationMessage />
 						) : (

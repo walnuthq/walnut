@@ -96,6 +96,25 @@ export function getDisplayNameForChain(key: ChainKey): string {
 	return CHAINS_META[key]?.displayName ?? key;
 }
 
+export function mapChainIdToChainKey(chainId: string): ChainKey | undefined {
+	const mapping: Record<string, ChainKey> = {
+		OP_MAIN: ChainKey.OP_MAINNET,
+		OP_SEPOLIA: ChainKey.OP_SEPOLIA,
+		ETH_MAIN: ChainKey.ETH_MAINNET,
+		ETH_SEPOLIA: ChainKey.ETH_SEPOLIA
+	};
+	return mapping[chainId];
+}
+
+export function getDisplayNameForChainId(chainId: string): string {
+	const chainKey = mapChainIdToChainKey(chainId);
+	if (chainKey) {
+		return getDisplayNameForChain(chainKey);
+	}
+	// Fallback for unmapped chain IDs (like Starknet chains)
+	return chainId;
+}
+
 export function getExplorerApiForChain(
 	key: ChainKey
 ): { baseUrl: string; type: NonNullable<ChainMeta['explorerType']> } | undefined {

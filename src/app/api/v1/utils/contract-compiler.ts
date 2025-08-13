@@ -15,7 +15,7 @@ export const isSolcVersionCompatible = (pragma: string, solcVersion: string): bo
 
 	const versionSpec = pragmaMatch[1].trim();
 
-	// Handle caret (^) versioning: ^0.8.20 means >=0.8.20 and <0.9.0
+	// Handle caret (^) versioning: ^0.8.20 means >=0.8.20
 	if (versionSpec.startsWith('^')) {
 		const minVersion = versionSpec.slice(1);
 		const [major, minor, patch] = minVersion.split('.').map(Number);
@@ -60,9 +60,7 @@ export const requiresStrictVersion = (pragma: string): boolean => {
 
 	// If it's a caret version like "^0.8.20", check if it could require 0.8.29+
 	if (versionSpec.startsWith('^')) {
-		const minVersion = versionSpec.slice(1);
-		const [major, minor, patch] = minVersion.split('.').map(Number);
-		return major === 0 && minor === 8 && patch >= 29;
+		return true;
 	}
 
 	return false;
@@ -180,7 +178,6 @@ export const compileContracts = async (
 				);
 				if (!metadataFile) {
 					console.warn(`Contract ${contract.address}: Missing metadata.json`);
-					compilationErrors.push(`Contract ${contract.address}: Missing metadata.json`);
 					continue;
 				}
 
@@ -219,15 +216,8 @@ export const compileContracts = async (
 					if (!isCompatible) {
 						const errorMsg = `Contract ${contract.address}: Solc version ${solcVersion} is not compatible with pragma ${pragmaDirective}`;
 						console.warn(`⚠️ ${errorMsg}`);
-
-						if (isNightly) {
-							console.warn(
-								`💡 SUGGESTION: Try using a release version of solc instead of nightly build`
-							);
-							console.warn(`   Current: ${solcVersion}`);
-							console.warn(`   Recommended: ${cleanSolcVersion} (release version)`);
-						}
-
+						contract.compilationStatus = 'failed';
+						contract.compilationError = errorMsg;
 						compilationErrors.push(errorMsg);
 					}
 				}
@@ -247,9 +237,13 @@ export const compileContracts = async (
 							console.log(
 								`✅ Successfully compiled ${contract.address} - debug data available (${debugFiles.length} files)`
 							);
+							// Update contract compilation status
+							contract.compilationStatus = 'success';
 							compiled.push({ address: contract.address, name: contract.name });
 						} else {
 							console.warn(`⚠️ Contract ${contract.address} compiled but debug directory is empty`);
+							contract.compilationStatus = 'failed';
+							contract.compilationError = 'Debug directory is empty after compilation';
 							compilationErrors.push(
 								`Contract ${contract.address}: Debug directory is empty after compilation`
 							);
@@ -266,62 +260,17 @@ export const compileContracts = async (
 						solcError?.message || String(solcError)
 					}`;
 					console.error(`❌ ${errorMsg}`);
-
-					// Provide more specific error analysis
-					if (solcError?.message) {
-						const errorMessage = solcError.message;
-
-						if (errorMessage.includes('requires different compiler version')) {
-							console.error(`🔍 VERSION MISMATCH ANALYSIS:`);
-							console.error(`   Contract pragma: ${pragmaDirective || 'Unknown'}`);
-							console.error(`   Current solc: ${solcVersion || 'Unknown'}`);
-							console.error(`   Clean version: ${getCleanSolcVersion(solcVersion || '')}`);
-
-							if (isNightlyBuild(solcVersion || '')) {
-								console.error(`💡 SOLUTION: Use release version of solc instead of nightly build`);
-								console.error(
-									`   Install: solc-select install ${getCleanSolcVersion(solcVersion || '')}`
-								);
-								console.error(`   Use: solc-select use ${getCleanSolcVersion(solcVersion || '')}`);
-							} else if (pragmaDirective) {
-								const pragmaMatch = pragmaDirective.match(/pragma\s+solidity\s+([^;]+);/);
-								if (pragmaMatch) {
-									const requiredVersion = pragmaMatch[1].trim();
-									console.error(`💡 SOLUTION: Install and use solc version ${requiredVersion}`);
-									console.error(`   Install: solc-select install ${requiredVersion}`);
-									console.error(`   Use: solc-select use ${requiredVersion}`);
-								}
-							}
-						} else if (errorMessage.includes('Source file not found')) {
-							console.error(`🔍 MISSING SOURCE ANALYSIS:`);
-							console.error(`   Check if all source files are properly written to: ${contractDir}`);
-						} else if (errorMessage.includes('ParserError')) {
-							console.error(`🔍 SYNTAX ERROR ANALYSIS:`);
-							console.error(`   Check Solidity syntax in source files`);
-						} else if (errorMessage.includes('PRAGMA unknown')) {
-							console.error(`🔍 PRAGMA DETECTION ISSUE:`);
-							console.error(`   Solc cannot detect pragma directive in source files`);
-							console.error(`   This may indicate:`);
-							console.error(`   - Source files not written correctly`);
-							console.error(`   - File encoding issues`);
-							console.error(`   - Missing or corrupted source files`);
-							console.error(`   - Pragma directive not at the beginning of the file`);
-
-							// Log the first few lines of the main source file for debugging
-							const mainSourceFile = contract.sources.find((s) => s.path?.endsWith('.sol'));
-							if (mainSourceFile) {
-								const firstLines = mainSourceFile.content.split('\n').slice(0, 5).join('\n');
-								console.error(`   First 5 lines of main source file:`);
-								console.error(`   ${firstLines}`);
-							}
-						}
-					}
-
+					// Update contract compilation status
+					contract.compilationStatus = 'failed';
+					contract.compilationError = errorMsg;
 					compilationErrors.push(errorMsg);
 				}
 			} catch (e: any) {
 				const errorMsg = `Contract ${contract.address}: Setup failed - ${e?.message || String(e)}`;
 				console.error(`❌ ${errorMsg}`);
+				// Update contract compilation status
+				contract.compilationStatus = 'failed';
+				contract.compilationError = errorMsg;
 				compilationErrors.push(errorMsg);
 			}
 		}
@@ -337,19 +286,6 @@ export const compileContracts = async (
 					: `${c.address}:${tmpDir}/${c.address}/debug`
 			);
 			cwd = `${tmpDir}/${compiled[0].address}`;
-		}
-
-		// Log compilation results
-		if (compiled.length === 0) {
-			console.warn('No contracts were successfully compiled. Debug data will not be available.');
-			console.warn('Compilation errors:', compilationErrors);
-		} else {
-			console.log(
-				`Successfully compiled ${compiled.length} out of ${verifiedContracts.length} contracts`
-			);
-			if (compilationErrors.length > 0) {
-				console.warn('Some contracts failed to compile:', compilationErrors);
-			}
 		}
 	}
 

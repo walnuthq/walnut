@@ -7,7 +7,8 @@ import {
 	FunctionCall,
 	type TransactionSimulationResult,
 	type InternalFnCallIO,
-	type DataDecoded
+	type DataDecoded,
+	type CompilationSummary
 } from '@/lib/simulation';
 import {
 	decodeFunctionDataSafe,
@@ -129,7 +130,8 @@ const traceCallResponseToTransactionSimulationResult = ({
 	type,
 	transactionIndex,
 	transactions,
-	txHash
+	txHash,
+	compilationSummary
 }: {
 	status: string;
 	error: string;
@@ -145,6 +147,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 	transactionIndex: number;
 	transactions: string[];
 	txHash?: Hash;
+	compilationSummary?: CompilationSummary;
 }): TransactionSimulationResult => {
 	const contractNames = sourcifyContracts.reduce<Record<Address, string>>(
 		(previousValue, currentValue) => ({
@@ -239,7 +242,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 				isDeepestPanicResult: tc.isRevertedFrame ?? false,
 				errorMessage: tc.isRevertedFrame ? error || 'Transaction reverted' : null,
 				nestingLevel: 0,
-				callDebuggerDataAvailable: tc.isVerified ?? false,
+				callDebuggerDataAvailable: sourcifyContract?.compilationStatus === 'success',
 				debuggerTraceStepIndex: null,
 				isHidden: false
 			};
@@ -361,7 +364,8 @@ const traceCallResponseToTransactionSimulationResult = ({
 					contractDebuggerData: {},
 					debuggerTrace: []
 				},
-				storageChanges: {}
+				storageChanges: {},
+				compilationSummary
 			},
 			chainId: chainId.toString(),
 			blockNumber: Number(blockNumber),

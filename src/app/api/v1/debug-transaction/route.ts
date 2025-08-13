@@ -9,6 +9,11 @@ import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulat
 import debugCallResponseToTransactionSimulationResult from '@/app/api/v1/debug-transaction/convert-response';
 import { type Contract } from '@/app/api/v1/types';
 import { compileContracts } from '@/app/api/v1/utils/contract-compiler';
+import {
+	verifyDebugDirectories,
+	logCompilationStatus
+} from '@/app/api/v1/utils/debug-directory-utils';
+import { createCompilationSummary } from '@/app/api/v1/utils/compilation-status-utils';
 
 type WithTxHash = {
 	tx_hash: Hash;
@@ -159,63 +164,7 @@ export const POST = async (request: NextRequest) => {
 			tmp
 		);
 
-		console.log('ETHDEBUG dirs:', ethdebugDirs);
-		console.log('ETHDEBUG cwd:', cwd);
-		console.log('Compiled contracts count:', compiled.length);
-		console.log(
-			'Compiled contracts:',
-			compiled.map((c: { address: Address; name?: string }) => ({
-				address: c.address,
-				name: c.name
-			}))
-		);
-
-		// RUN WALNUT-CLI
-		if (ethdebugDirs.length === 0) {
-			console.warn('No debug directories available - running walnut-cli without debug data');
-			console.warn('Compilation errors that prevented debug data:', compilationErrors);
-
-			// If we have verified contracts but none compiled, this is a significant issue
-			if (verifiedContracts.length > 0) {
-				console.error(
-					'CRITICAL: All verified contracts failed to compile. Debug data will not be available.'
-				);
-			}
-		} else {
-			console.log(`Debug directories available for ${ethdebugDirs.length} contracts`);
-			console.log('Debug directory paths:');
-			ethdebugDirs.forEach((dir, index) => {
-				console.log(`  ${index + 1}. ${dir}`);
-			});
-		}
-
-		// Verify debug directories actually exist and have content
-		if (ethdebugDirs.length > 0) {
-			console.log('\n--- Verifying debug directories ---');
-			for (const debugDir of ethdebugDirs) {
-				try {
-					const fs = await import('node:fs/promises');
-					const exists = await fs
-						.access(debugDir)
-						.then(() => true)
-						.catch(() => false);
-					if (exists) {
-						const files = await fs.readdir(debugDir);
-						console.log(`✅ Debug dir exists: ${debugDir} (${files.length} files)`);
-						if (files.length > 0) {
-							console.log(
-								`  Files: ${files.slice(0, 5).join(', ')}${files.length > 5 ? '...' : ''}`
-							);
-						}
-					} else {
-						console.error(`❌ Debug dir does not exist: ${debugDir}`);
-					}
-				} catch (error) {
-					console.error(`❌ Error checking debug dir ${debugDir}:`, error);
-				}
-			}
-			console.log('--- End debug directory verification ---\n');
-		}
+		const debugVerification = await verifyDebugDirectories(ethdebugDirs);
 
 		try {
 			const { traceCall, steps, contracts, status, error } = await walnutCli({

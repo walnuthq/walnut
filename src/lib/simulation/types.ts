@@ -139,6 +139,7 @@ export interface ContractCall {
 	codeLocation?: CodeLocation | null;
 	callDebuggerDataAvailable: boolean;
 	debuggerTraceStepIndex: number | null;
+	compilationError?: string | null;
 
 	isHidden: boolean;
 }
@@ -192,6 +193,21 @@ export interface Parameter {
 	typeName: string;
 }
 
+export interface CompilationStatus {
+	address: `0x${string}`;
+	status: 'pending' | 'success' | 'failed';
+	error?: string;
+	verificationSource?: 'sourcify' | 'blockscout';
+}
+
+export interface CompilationSummary {
+	totalContracts: number;
+	successfulCompilations: number;
+	failedCompilations: number;
+	compilationErrors: string[];
+	contractStatuses: CompilationStatus[];
+}
+
 export interface SimulationResult {
 	contractCallsMap: { [key: string]: ContractCall };
 	functionCallsMap: { [key: string]: FunctionCall };
@@ -201,6 +217,7 @@ export interface SimulationResult {
 	simulationDebuggerData: SimulationDebuggerData;
 	storageChanges: { [key: string]: { [key: string]: string[] } }; // { contractCallId: { storageAddress: [before, after] } }
 	estimatedFee?: string;
+	compilationSummary?: CompilationSummary;
 }
 
 export interface TextPosition {

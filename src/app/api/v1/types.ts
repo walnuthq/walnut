@@ -9,6 +9,9 @@ export type Contract = {
 	sources: { path: string; content: string }[];
 	abi: Abi;
 	verified: boolean;
+	verificationSource?: 'sourcify' | 'blockscout';
+	compilationStatus?: 'pending' | 'success' | 'failed';
+	compilationError?: string;
 };
 
 export type RawTraceLog = {

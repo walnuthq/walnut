@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation';
 import { getCacheWithTTL, setCacheWithTTL } from '@/lib/utils/cache-utils';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
+import { getDisplayNameForChainId } from '@/lib/networks';
 
 export function TransactionPage({
 	txHash,
@@ -166,7 +167,19 @@ export function TransactionPage({
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};
-	const network = rpcUrl ? getNetworkByRpcUrl(rpcUrl) : null;
+
+	// Determine network for display - support both chainId and rpcUrl
+	let network = null;
+	if (rpcUrl) {
+		network = getNetworkByRpcUrl(rpcUrl);
+	} else if (chainId) {
+		// Create network object from chainId for display purposes
+		network = {
+			networkName: getDisplayNameForChainId(chainId),
+			rpcUrl: ''
+		};
+	}
+
 	return (
 		<>
 			<HeaderNav />
@@ -264,6 +277,7 @@ export function TransactionPage({
 											>
 												{shortenHash(l1TransactionData.l1TxHash)}
 											</CopyToClipboardElement>
+											{network && <NetworkBadge network={network} />}
 										</h1>
 									)}
 								</div>

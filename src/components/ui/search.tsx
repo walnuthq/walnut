@@ -61,6 +61,7 @@ export function Search({
 	useEffect(() => {
 		if (networks.length > 0) {
 			const networkNames = networks.map((network) => network.networkName);
+			console.log('networkNames', networkNames);
 			setAllAvailableNetworksString(`${networkNames.join(', ')}`);
 		}
 	}, [networks]);

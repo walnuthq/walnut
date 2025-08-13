@@ -135,7 +135,6 @@ const fetchContract = async (
 
 						// Generate metadata.json if we have sources but no metadata
 						if (sources.length > 0) {
-							console.log('SOURCES', sources);
 							const mainSource = sources.find(
 								(s) => !s.path.includes('@openzeppelin') && !s.path.includes('node_modules')
 							);
@@ -302,125 +301,86 @@ const fetchContract = async (
 								);
 							}
 						}
-						return { address, bytecode, name, sources, abi, verified };
+						return {
+							address,
+							bytecode,
+							name,
+							sources,
+							abi,
+							verified,
+							verificationSource: 'blockscout'
+						};
 					}
 				}
 			} catch (e) {
-				console.warn(`[FETCH-CONTRACT] Blockscout v2 failed for address: ${address}:`, e);
+				console.warn(
+					`[FETCH-CONTRACT] Blockscout v2 - Failed to get source code for address: ${address}:`,
+					e
+				);
 			}
+		} else {
+			console.warn(`[FETCH-CONTRACT] Blockscout - No explorer configured for chain ${chainId}`);
 		}
 	}
 
-	// Fallback: try Sourcify
-	const provider = whatsabi.providers.WithCachedCode(publicClient, {
-		[address]: bytecode
-	});
-	const result = await whatsabi.autoload(address, {
-		provider,
-		abiLoader: new whatsabi.loaders.SourcifyABILoader({ chainId }),
-		loadContractResult: true
-	});
-	if (result.contractResult) {
-		const [sources, proxyResult] = await Promise.all([
-			result.contractResult.getSources && result.contractResult.getSources(),
-			result.followProxies && result.followProxies()
-		]);
-		if (proxyResult && proxyResult.contractResult) {
-			result.contractResult.abi = proxyResult.contractResult.abi;
-		}
-		const filteredSources = sources
-			? sources
-					.filter(({ path }) => path)
-					.map(({ path, content }) => ({
-						path: whatsabi.loaders.SourcifyABILoader.stripPathPrefix(`/${path}`),
-						content
-					}))
-			: [];
-
-		console.log(
-			`[FETCH-CONTRACT] Sourcify - Contract ${address}: Sources found: ${filteredSources.length} files`
-		);
-		console.log(
-			`[FETCH-CONTRACT] Sourcify - Contract ${address}: Source paths: ${filteredSources
-				.map((s) => s.path)
-				.join(', ')}`
-		);
-
-		const hasMetadata = filteredSources.some((s) => s.path === 'metadata.json');
-		console.log(
-			`[FETCH-CONTRACT] Sourcify - Contract ${address}: Has metadata.json: ${hasMetadata}`
-		);
-
-		const isVerified = filteredSources.length > 0;
-		return {
-			address,
-			bytecode,
-			name: result.contractResult.name ?? address,
-			sources: filteredSources,
-			abi: result.contractResult.abi,
-			verified: isVerified
-		};
-	}
-
-	// Additional fallback: Etherscan-compatible getsourcecode endpoint
-	const explorer = chainKey ? getExplorerApiForChain(chainKey) : undefined;
-	if (explorer) {
+	// Handle sourcify verificationType if configured
+	if (verificationType === 'sourcify') {
 		try {
-			const escan = await fetch(
-				`${explorer.baseUrl}/api?module=contract&action=getsourcecode&address=${address}`
-			);
-			if (escan.ok) {
-				const json = await escan.json();
-				const row = Array.isArray((json as any)?.result) ? (json as any).result[0] : undefined;
-				const abi: Abi | undefined =
-					row?.ABI && row.ABI !== 'Contract source code not verified'
-						? (JSON.parse(row.ABI) as Abi)
-						: undefined;
-				const name: string = row?.ContractName || (address as string);
+			const provider = whatsabi.providers.WithCachedCode(publicClient, {
+				[address]: bytecode
+			});
 
-				let sources: { path: string; content: string }[] = [];
-				const sourceCode = row?.SourceCode as string | undefined;
-				if (typeof sourceCode === 'string' && sourceCode.trim()) {
-					try {
-						// Etherscan sometimes double-wraps JSON in extra braces
-						const normalized =
-							sourceCode.startsWith('{{') && sourceCode.endsWith('}}')
-								? sourceCode.slice(1, -1)
-								: sourceCode;
-						const parsed = JSON.parse(normalized.startsWith('{') ? normalized : `{}`);
-						const files = (parsed as any)?.sources || (parsed as any)?.files;
-						if (files && typeof files === 'object') {
-							for (const [p, obj] of Object.entries(files as Record<string, any>)) {
-								const content = typeof obj === 'string' ? obj : (obj as any)?.content;
-								if (content) sources.push({ path: p, content: String(content) });
-							}
-						} else if (sourceCode && sourceCode.length > 0) {
-							sources = [{ path: `${address}.sol`, content: sourceCode }];
-						}
-					} catch {
-						sources = [{ path: `${address}.sol`, content: sourceCode }];
-					}
+			const result = await whatsabi.autoload(address, {
+				provider,
+				abiLoader: new whatsabi.loaders.SourcifyABILoader({ chainId }),
+				loadContractResult: true
+			});
+
+			if (result.contractResult) {
+				const [sources, proxyResult] = await Promise.all([
+					result.contractResult.getSources && result.contractResult.getSources(),
+					result.followProxies && result.followProxies()
+				]);
+
+				if (proxyResult && proxyResult.contractResult) {
+					result.contractResult.abi = proxyResult.contractResult.abi;
 				}
 
-				if (Array.isArray(abi)) {
-					const isVerified =
-						sources.length > 0 || row?.IsVerified === 'true' || (row as any)?.is_verified === true;
-					return { address, bytecode, name, sources, abi, verified: isVerified };
-				}
+				const filteredSources = sources
+					? sources
+							.filter(({ path }) => path)
+							.map(({ path, content }) => ({
+								path: whatsabi.loaders.SourcifyABILoader.stripPathPrefix(`/${path}`),
+								content
+							}))
+					: [];
+				const isVerified = filteredSources.length > 0;
+				return {
+					address,
+					bytecode,
+					name: result.contractResult.name ?? address,
+					sources: filteredSources,
+					abi: result.contractResult.abi,
+					verified: isVerified,
+					verificationSource: 'sourcify'
+				};
 			}
-		} catch (e) {
-			console.warn(`[FETCH-CONTRACT] Etherscan-compatible API failed for address: ${address}:`, e);
+		} catch (error) {
+			console.warn(
+				`[FETCH-CONTRACT] Sourcify - Failed to get source code for address: ${address}:`,
+				error
+			);
 		}
 	}
 
-	// Final fallback: whatsabi ABI only
 	const finalResult = {
 		address,
 		bytecode,
 		name: address,
 		sources: [],
-		abi: result.abi as Abi,
-		verified: false
+		abi: [] as Abi,
+		verified: false,
+		verificationSource: undefined
 	};
 
 	return finalResult;
