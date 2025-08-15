@@ -3,7 +3,10 @@ import { type Hash, type Address, type Hex, getAddress } from 'viem';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
 import debugCallResponseToTransactionSimulationResult from '@/app/api/v1/debug-transaction/convert-response';
-import { processTransactionRequest } from '@/app/api/v1/utils/transaction-processing';
+import {
+	processTransactionRequest,
+	cleanupOldTempDirs
+} from '@/app/api/v1/utils/transaction-processing';
 import { getRpcUrlForChainSafe } from '@/lib/networks';
 
 type WithTxHash = {
@@ -73,6 +76,17 @@ const getParameters = ({
 
 export const POST = async (request: NextRequest) => {
 	try {
+		// Periodic cleanup (every 10th request or based on time)
+		const shouldCleanup = Math.random() < 0.1; // 10% chance
+		if (shouldCleanup) {
+			// Run cleanup in background, don't wait for it
+			cleanupOldTempDirs(3).catch(
+				(
+					error // Clean dirs older than 3 minutes
+				) => console.warn('Background cleanup failed:', error?.message)
+			);
+		}
+
 		const body = await request.json();
 		const parameters = getParameters(body);
 

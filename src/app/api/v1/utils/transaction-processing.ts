@@ -123,8 +123,18 @@ export const compileContractsForDebug = async (
 	verifiedContracts: Contract[],
 	parameters: TransactionParameters
 ) => {
-	const tmp = `/tmp/${parameters.txHash ?? parameters.calldata?.slice(0, 128)}`;
-	await rm(tmp, { recursive: true, force: true });
+	// Generate unique temp directory with timestamp and random suffix
+	const timestamp = Date.now();
+	const randomSuffix = Math.random().toString(36).substring(2, 8);
+	const baseName = parameters.txHash ?? parameters.calldata?.slice(0, 128);
+	const tmp = `/tmp/walnut_${baseName}_${timestamp}_${randomSuffix}`;
+
+	// Ensure clean start - this should always succeed since directory is unique
+	try {
+		await rm(tmp, { recursive: true, force: true });
+	} catch (error: any) {
+		console.warn(`Unexpected error removing unique temp dir ${tmp}:`, error.message);
+	}
 
 	const { compiled, ethdebugDirs, cwd, compilationErrors } = await compileContracts(
 		verifiedContracts,
@@ -133,6 +143,91 @@ export const compileContractsForDebug = async (
 
 	return { compiled, ethdebugDirs, cwd, compilationErrors, tmp };
 };
+
+/**
+ * Cleanup old temporary directories to prevent disk space issues
+ */
+export const cleanupOldTempDirs = async (maxAgeMinutes = 60) => {
+	const tempDir = '/tmp';
+	try {
+		const { readdir, stat, rm } = await import('node:fs/promises');
+		const files = await readdir(tempDir);
+
+		const walnutDirs = files.filter(
+			(file) => file.startsWith('walnut_') && file.includes('_') && file.split('_').length >= 3
+		);
+
+		let cleanedCount = 0;
+		for (const dir of walnutDirs) {
+			const dirPath = `${tempDir}/${dir}`;
+			try {
+				const stats = await stat(dirPath);
+				const age = Date.now() - stats.mtime.getTime();
+				const maxAge = maxAgeMinutes * 60 * 1000;
+				const ageMinutes = Math.round(age / 1000 / 60);
+
+				if (age > maxAge) {
+					await rm(dirPath, { recursive: true, force: true });
+					cleanedCount++;
+					console.log(`🧹 Cleaned up old temp dir: ${dir} (age: ${ageMinutes}min)`);
+				}
+			} catch (error: any) {
+				// Ignore cleanup errors for individual directories
+				console.warn(`⚠️ Failed to cleanup ${dir}:`, error?.message);
+			}
+		}
+
+		if (cleanedCount > 0) {
+			console.log(`🧹 Cleanup completed: removed ${cleanedCount} old temp directories`);
+		}
+	} catch (error: any) {
+		console.error('❌ Failed to cleanup temp directories:', error?.message);
+	}
+};
+
+// Global cleanup interval (runs every 30 minutes)
+let cleanupInterval: NodeJS.Timeout | null = null;
+
+export const startCleanupScheduler = () => {
+	if (cleanupInterval) return; // Already started
+
+	cleanupInterval = setInterval(async () => {
+		try {
+			await cleanupOldTempDirs(3); // Clean dirs older than 3 minutes
+		} catch (error: any) {
+			console.error('❌ Scheduled cleanup failed:', error?.message);
+		}
+	}, 3 * 60 * 1000); // Every 3 minutes
+
+	console.log('🕐 Cleanup scheduler started (every 3 minutes)');
+};
+
+export const stopCleanupScheduler = () => {
+	if (cleanupInterval) {
+		clearInterval(cleanupInterval);
+		cleanupInterval = null;
+		console.log('🛑 Temp directory cleanup scheduler stopped');
+	}
+};
+
+// Manual cleanup function that can be called from API endpoints
+export const triggerManualCleanup = async () => {
+	try {
+		console.log('🧹 Manual cleanup triggered');
+		await cleanupOldTempDirs(3); // Clean dirs older than 3 minutes
+		return { success: true, message: 'Manual cleanup completed' };
+	} catch (error: any) {
+		console.error('❌ Manual cleanup failed:', error?.message);
+		return { success: false, error: error?.message };
+	}
+};
+
+// Auto-start cleanup when module loads (in all environments)
+// This ensures cleanup runs even in .local environment
+// You can disable it by setting DISABLE_CLEANUP=true in .env.local
+if (process.env.DISABLE_CLEANUP !== 'true') {
+	startCleanupScheduler();
+}
 
 /**
  * Main function that processes transaction request and returns all necessary data

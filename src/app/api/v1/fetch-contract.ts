@@ -193,15 +193,7 @@ const fetchContract = async (
 									path: 'metadata.json',
 									content: JSON.stringify(metadata, null, 2)
 								});
-								console.log(`[FETCH-CONTRACT] Blockscout v2 - metadata.json added to sources`);
 							} else {
-								console.warn(
-									`[FETCH-CONTRACT] Blockscout v2 - Contract ${address}: No main source found (all sources contain @openzeppelin or node_modules)`
-								);
-								console.log(
-									`[FETCH-CONTRACT] Blockscout v2 - Contract ${address}: Creating metadata.json with first available source...`
-								);
-
 								// Use the first source file as compilation target
 								const firstSource = sources[0];
 								const metadata = {
@@ -246,15 +238,8 @@ const fetchContract = async (
 									path: 'metadata.json',
 									content: JSON.stringify(metadata, null, 2)
 								});
-								console.log(
-									`[FETCH-CONTRACT] Blockscout v2 - Contract ${address}: metadata.json created with first source as target`
-								);
 							}
 						} else {
-							console.warn(
-								`[FETCH-CONTRACT] Blockscout v2 - Contract ${address}: No sources found, cannot create metadata.json`
-							);
-
 							// Even without sources, try to create minimal metadata.json if we have compiler version
 							const compilerVersion =
 								json?.compiler_version ||
@@ -292,9 +277,6 @@ const fetchContract = async (
 									path: 'metadata.json',
 									content: JSON.stringify(minimalMetadata, null, 2)
 								});
-								console.log(
-									`[FETCH-CONTRACT] Blockscout v2 - Contract ${address}: Minimal metadata.json added to sources`
-								);
 							} else {
 								console.warn(
 									`[FETCH-CONTRACT] Blockscout v2 - Contract ${address}: No compiler version found, cannot create metadata.json`
