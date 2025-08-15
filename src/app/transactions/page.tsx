@@ -1,7 +1,7 @@
 'use client';
 
 import { TransactionPage } from '@/components/transaction-page';
-import { extractChainId } from '@/lib/utils';
+// import { extractChainId } from '@/lib/utils';
 import { useSearchParams } from 'next/navigation';
 
 export const runtime = 'edge';
@@ -11,18 +11,10 @@ export default function Page() {
 
 	const txHash = searchParams.get('txHash');
 	const chainIdStr = searchParams.get('chainId');
-	let rpcUrl = searchParams.get('rpcUrl');
-
-	// TODO: Fix this on Dojo side and remove this
-	if (rpcUrl && !isValidUrl(rpcUrl)) {
-		rpcUrl = decodeURIComponent(rpcUrl);
-	}
 
 	if (txHash && chainIdStr) {
-		const chainId = extractChainId(chainIdStr);
-		return <TransactionPage txHash={txHash} chainId={chainId} />;
-	} else if (txHash && rpcUrl) {
-		return <TransactionPage txHash={txHash} rpcUrl={rpcUrl} />;
+		// Pass through chain key as-is to support custom chains (no env RPC override here)
+		return <TransactionPage txHash={txHash} chainId={chainIdStr as any} />;
 	} else {
 		return <div>Page not found</div>;
 	}

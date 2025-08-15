@@ -108,6 +108,48 @@ export function extractChainId(chainIdStr: string): ChainId | undefined {
 			return ChainId.ETH_MAIN;
 		case ChainId.ETH_SEPOLIA:
 			return ChainId.ETH_SEPOLIA;
+		case ChainId.OP_MAIN:
+			return ChainId.OP_MAIN;
+		case ChainId.OP_SEPOLIA:
+			return ChainId.OP_SEPOLIA;
+		default:
+			return undefined;
+	}
+}
+
+export function mapChainIdNumberToEnum(chainIdNumber: number): ChainId | undefined {
+	switch (chainIdNumber) {
+		case 1: // Ethereum Mainnet
+			return ChainId.ETH_MAIN;
+		case 11155111: // Sepolia
+			return ChainId.ETH_SEPOLIA;
+		case 10: // Optimism Mainnet
+			return ChainId.OP_MAIN;
+		case 11155420: // Optimism Sepolia
+			return ChainId.OP_SEPOLIA;
+		case 23448594291968334: // Starknet Mainnet
+			return ChainId.SN_MAIN;
+		case 1536727068981429685: // Starknet Sepolia
+			return ChainId.SN_SEPOLIA;
+		default:
+			return undefined;
+	}
+}
+
+export function mapChainIdStringToNumber(chainIdString: string): number | undefined {
+	switch (chainIdString) {
+		case ChainId.ETH_MAIN:
+			return 1;
+		case ChainId.ETH_SEPOLIA:
+			return 11155111;
+		case ChainId.OP_MAIN:
+			return 10;
+		case ChainId.OP_SEPOLIA:
+			return 11155420;
+		case ChainId.SN_MAIN:
+			return 23448594291968334;
+		case ChainId.SN_SEPOLIA:
+			return 1536727068981429685;
 		default:
 			return undefined;
 	}
@@ -121,10 +163,9 @@ export function extractSimulationPayloadWithCalldata(
 	const blockNumber = searchParams.get('blockNumber');
 	const transactionVersion = searchParams.get('transactionVersion');
 	const nonce = searchParams.get('nonce');
-	const rpcUrl = searchParams.get('rpcUrl');
 	const chainId = searchParams.get('chainId');
 
-	if ((rpcUrl || chainId) && senderAddress && calldata && transactionVersion) {
+	if (senderAddress && calldata && transactionVersion) {
 		const parsedCalldata = parseCalldata(calldata);
 
 		const result: SimulationPayloadWithCalldata = {
@@ -132,7 +173,6 @@ export function extractSimulationPayloadWithCalldata(
 			calldata: parsedCalldata,
 			transactionVersion: parseInt(transactionVersion),
 			nonce: nonce ? parseInt(nonce) : undefined,
-			rpcUrl: rpcUrl ?? undefined,
 			chainId: chainId ?? undefined
 		};
 
@@ -217,7 +257,6 @@ export function openSimulationPage(simulationPayload: SimulationPayload): void {
 	if (simulationPayload.nonce !== undefined)
 		params.set('nonce', simulationPayload.nonce.toString());
 	if (simulationPayload.chainId) params.set('chainId', simulationPayload.chainId);
-	if (simulationPayload.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl);
 
 	window.location.href = `/simulations?${params.toString()}`;
 }

@@ -214,7 +214,7 @@ export const DebuggerContextProvider = ({
 				const txHash = searchParams.get('txHash');
 				const result = txHash
 					? await debugCustomNetworkTransactionByHash({
-							rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
+							chainKey: debuggerPayload?.chainId ?? undefined,
 							txHash
 					  })
 					: await debugTransactionByData(debuggerPayload);

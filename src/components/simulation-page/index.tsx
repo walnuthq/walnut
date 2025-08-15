@@ -111,10 +111,7 @@ export function SimulationPage({
 	} else if (l2TransactionData) {
 		content = (
 			<>
-				<TransactionDetails
-					transactionData={l2TransactionData}
-					rpcUrl={simulationPayload?.rpcUrl}
-				/>
+				<TransactionDetails transactionData={l2TransactionData} />
 				<CallTraceRoot
 					simulationResult={l2TransactionData.simulationResult}
 					l2Flamegraph={l2TransactionData?.flamechart}
@@ -139,7 +136,6 @@ export function SimulationPage({
 			if (l2TransactionData.blockNumber)
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (simulationPayload?.chainId) params.set('chainId', simulationPayload.chainId);
-			else if (simulationPayload?.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl || '');
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};

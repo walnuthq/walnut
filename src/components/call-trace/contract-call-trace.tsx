@@ -13,6 +13,7 @@ import { CommonCallTrace } from './common-call-trace';
 import { ContractCallSignature } from '../ui/signature';
 import { ErrorTraceLine } from './error-trace-line';
 import ValueWithTooltip from '../ui/value-with-tooltip';
+import { getContractCompilationError } from '@/app/api/v1/utils/compilation-status-utils';
 
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
@@ -35,7 +36,8 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		functionCallsMap,
 		isExecutionFailed,
 		traceLineElementRefs,
-		setChosenCallName
+		setChosenCallName,
+		compilationSummary
 	} = useCallTrace();
 	const debuggerContext: ReturnType<typeof useDebugger> = useDebugger();
 
@@ -89,6 +91,14 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	}
 
 	const isDebuggable = call?.callDebuggerDataAvailable;
+
+	// Get compilation error for this contract if available
+	const compilationError = compilationSummary
+		? getContractCompilationError(
+				call.entryPoint.storageAddress as `0x${string}`,
+				compilationSummary
+		  )
+		: undefined;
 
 	if (!traceLineElementRefs.current[contractCallId]) {
 		traceLineElementRefs.current[contractCallId] = React.createRef<HTMLDivElement>();
@@ -187,6 +197,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						}}
 						isDebuggable={isDebuggable}
 						debuggerError={debuggerError}
+						compilationError={compilationError}
 					/>
 				)}
 

@@ -44,8 +44,7 @@ export function Search({
 		async (value: string) => {
 			try {
 				const searchData: SearchDataResponse = await fetchSearchData({
-					hash: value,
-					rpcUrls: networks.map((n) => n.rpcUrl)
+					hash: value
 				});
 				setSearchDataResponse(searchData);
 				setDataResponseResults(
@@ -224,14 +223,12 @@ const SearchItem = ({
 }) => {
 	const handleSearchItem = useCallback(() => {
 		if (type === 'transactions') {
-			if (data.source.rpcUrl) {
-				window.location.href = `/transactions?rpcUrl=${encodeURIComponent(
-					data.source.rpcUrl
-				)}&txHash=${data.hash}`;
-			} else if (data.source.chainId) {
+			if (data.source.chainId) {
 				window.location.href = `/transactions?chainId=${data.source.chainId.toUpperCase()}&txHash=${
 					data.hash
 				}`;
+			} else {
+				console.log('The chainId is not defined');
 			}
 		} else if (type === 'contracts') {
 			window.location.href = `/contracts/${data.hash}`;
@@ -240,9 +237,7 @@ const SearchItem = ({
 		}
 	}, [data, type]);
 
-	const network = data.source.rpcUrl
-		? networks.find((n) => n.rpcUrl === data.source.rpcUrl)
-		: undefined;
+	const network = undefined; // chain-based routing now; we display chain key/enum
 
 	return (
 		<CommandItem
@@ -250,9 +245,7 @@ const SearchItem = ({
 			className="truncate cursor-pointer !bg-transparent hover:!bg-accent"
 			style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
 		>
-			{network ? (
-				<Badge className="hover:bg-primary">{network.networkName}</Badge>
-			) : data.source.chainId ? (
+			{data.source.chainId ? (
 				<Badge className="hover:bg-primary">{data.source.chainId}</Badge>
 			) : null}
 			<p className="ml-2 text-sm truncate">{data.hash}</p>

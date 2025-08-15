@@ -11,7 +11,7 @@ const solc = async ({
 	cwd?: string;
 }) => {
 	try {
-		const { stderr } = await execFile(
+		const { stderr, stdout } = await execFile(
 			'solc',
 			[
 				'--via-ir',
@@ -28,23 +28,10 @@ const solc = async ({
 			],
 			{ cwd }
 		);
-		if (stderr && stderr.includes('Source file requires different compiler version')) {
-			const pragmaMatch = stderr.match(/pragma solidity ([^;]+);/);
-			const pragma = pragmaMatch ? pragmaMatch[1] : 'unknown';
-			throw new Error(
-				`Debugging is only supported with solc >0.8.29, but your file uses pragma solidity ${pragma}.`
-			);
-		}
-		if (stderr) {
-			console.error(stderr);
-		}
 	} catch (err: any) {
-		if (err?.stderr && err.stderr.includes('Source file requires different compiler version')) {
-			const pragmaMatch = err.stderr.match(/pragma solidity ([^;]+);/);
-			const pragma = pragmaMatch ? pragmaMatch[1] : 'unknown';
-			throw new Error(
-				`Debugging is only supported with solc >0.8.29, but your file uses pragma solidity ${pragma}.`
-			);
+		console.log('ERR', err);
+		if (err?.stderr) {
+			throw new Error(err.stderr);
 		}
 		throw err;
 	}

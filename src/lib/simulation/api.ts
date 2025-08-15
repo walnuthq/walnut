@@ -15,7 +15,6 @@ export async function simulateTransactionByData(
 				block_number: simulationPayload.blockNumber,
 				transaction_version: simulationPayload.transactionVersion,
 				nonce: simulationPayload.nonce,
-				rpc_url: process.env.NEXT_PUBLIC_RPC_URL,
 				chain_id: simulationPayload.chainId
 			}
 		},
@@ -46,20 +45,27 @@ export async function simulateTransactionByHash({
 
 export async function simulateCustomNetworkTransactionByHash({
 	rpcUrl,
+	chainKey,
 	txHash,
 	skipTracking
 }: {
-	rpcUrl: string;
+	rpcUrl?: string;
+	chainKey?: string;
 	txHash: string;
 	skipTracking?: boolean;
 }): Promise<TransactionSimulationResult> {
+	// Validate that either chainKey is provided
+	if (!chainKey && !rpcUrl) {
+		throw new Error('ChainKey must be provided to simulate transaction');
+	}
+
 	return await fetchApi<TransactionSimulationResult>(`/v1/simulate-transaction`, {
 		method: 'POST',
 		renameToCamelCase: true,
 		data: {
 			WithTxHash: {
-				rpc_url: rpcUrl,
-				tx_hash: txHash
+				tx_hash: txHash,
+				chain_id: chainKey
 			}
 		},
 		queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
