@@ -72,14 +72,8 @@ export function SimulateTransactionPage({
 	const [_transactionVersion, _setTransactionVersion] = useState<number>(
 		simulationPayload?.transactionVersion || defaultTransactionVersion
 	);
-	const defaultChain = {
-		chainId: process.env.NEXT_PUBLIC_CHAIN_ID,
-		network: {
-			rpcUrl: process.env.NEXT_PUBLIC_RPC_URL!,
-			networkName: process.env.NEXT_PUBLIC_NETWORK_NAME!
-		}
-	};
-	const [_chain, _setChain] = useState<Chain | undefined>(defaultChain);
+
+	const [_chain, _setChain] = useState<Chain | undefined>();
 
 	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
@@ -195,8 +189,7 @@ export function SimulateTransactionPage({
 				}));
 			}
 		} catch (error) {
-			console.log('Error fetching functions:', error);
-
+			console.log('Error fetching functions - ABI not found for contract address');
 			if (error instanceof Error && error.message === 'ABI not found for contract address') {
 				_setContractCallsFunctions((prev) => {
 					const { contractAddress, ...rest } = prev;

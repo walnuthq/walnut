@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation';
 import { getCacheWithTTL, setCacheWithTTL } from '@/lib/utils/cache-utils';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
+import { getDisplayNameForChainId } from '@/lib/networks';
 
 export function TransactionPage({
 	txHash,
@@ -95,19 +96,20 @@ export function TransactionPage({
 					return;
 				}
 
+				if (!chainId) {
+					setError('ChainId must be provided to simulate transaction');
+					return;
+				}
+
 				let simulation: TransactionSimulationResult;
 
-				if (chainId) {
-					simulation = await simulateTransactionByHash({ chainId, txHash, skipTracking });
-				} else if (rpcUrl) {
-					simulation = await simulateCustomNetworkTransactionByHash({
-						txHash,
-						rpcUrl,
-						skipTracking
-					});
-				} else {
-					simulation = {};
-				}
+				// Prefer chain-based resolution; fallback to explicit rpcUrl if provided
+				simulation = await simulateCustomNetworkTransactionByHash({
+					txHash,
+					chainKey: chainId,
+					rpcUrl: rpcUrl,
+					skipTracking
+				});
 
 				setCacheWithTTL(cacheKey, simulation);
 				setTransactionSimulation(simulation);
@@ -167,12 +169,22 @@ export function TransactionPage({
 			if (l2TransactionData.blockNumber)
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (chainId) params.set('chainId', chainId);
-			else if (rpcUrl) params.set('rpcUrl', rpcUrl);
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};
-	const network = rpcUrl ? getNetworkByRpcUrl(rpcUrl) : null;
-	console.log(network?.networkName);
+
+	// Determine network for display - support both chainId and rpcUrl
+	let network = null;
+	if (rpcUrl) {
+		network = getNetworkByRpcUrl(rpcUrl);
+	} else if (chainId) {
+		// Create network object from chainId for display purposes
+		network = {
+			networkName: getDisplayNameForChainId(chainId),
+			rpcUrl: ''
+		};
+	}
+
 	return (
 		<>
 			<HeaderNav />
@@ -270,6 +282,7 @@ export function TransactionPage({
 											>
 												{shortenHash(l1TransactionData.l1TxHash)}
 											</CopyToClipboardElement>
+											{network && <NetworkBadge network={network} />}
 										</h1>
 									)}
 								</div>

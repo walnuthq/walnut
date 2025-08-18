@@ -1,23 +1,17 @@
-import { rm, mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
 import { NextResponse, type NextRequest } from 'next/server';
-import { createPublicClient, http, type Hash, type Address, type Hex, getAddress } from 'viem';
-import { type Metadata } from '@ethereum-sourcify/lib-sourcify';
-import { uniqBy } from 'lodash';
-
-// import { spawnAnvil } from '@/app/api/v1/anvil';
-import createTracingClient, { flattenTraceCall } from '@/app/api/v1/tracing-client';
-import fetchContract from '@/app/api/v1/fetch-contract';
-import solc from '@/app/api/v1/solc';
+import { type Hash, type Address, type Hex, getAddress } from 'viem';
 import walnutCli from '@/app/api/v1/walnut-cli';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
-import { type Contract } from '@/app/api/v1/types';
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { getRpcUrlForChainSafe } from '@/lib/networks';
+import { createCompilationSummary } from '@/app/api/v1/utils/compilation-status-utils';
+import {
+	processTransactionRequest,
+	cleanupOldTempDirs
+} from '@/app/api/v1/utils/transaction-processing';
 
 type WithTxHash = {
-	rpc_url: string;
 	tx_hash: Hash;
+	chain_id: string;
 };
 
 type WithCalldata = {
@@ -26,8 +20,7 @@ type WithCalldata = {
 	block_number: number | undefined;
 	transaction_version: number;
 	nonce: number | undefined;
-	rpc_url: string;
-	chain_id: string | undefined;
+	chain_id: string;
 };
 
 const getParameters = ({
@@ -38,11 +31,27 @@ const getParameters = ({
 	WithCalldata: WithCalldata;
 }) => {
 	if (withTxHash) {
-		return { rpcUrl: withTxHash.rpc_url, txHash: withTxHash.tx_hash };
+		// Validate chain_id is not undefined
+		if (!withTxHash.chain_id) {
+			throw new Error(
+				'chain_id is required for transaction simulation. Every chain must have a valid RPC URL with debug options.'
+			);
+		}
+
+		const rpcUrl = getRpcUrlForChainSafe(withTxHash.chain_id);
+		return { rpcUrl, txHash: withTxHash.tx_hash, chainId: withTxHash.chain_id };
 	}
 	if (withCalldata) {
+		// Validate chain_id is not undefined
+		if (!withCalldata.chain_id) {
+			throw new Error(
+				'chain_id is required for calldata simulation. Every chain must have a valid RPC URL with debug options.'
+			);
+		}
+
+		const rpcUrl = getRpcUrlForChainSafe(withCalldata.chain_id);
 		return {
-			rpcUrl: withCalldata.rpc_url,
+			rpcUrl,
 			senderAddress: withCalldata.sender_address as Address,
 			to: withCalldata.calldata[1] as Address,
 			calldata: withCalldata.calldata[4] as Hex,
@@ -56,153 +65,85 @@ const getParameters = ({
 
 export const POST = async (request: NextRequest) => {
 	try {
-		const body = await request.json();
-		const parameters = getParameters(body);
-		// console.log('/simulate-transaction parameters', parameters);
-		// SPAWN ANVIL
-		// console.log('SPAWNING ANVIL');
-		// const anvil = await spawnAnvil({ rpcUrl, txHash });
-		// console.log('ANVIL STARTED');
-		// FETCH TRACE CALL
-		const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
-		const tracingClient = createTracingClient(parameters.rpcUrl);
-		const [chainId, transaction, traceResult] = await Promise.all([
-			parameters.chainId ? Number(parameters.chainId) : publicClient.getChainId(),
-			parameters.txHash
-				? publicClient.getTransaction({ hash: parameters.txHash })
-				: {
-						to: parameters.to,
-						blockNumber: parameters.blockNumber,
-						nonce: parameters.nonce,
-						from: parameters.senderAddress,
-						transactionIndex: 0
-				  },
-			parameters.txHash
-				? tracingClient.traceTransaction({
-						transactionHash: parameters.txHash,
-						tracer: 'callTracer'
-						// tracerConfig: { withLog: true }
-				  })
-				: tracingClient.traceCall({
-						from: parameters.senderAddress,
-						to: parameters.to,
-						data: parameters.calldata,
-						blockNrOrHash: parameters.blockNumber
-							? `0x${parameters.blockNumber.toString(16)}`
-							: 'latest',
-						//txIndex: '0x0', //options.txIndex ?? 0,
-						tracer: 'callTracer'
-						// tracerConfig: { withLog: true }
-				  })
-		]);
-		// console.log('TRACE CALL FETCHED');
-		// console.log({ chainId });
-		// console.log(transaction.to);
-		// console.log(traceResult);
-		if (!transaction.to && traceResult && traceResult.type !== 'CREATE') {
-			throw new Error(
-				'ERROR: eth_getTransactionByHash failed - missing to address and not a CREATE transaction'
+		// Periodic cleanup (every 10th request or based on time)
+		const shouldCleanup = Math.random() < 0.1; // 10% chance
+		if (shouldCleanup) {
+			// Run cleanup in background, don't wait for it
+			cleanupOldTempDirs(3).catch(
+				(
+					error // Clean dirs older than 3 minutes
+				) => console.warn('Background cleanup failed:', error?.message)
 			);
 		}
-		if (!traceResult) {
-			throw new Error('ERROR: debug_traceTransaction/debug_traceCall failed');
-		}
-		// contracts should be verified first
-		// forge verify-contract --rpc-url $RPC_URL --compiler-version 0.8.30 --via-ir $CONTRACT_ADDRESS examples/TestContract.sol:TestContract
-		// FETCH CONTRACTS
-		const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceResult), 'to');
-		const [{ timestamp, transactions }, sourcifyContracts] = await Promise.all([
-			publicClient.getBlock({ blockNumber: transaction.blockNumber }),
-			Promise.allSettled(
-				flattenedTraceTransactionResult
-					.filter(({ type }) => type === 'CALL' || type === 'DELEGATECALL')
-					.map(({ to }) => fetchContract(to, publicClient, chainId))
-			)
-		]);
 
-		// Filter out failed contract fetches and get only verified contracts
-		const verifiedContracts = sourcifyContracts
-			.filter(
-				(result): result is PromiseFulfilledResult<Contract> =>
-					result.status === 'fulfilled' && result.value.verified
-			)
-			.map((result) => result.value);
+		const body = await request.json();
+		const parameters = getParameters(body);
 
-		const allContracts = sourcifyContracts
-			.filter((result): result is PromiseFulfilledResult<Contract> => result.status === 'fulfilled')
-			.map((result) => result.value);
-
-		// COPY SOURCES TO /TMP AND COMPILE ONLY VERIFIED CONTRACTS
-		const tmp = `/tmp/${parameters.txHash ?? parameters.calldata.slice(0, 128)}`;
-		await rm(tmp, { recursive: true, force: true });
-
-		let ethdebugDirs: string[] = [];
-		let cwd = process.env.PWD;
-		let compilationFailed = false;
-
-		// Try to compile all verified contracts
-		if (verifiedContracts.length > 0) {
-			try {
-				await Promise.all(
-					verifiedContracts.map(async (contract) => {
-						const metadataFile = contract.sources.find((source) =>
-							source.path?.endsWith('metadata.json')
-						);
-						if (!metadataFile) {
-							throw new Error(`No metadata found for ${contract.address}`);
-						}
-
-						const metadata = JSON.parse(metadataFile.content) as Metadata;
-						const [compilationTarget] = Object.keys(metadata.settings.compilationTarget);
-						await Promise.all(
-							contract.sources
-								.filter((source) => source.path)
-								.map(async (source) => {
-									const filename = `${tmp}/${contract.address}/${source.path}`;
-									const parentDirectory = dirname(filename);
-									await mkdir(parentDirectory, { recursive: true });
-									return writeFile(filename, source.content);
-								})
-						);
-						// ugly fix to make sure we wait until all files are written on disk
-						await sleep(400);
-						await solc({ compilationTarget, cwd: `${tmp}/${contract.address}` });
-						console.log(`Successfully compiled ${contract.address}`);
-					})
-				);
-
-				// If all compilations succeeded, set up ethdebugDirs
-				if (verifiedContracts.length === 1) {
-					ethdebugDirs = [`${tmp}/${verifiedContracts[0].address}/debug`];
-					cwd = `${tmp}/${verifiedContracts[0].address}`;
-				} else if (verifiedContracts.length > 1) {
-					ethdebugDirs = verifiedContracts.map((contract) =>
-						contract.name
-							? `${contract.address}:${contract.name}:${tmp}/${contract.address}/debug`
-							: `${contract.address}:${tmp}/${contract.address}/debug`
-					);
-					cwd = `${tmp}/${verifiedContracts[0].address}`;
-				}
-			} catch (error) {
-				console.error('Compilation failed for one or more contracts:', error);
-				console.log('Treating all contracts as unverified due to compilation failure');
-				compilationFailed = true;
-				// Keep ethdebugDirs empty and cwd as process.env.PWD
-			}
-		}
-
-		// RUN WALNUT-CLI
-		const { traceCall, steps, contracts, status, error } = await walnutCli({
-			command: parameters.txHash ? 'trace' : 'simulate',
+		// Use shared transaction processing utility
+		const {
+			chainId,
+			transaction,
+			traceResult,
+			verifiedContracts,
+			allContracts,
+			compiled,
+			ethdebugDirs,
+			cwd,
+			compilationErrors,
+			timestamp,
+			transactions
+		} = await processTransactionRequest({
+			rpcUrl: parameters.rpcUrl,
 			txHash: parameters.txHash,
-			to: transaction.to || undefined,
+			to: parameters.to,
 			calldata: parameters.calldata,
 			from: parameters.senderAddress,
 			blockNumber: parameters.blockNumber,
-			rpcUrl: parameters.rpcUrl,
-			ethdebugDirs,
-			cwd
+			nonce: parameters.nonce,
+			chainId: parameters.chainId
 		});
+
+		let walnutCliResult;
+		try {
+			const walnutParams = {
+				command: (parameters.txHash ? 'trace' : 'simulate') as 'trace' | 'simulate',
+				txHash: parameters.txHash,
+				to: transaction.to || undefined,
+				calldata: parameters.calldata,
+				from: parameters.senderAddress,
+				blockNumber: parameters.blockNumber,
+				rpcUrl: parameters.rpcUrl,
+				ethdebugDirs,
+				cwd
+			};
+
+			walnutCliResult = await walnutCli(walnutParams);
+		} catch (walnutError: any) {
+			console.error(
+				`WALNUT-CLI failed. Compilation errors prevented debug data: ${compilationErrors.join(
+					'; '
+				)}. Execution error: ${walnutError?.message || String(walnutError)}`
+			);
+			// If we have compilation errors, include them in the error message
+			if (compilationErrors.length > 0) {
+				const errorMsg = `WALNUT-CLI execution failed: ${
+					walnutError?.message || String(walnutError)
+				}`;
+				return NextResponse.json({ error: errorMsg }, { status: 400 });
+			}
+
+			throw walnutError; // Re-throw if it's not related to compilation
+		}
+
+		const { traceCall, steps, contracts, status, error } = walnutCliResult;
+
+		// Create compilation summary for frontend
+		const compilationSummary = createCompilationSummary(
+			verifiedContracts,
+			compiled,
+			compilationErrors
+		);
+
 		const response = traceCallResponseToTransactionSimulationResult({
 			status: status === 'reverted' ? 'REVERTED' : 'SUCCEEDED',
 			error: error ?? '',
@@ -217,12 +158,41 @@ export const POST = async (request: NextRequest) => {
 			from: getAddress(transaction.from),
 			type: 'INVOKE',
 			transactionIndex: transaction.transactionIndex,
-			transactions,
-			txHash: parameters.txHash
+			transactions: [transactions.toString()], // Convert bigint to string array
+			txHash: parameters.txHash,
+			compilationSummary
 		});
 		// anvil.kill();
 		return NextResponse.json(response);
 	} catch (err: any) {
-		return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 400 });
+		// Handle SourcifyABILoader errors specifically to avoid logging full call traces
+		if (
+			err?.message?.includes('SourcifyABILoaderError') ||
+			err?.message?.includes('SourcifyABILoader')
+		) {
+			console.error('SOURCIFY ABI LOADER ERROR:', err.message);
+			return NextResponse.json(
+				{
+					error: 'Failed to load contract ABI from Sourcify',
+					details: 'Contract verification or ABI loading failed'
+				},
+				{ status: 400 }
+			);
+		}
+
+		// Handle other errors with limited logging
+		console.error('SIMULATE TRANSACTION ERROR:', err?.message || String(err));
+
+		// Don't log the full error object to avoid call traces
+		if (err?.stack) {
+			console.error('Error stack trace available (not logged for brevity)');
+		}
+
+		return NextResponse.json(
+			{
+				error: err?.message || 'Unknown error occurred during transaction simulation'
+			},
+			{ status: 400 }
+		);
 	}
 };

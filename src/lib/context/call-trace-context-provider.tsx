@@ -15,7 +15,8 @@ import {
 	ContractCallEvent,
 	SimulationDebuggerData,
 	SimulationResult,
-	FlameNode
+	FlameNode,
+	CompilationSummary
 } from '@/lib/simulation';
 import { DebuggerPayload } from '@/lib/debugger';
 
@@ -51,6 +52,7 @@ interface CallTraceContextProps {
 	scrollToTraceLineElement: (key: number) => void;
 	chosenCallName: string | null;
 	setChosenCallName: (callName: string | null) => void;
+	compilationSummary?: CompilationSummary;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -226,7 +228,8 @@ export const CallTraceContextProvider: React.FC<
 				setActiveTab,
 				scrollToTraceLineElement,
 				chosenCallName,
-				setChosenCallName
+				setChosenCallName,
+				compilationSummary: simulationResult.compilationSummary
 			}}
 		>
 			{children}

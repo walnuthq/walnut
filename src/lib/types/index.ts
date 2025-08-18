@@ -1,6 +1,8 @@
 export enum ChainId {
 	SN_MAIN = 'SN_MAIN',
 	SN_SEPOLIA = 'SN_SEPOLIA',
+	OP_SEPOLIA = 'OP_SEPOLIA',
+	OP_MAIN = 'OP_MAIN',
 	ETH_MAIN = 'ETH_MAIN',
 	ETH_SEPOLIA = 'ETH_SEPOLIA'
 }

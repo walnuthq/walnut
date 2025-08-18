@@ -9,7 +9,6 @@ export async function debugTransactionByData(
 		method: 'POST',
 		data: {
 			WithCalldata: {
-				rpc_url: process.env.NEXT_PUBLIC_RPC_URL,
 				chain_id: debuggerPayload.chainId ?? null,
 				block_number: debuggerPayload.blockNumber ?? null,
 				block_timestamp: debuggerPayload.blockTimestamp,
@@ -30,19 +29,26 @@ export async function debugTransactionByData(
 
 export async function debugCustomNetworkTransactionByHash({
 	rpcUrl,
+	chainKey,
 	txHash,
 	skipTracking
 }: {
-	rpcUrl: string;
+	rpcUrl?: string;
+	chainKey?: string;
 	txHash: string;
 	skipTracking?: boolean;
 }): Promise<DebuggerInfo> {
+	if (!chainKey && !rpcUrl) {
+		throw new Error('ChainKey must be provided to debug transaction');
+	}
+
 	return await fetchApi<DebuggerInfo>(`/v1/debug-transaction`, {
 		method: 'POST',
 		renameToCamelCase: true,
 		data: {
 			WithTxHash: {
 				rpc_url: rpcUrl,
+				chain_id: chainKey,
 				tx_hash: txHash
 			}
 		},
