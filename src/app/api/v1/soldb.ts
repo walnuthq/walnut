@@ -37,7 +37,7 @@ const rawWalnutTraceCallToWalnutTraceCall = (
 	rawWalnutTraceCall: RawWalnutTraceCall
 ): WalnutTraceCall => ({
 	...rawWalnutTraceCall,
-	// FIXME walnut-cli returns output as a string without 0x prefix
+	// FIXME soldb returns output as a string without 0x prefix
 	output: rawWalnutTraceCall.output
 		? rawWalnutTraceCall.output.startsWith('0x')
 			? rawWalnutTraceCall.output
@@ -81,7 +81,7 @@ type TraceCallWithIds = TraceCallWithIndex & {
 	parentContractCallId: number;
 };
 
-const walnutCli = async ({
+const soldb = async ({
 	command,
 	txHash,
 	to,
@@ -111,7 +111,7 @@ const walnutCli = async ({
 	}
 
 	const fullCommand = [
-		'walnut-cli',
+		'soldb',
 		...args,
 		...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
 		'--rpc',
@@ -119,14 +119,14 @@ const walnutCli = async ({
 		'--json'
 	];
 
-	console.log('Executing walnut-cli command:', fullCommand.join(' '));
+	console.log('Executing soldb command:', fullCommand.join(' '));
 	if (cwd) {
 		console.log('Working directory:', cwd);
 	}
 
 	try {
 		const { stdout } = await execFile(
-			'walnut-cli',
+			'soldb',
 			[
 				...args,
 				...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
@@ -136,13 +136,12 @@ const walnutCli = async ({
 			],
 			{ cwd }
 		);
-		console.log('walnut-cli stdout:', stdout.substring(0, 500) + '...');
 		const rawDebugCallResponse = JSON.parse(stdout) as RawDebugCallResponse;
 		return rawDebugCallResponseToDebugCallResponse(rawDebugCallResponse);
 	} catch (err: any) {
-		console.error('walnut-cli error:', err);
+		console.error('soldb error:', err);
 		throw new Error('Failed to fetch debugger call trace');
 	}
 };
 
-export default walnutCli;
+export default soldb;

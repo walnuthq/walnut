@@ -1,0 +1,10 @@
+# Robots.txt for Walnut Debugger
+# Allow all crawlers to access the site
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://your-domain.com/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1

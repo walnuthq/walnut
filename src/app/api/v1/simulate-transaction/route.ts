@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { type Hash, type Address, type Hex, getAddress } from 'viem';
-import walnutCli from '@/app/api/v1/walnut-cli';
+import soldb from '@/app/api/v1/soldb';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
 import { getRpcUrlForChainSafe } from '@/lib/networks';
 import { createCompilationSummary } from '@/app/api/v1/utils/compilation-status-utils';
@@ -117,18 +117,16 @@ export const POST = async (request: NextRequest) => {
 				cwd
 			};
 
-			walnutCliResult = await walnutCli(walnutParams);
+			walnutCliResult = await soldb(walnutParams);
 		} catch (walnutError: any) {
 			console.error(
-				`WALNUT-CLI failed. Compilation errors prevented debug data: ${compilationErrors.join(
+				`SOLDB failed. Compilation errors prevented debug data: ${compilationErrors.join(
 					'; '
 				)}. Execution error: ${walnutError?.message || String(walnutError)}`
 			);
 			// If we have compilation errors, include them in the error message
 			if (compilationErrors.length > 0) {
-				const errorMsg = `WALNUT-CLI execution failed: ${
-					walnutError?.message || String(walnutError)
-				}`;
+				const errorMsg = `SOLDB execution failed: ${walnutError?.message || String(walnutError)}`;
 				return NextResponse.json({ error: errorMsg }, { status: 400 });
 			}
 
