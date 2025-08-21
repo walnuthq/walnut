@@ -23,14 +23,19 @@
 - [Who is Walnut for?](#who-is-walnut-for)
 - [Live Demo](#live-demo)
 - [Features and Roadmap](#features-and-roadmap)
-- [Enterprise & Privacy](#enterprise--privacy)
+- [Enterprise \& Privacy](#enterprise--privacy)
 - [Deployment and Self-Hosting](#deployment-and-self-hosting)
-- [Local Setup & Usage](#local-setup--usage)
+- [Local Setup \& Usage](#local-setup--usage)
+  - [1. Install Prerequisites](#1-install-prerequisites)
+  - [2. Set Up Environment Variables](#2-set-up-environment-variables)
+  - [3. Activate Python Virtual Environment](#3-activate-python-virtual-environment)
+  - [4. Install Dependencies \& Build](#4-install-dependencies--build)
+  - [5. Run the Debugger](#5-run-the-debugger)
 - [Contributing](#contributing)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
 - [Security Practices](#security-practices)
-- [Support & Contact](#support--contact)
+- [Support \& Contact](#support--contact)
 
 ## Who is Walnut for?
 
@@ -45,9 +50,9 @@ https://github.com/user-attachments/assets/c58884e5-a6b8-49fe-8f3f-08246d3139fd
 
 Try Walnut live at [evm.walnut.dev](https://evm.walnut.dev)
 
-
 ## Features and Roadmap
-- [x] Full transaction call trace with internal function calls and decoded values 
+
+- [x] Full transaction call trace with internal function calls and decoded values
 - [x] Step-by-step transaction debugger
 - [x] Transaction simulations
 - [x] Custom RPCs including local (Anvil, Public RPCs, custom chains)
@@ -70,10 +75,10 @@ Docker images and deployment guides will be available soon. In the meantime, ple
 
 ### 1. Install Prerequisites
 
-This project depends on [walnut-cli](https://github.com/walnuthq/walnut-cli). **Follow the CLI installation guide carefully, using the [Install from source](https://github.com/walnuthq/walnut-cli#a-install-from-source-recommended) instructions.**
+This project depends on [soldb](https://github.com/walnuthq/soldb). **Follow the CLI installation guide carefully, using the [Install from source](https://github.com/walnuthq/soldb#a-install-from-source-recommended) instructions.**
 This will create a Python Virtual Environment within the CLI folder.
 
-> **Note:** The Python Virtual Environment created during walnut-cli setup is also required for running Walnut as described below.
+> **Note:** The Python Virtual Environment created during soldb setup is also required for running Walnut as described below.
 
 ---
 
@@ -99,14 +104,14 @@ NEXT_PUBLIC_CHAIN_ID="11155420"
 
 ### 3. Activate Python Virtual Environment
 
-Before running Walnut, activate the Python Virtual Environment created during walnut-cli installation.  From the root of this repository, run:
+Before running Walnut, activate the Python Virtual Environment created during soldb installation. From the root of this repository, run:
 
 ```sh
-source ../walnut-cli/MyEnv/bin/activate
+source ../soldb/MyEnv/bin/activate
 ```
 
-> **Note:** Replace `../walnut-cli/MyEnv/bin/activate` with your actual virtual environment path if it differs.  
-> You should see your shell prompt change, indicating the environment is active. Keep this environment activated for all steps that require walnut-cli or Python dependencies.
+> **Note:** Replace `../soldb/MyEnv/bin/activate` with your actual virtual environment path if it differs.  
+> You should see your shell prompt change, indicating the environment is active. Keep this environment activated for all steps that require soldb or Python dependencies.
 
 ---
 
@@ -116,7 +121,6 @@ source ../walnut-cli/MyEnv/bin/activate
 npm install
 npm run build
 ```
-
 
 ---
 
