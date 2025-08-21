@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { type Hash, type Address, type Hex, getAddress } from 'viem';
-import walnutCli from '@/app/api/v1/walnut-cli';
+import soldb from '@/app/api/v1/soldb';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
 import debugCallResponseToTransactionSimulationResult from '@/app/api/v1/debug-transaction/convert-response';
 import {
@@ -115,7 +115,7 @@ export const POST = async (request: NextRequest) => {
 		});
 
 		try {
-			const { traceCall, steps, contracts, status, error } = await walnutCli({
+			const { traceCall, steps, contracts, status, error } = await soldb({
 				command: parameters.txHash ? 'trace' : 'simulate',
 				txHash: parameters.txHash,
 				to: transaction.to || undefined,
@@ -157,12 +157,12 @@ export const POST = async (request: NextRequest) => {
 			});
 			return NextResponse.json(response);
 		} catch (e: any) {
-			// Handle walnut-cli errors with limited logging to avoid call traces
-			console.error('Error running walnut-cli:', e?.message || String(e));
+			// Handle soldb errors with limited logging to avoid call traces
+			console.error('Error running soldb:', e?.message || String(e));
 			return NextResponse.json(
 				{
-					error: 'Failed to run walnut-cli',
-					details: e?.message || 'Unknown walnut-cli error'
+					error: 'Failed to run soldb',
+					details: e?.message || 'Unknown soldb error'
 				},
 				{ status: 500 }
 			);
