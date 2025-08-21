@@ -20,8 +20,6 @@
 
 ## Table of Contents
 
-- [Key features](#key-features)
-- [Table of Contents](#table-of-contents)
 - [Who is Walnut for?](#who-is-walnut-for)
 - [Live Demo](#live-demo)
 - [Features and Roadmap](#features-and-roadmap)
