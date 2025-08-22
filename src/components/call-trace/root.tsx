@@ -78,7 +78,11 @@ function CallTraceRootContent() {
 				</div>
 			)}
 
-			<div className="mt-4 h-full flex flex-col overflow-hidden">
+			<div
+				className={`${
+					simulationResult.executionResult.executionStatus !== 'SUCCEEDED' ? '' : 'mt-12'
+				} h-full flex flex-col overflow-hidden`}
+			>
 				<Tabs
 					value={activeTab}
 					onValueChange={onValueChange}
