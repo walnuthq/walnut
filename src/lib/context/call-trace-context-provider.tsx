@@ -54,7 +54,7 @@ interface CallTraceContextProps {
 	chosenCallName: string | null;
 	setChosenCallName: (callName: string | null) => void;
 	compilationSummary?: CompilationSummary;
-	contractCallWithError: ContractCall | undefined;
+	callWithError: ContractCall | FunctionCall | undefined;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -81,7 +81,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	scrollToTraceLineElement: (key: number) => undefined,
 	chosenCallName: null,
 	setChosenCallName: () => undefined,
-	contractCallWithError: undefined
+	callWithError: undefined
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -160,9 +160,9 @@ export const CallTraceContextProvider: React.FC<
 	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});
 	const [chosenCallName, setChosenCallName] = useState<string | null>(null);
-	const [contractCallWithError, setContractCallWithError] = useState<ContractCall | undefined>(
-		undefined
-	);
+	const [callWithError, setContractCallWithError] = useState<
+		ContractCall | FunctionCall | undefined
+	>(undefined);
 	const errorMessage =
 		simulationResult.executionResult.executionStatus === 'REVERTED'
 			? simulationResult.executionResult.revertReason
@@ -211,9 +211,13 @@ export const CallTraceContextProvider: React.FC<
 
 	useEffect(() => {
 		if (isExecutionFailed && errorMessage) {
-			const errorCall = Object.values(simulationResult.contractCallsMap).find(
-				(item) => item.errorMessage === errorMessage
-			);
+			const errorCall =
+				Object.values(simulationResult.contractCallsMap).find(
+					(item) => item.errorMessage === errorMessage
+				) ||
+				Object.values(simulationResult.functionCallsMap).find(
+					(item) => item.errorMessage === errorMessage
+				);
 			setContractCallWithError(errorCall);
 		}
 	}, [simulationResult.contractCallsMap]);
@@ -245,7 +249,7 @@ export const CallTraceContextProvider: React.FC<
 				chosenCallName,
 				setChosenCallName,
 				compilationSummary: simulationResult.compilationSummary,
-				contractCallWithError
+				callWithError
 			}}
 		>
 			{children}

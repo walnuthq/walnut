@@ -59,7 +59,7 @@ function CallTraceRootContent() {
 		l1DataFlamegraph,
 		setChosenCallName,
 		debuggerPayload,
-		contractCallWithError
+		callWithError
 	} = useCallTrace();
 	const onValueChange = useCallback(
 		(value: string) => {
@@ -72,9 +72,9 @@ function CallTraceRootContent() {
 	);
 	return (
 		<>
-			{simulationResult.executionResult.executionStatus !== 'SUCCEEDED' && (
+			{simulationResult.executionResult.executionStatus !== 'SUCCEEDED' && callWithError && (
 				<div>
-					<ErrorAlert contractCallError={contractCallWithError} />
+					<ErrorAlert callError={callWithError} />
 				</div>
 			)}
 
