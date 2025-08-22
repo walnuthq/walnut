@@ -28,9 +28,8 @@
 - [Local Setup \& Usage](#local-setup--usage)
   - [1. Install Prerequisites](#1-install-prerequisites)
   - [2. Set Up Environment Variables](#2-set-up-environment-variables)
-  - [3. Activate Python Virtual Environment](#3-activate-python-virtual-environment)
-  - [4. Install Dependencies \& Build](#4-install-dependencies--build)
-  - [5. Run the Debugger](#5-run-the-debugger)
+  - [3. Install Dependencies \& Build](#3-install-dependencies--build)
+- [4. Run the Debugger](#4-run-the-debugger)
 - [Contributing](#contributing)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
@@ -75,10 +74,13 @@ Docker images and deployment guides will be available soon. In the meantime, ple
 
 ### 1. Install Prerequisites
 
-This project depends on [soldb](https://github.com/walnuthq/soldb). **Follow the CLI installation guide carefully, using the [Install from source](https://github.com/walnuthq/soldb#a-install-from-source-recommended) instructions.**
-This will create a Python Virtual Environment within the CLI folder.
+This project depends on [SolDB](https://github.com/walnuthq/soldb). Install it using:
 
-> **Note:** The Python Virtual Environment created during soldb setup is also required for running Walnut as described below.
+```bash
+pip install git+https://github.com/walnuthq/soldb.git
+```
+
+> **Note:** SolDB is currently in beta and doesn't have a PyPI package yet.
 
 ---
 
@@ -102,20 +104,9 @@ NEXT_PUBLIC_CHAIN_ID="11155420"
 
 ---
 
-### 3. Activate Python Virtual Environment
-
-Before running Walnut, activate the Python Virtual Environment created during soldb installation. From the root of this repository, run:
-
-```sh
-source ../soldb/MyEnv/bin/activate
-```
-
-> **Note:** Replace `../soldb/MyEnv/bin/activate` with your actual virtual environment path if it differs.  
-> You should see your shell prompt change, indicating the environment is active. Keep this environment activated for all steps that require soldb or Python dependencies.
-
 ---
 
-### 4. Install Dependencies & Build
+### 3. Install Dependencies & Build
 
 ```sh
 npm install
@@ -124,7 +115,7 @@ npm run build
 
 ---
 
-### 5. Run the Debugger
+### 4. Run the Debugger
 
 Start the application:
 
