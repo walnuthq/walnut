@@ -20,6 +20,7 @@ import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { useRouter } from 'next/navigation';
 import { getCacheWithTTL, safeStringify, setCacheWithTTL } from '@/lib/utils/cache-utils';
+import { NetworkBadge } from '../ui/network-badge';
 export function SimulationPage({
 	simulationPayload
 }: {
@@ -31,7 +32,7 @@ export function SimulationPage({
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { trackingActive, trackingFlagLoaded } = useSettings();
 	const router = useRouter();
-
+	const { parseChain, getNetworkByRpcUrl } = useSettings();
 	useEffect(() => {
 		const fetchData = async () => {
 			if (!simulationPayload) {
@@ -102,7 +103,12 @@ export function SimulationPage({
 			fetchData();
 		}
 	}, [simulationPayload, trackingActive, trackingFlagLoaded]);
-
+	const network = simulationPayload?.rpcUrl ? getNetworkByRpcUrl(simulationPayload?.rpcUrl) : null;
+	const chainDetails = network?.networkName
+		? parseChain(network?.networkName)
+		: simulationPayload?.chainId
+		? parseChain(simulationPayload?.chainId)
+		: undefined;
 	let content = null;
 	if (isLoading) {
 		content = <Loader />;
@@ -146,7 +152,9 @@ export function SimulationPage({
 			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
 				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
 					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
-						<h1 className="text-xl font-medium leading-6 mb-2">Transaction simulation</h1>
+						<h1 className="text-xl font-medium leading-6 mb-2">
+							Transaction simulation {chainDetails && <NetworkBadge network={chainDetails} />}
+						</h1>
 						<Button
 							variant="outline"
 							disabled={isLoading}
