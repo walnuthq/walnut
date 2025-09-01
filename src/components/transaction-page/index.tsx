@@ -53,7 +53,7 @@ export function TransactionPage({
 	const [l2TxHashShort, setL2TxHashShort] = useState<string>();
 	const router = useRouter();
 	const [showIO, setShowIO] = useState(false);
-	const { getNetworkByRpcUrl } = useSettings();
+	const { getNetworkByRpcUrl, parseChain } = useSettings();
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -185,6 +185,14 @@ export function TransactionPage({
 		};
 	}
 
+	const chainDetails = chainId
+		? parseChain(chainId)
+		: network?.networkName
+		? parseChain(network?.networkName)
+		: l2TransactionData?.chainId
+		? parseChain(l2TransactionData?.chainId)
+		: undefined;
+
 	return (
 		<>
 			<HeaderNav />
@@ -212,7 +220,7 @@ export function TransactionPage({
 											>
 												<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 											</CopyToClipboardElement>
-											{network && <NetworkBadge network={network} />}
+											{chainDetails && <NetworkBadge network={chainDetails} />}
 										</h1>
 									)}
 									{l1TxHash && (
@@ -232,7 +240,7 @@ export function TransactionPage({
 											>
 												{l1TxHashShort}
 											</CopyToClipboardElement>
-											{network && <NetworkBadge network={network} />}
+											{chainDetails && <NetworkBadge network={chainDetails} />}
 										</h2>
 									)}
 								</div>
@@ -282,7 +290,7 @@ export function TransactionPage({
 											>
 												{shortenHash(l1TransactionData.l1TxHash)}
 											</CopyToClipboardElement>
-											{network && <NetworkBadge network={network} />}
+											{chainDetails && <NetworkBadge network={chainDetails} />}
 										</h1>
 									)}
 								</div>
@@ -361,7 +369,34 @@ export function TransactionPage({
 					) : error ? (
 						<Error message={error} />
 					) : (
-						<Loader />
+						<>
+							<div className="lg:flex flex-row items-baseline justify-between">
+								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
+									<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
+										Transaction{' '}
+										<CopyToClipboardElement
+											value={txHash}
+											toastDescription="The address has been copied."
+											className="hidden lg:block p-0"
+										>
+											<AddressLink address={txHash}>{txHash}</AddressLink>
+										</CopyToClipboardElement>
+										<CopyToClipboardElement
+											value={txHash}
+											toastDescription="The address has been copied."
+											className="lg:hidden p-0"
+										>
+											<AddressLink address={txHash}>{shortenHash(txHash)}</AddressLink>
+										</CopyToClipboardElement>
+										{chainDetails && <NetworkBadge network={chainDetails} />}
+									</h1>
+								</div>
+								<Button variant="outline" disabled>
+									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								</Button>
+							</div>
+							<Loader />
+						</>
 					)}
 				</Container>
 			</main>

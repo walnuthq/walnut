@@ -9,6 +9,7 @@ import {
 	getNetworksApi
 } from '@/app/api/monitoring-api-service';
 import { isTrackingActive } from '@/app/api/tracking-service';
+import { chainMapping, stackMapping, unknownPrefixesAsStarknet } from '../utils';
 
 export interface Network {
 	rpcUrl: string;
@@ -30,6 +31,7 @@ type SettingsContextType = {
 	trackingActive: boolean;
 	// informs if tracking flag was correctly set
 	trackingFlagLoaded: boolean;
+	parseChain: (chainString: string) => { stack?: string; chain?: string } | null;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -100,6 +102,58 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 		}
 	};
 
+	const parseChain = (chainString: string) => {
+		const parts = chainString.toLowerCase().split('_');
+		let stack: string | undefined;
+		let chain: string | undefined;
+		let isCustomNetwork = false;
+
+		if (parts.length === 1) {
+			const prefix = parts[0];
+			stack = stackMapping[prefix];
+			chain = chainMapping[prefix];
+		} else if (parts.length === 2) {
+			const [prefix, chainPart] = parts;
+
+			if (stackMapping[prefix]) {
+				stack = stackMapping[prefix];
+			} else if (
+				unknownPrefixesAsStarknet(prefix) &&
+				(chainPart === 'sepolia' || chainPart === 'main' || chainPart === 'mainnet')
+			) {
+				stack = 'Starknet';
+				isCustomNetwork = true;
+			}
+
+			chain = chainMapping[chainPart];
+		}
+
+		const result: Record<string, string> = {};
+
+		if (stack) {
+			result.stack = stack;
+		} else {
+			result.stack = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+		}
+
+		if (chain) {
+			result.chain = chain;
+		} else {
+			const chainPart = parts.length > 1 ? parts[1] : parts[0];
+			result.chain = chainPart.charAt(0).toUpperCase() + chainPart.slice(1);
+		}
+
+		if (isCustomNetwork && parts.length === 2) {
+			const [prefix, chainPart] = parts;
+			const formattedPrefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+			const formattedChain =
+				chainMapping[chainPart] || chainPart.charAt(0).toUpperCase() + chainPart.slice(1);
+			result.customNetworkName = `${formattedPrefix} ${formattedChain}`;
+		}
+
+		return Object.keys(result).length > 0 ? result : null;
+	};
+
 	const getNetworkByRpcUrl = (rpcUrl: string): Network | undefined => {
 		return networks.find((network) => network.rpcUrl === rpcUrl);
 	};
@@ -112,7 +166,8 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 				removeNetwork,
 				getNetworkByRpcUrl,
 				trackingActive,
-				trackingFlagLoaded
+				trackingFlagLoaded,
+				parseChain
 			}}
 		>
 			{children}

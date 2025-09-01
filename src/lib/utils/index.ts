@@ -280,3 +280,25 @@ export const getContractName = ({ contractCall }: { contractCall: ContractCall }
 	}
 	return contractName;
 };
+
+export const stackMapping: { [key: string]: string } = {
+	sn: 'Starknet',
+	OP: 'Optimism',
+	op: 'Optimism',
+	eth: 'Ethereum',
+	'PowerLoom Devnet': 'Arbitrum'
+};
+
+export const chainMapping: { [key: string]: string } = {
+	sepolia: 'Sepolia',
+	main: 'Mainnet',
+	mainnet: 'Mainnet',
+	'PowerLoom Devnet': 'PowerLoom Devnet'
+};
+
+export const starknetPrefixes = ['sn'];
+
+export const unknownPrefixesAsStarknet = (prefix: string): boolean => {
+	const knownPrefixes = Object.keys(stackMapping).map((k) => k.toLowerCase());
+	return !knownPrefixes.includes(prefix.toLowerCase());
+};
