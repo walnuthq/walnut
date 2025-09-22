@@ -293,6 +293,7 @@ export function SimulateTransactionPage({
 			const errors = [];
 			const emptyFields = [];
 
+			if (!_chain) emptyFields.push('Network');
 			if (!_senderAddress) emptyFields.push('Sender Address');
 
 			const hasEmptyAddresses = _contractCalls.some(
@@ -385,6 +386,7 @@ export function SimulateTransactionPage({
 			});
 
 			if (
+				_chain &&
 				_senderAddress !== '' &&
 				validateHexFormat(_senderAddress) &&
 				allAddressesValid &&
@@ -395,7 +397,7 @@ export function SimulateTransactionPage({
 				setAlert(false);
 			}
 		}
-	}, [_senderAddress, _contractCalls, _transactionVersion, alert, validateCalldata]);
+	}, [_chain, _senderAddress, _contractCalls, _transactionVersion, alert, validateCalldata]);
 
 	const handleContractAddressChange = async (index: number, newAddress: string) => {
 		const newCalls = [..._contractCalls];
@@ -482,7 +484,7 @@ export function SimulateTransactionPage({
 
 						<div className="rounded-lg py-4">
 							<div className="grid gap-6">
-								{/*<div className="grid grid-cols-4 items-center gap-4">
+								<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
 									<Label htmlFor="chain-id" className="text-right">
 										Network
 									</Label>
@@ -491,7 +493,12 @@ export function SimulateTransactionPage({
 										simulationPayload={simulationPayload}
 										onChainChangedCallback={onChainChangedCallback}
 									/>
-								</div> */}
+									{alert && !_chain && (
+										<p className="text-xs text-muted-foreground text-red-500 col-span-3 col-start-2">
+											Network is required.
+										</p>
+									)}
+								</div>
 
 								<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
 									<Label htmlFor="sender-address" className="text-right">

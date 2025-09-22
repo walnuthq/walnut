@@ -46,12 +46,12 @@ export function NetworksSelect({
 					};
 			}
 		}
-		return { chainId: 'SN_MAIN' };
+		return { chainId: 'OP_MAIN' };
 	}
 
 	const chainOptions = [
-		{ value: 'SN_MAIN', label: 'SN_MAIN' },
-		{ value: 'SN_SEPOLIA', label: 'SN_SEPOLIA' },
+		{ value: 'OP_MAIN', label: 'OP_MAIN' },
+		{ value: 'OP_SEPOLIA', label: 'OP_SEPOLIA' },
 		...networks.map((network) => ({ value: network.networkName, label: network.networkName }))
 	];
 
@@ -59,7 +59,7 @@ export function NetworksSelect({
 	const [_chain, _setChain] = useState<Chain>(defaultChain);
 
 	function handleChainChange(value: string) {
-		if (value === 'SN_MAIN' || value === 'SN_SEPOLIA') {
+		if (value === 'OP_MAIN' || value === 'OP_SEPOLIA') {
 			_setChain({ chainId: value });
 			onChainChangedCallback({ chainId: value });
 		} else {
@@ -81,8 +81,8 @@ export function NetworksSelect({
 			});
 			onChainChangedCallback({ chainId: simulationPayload?.chainId });
 		} else {
-			_setChain({ chainId: 'SN_MAIN' });
-			onChainChangedCallback({ chainId: 'SN_MAIN' });
+			_setChain({ chainId: 'OP_MAIN' });
+			onChainChangedCallback({ chainId: 'OP_MAIN' });
 		}
 	}, [simulationPayload]);
 

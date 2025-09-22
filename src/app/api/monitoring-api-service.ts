@@ -69,7 +69,7 @@ export const getOrganizationMembersApi = async (
 };
 
 export const createMonitoringApiKeyApi = async (
-	network: 'SN_MAIN' | 'SN_SEPOLIA' | 'CUSTOM',
+	network: 'OP_MAIN' | 'OP_SEPOLIA' | 'CUSTOM',
 	organizationId: string,
 	customNetworkId?: string
 ): Promise<string | undefined> => {
@@ -128,7 +128,7 @@ export const deleteNetworkApi = async (
 
 interface ApiKeyData {
 	apiKey: string;
-	network: 'SN_MAIN' | 'SN_SEPOLIA' | 'CUSTOM';
+	network: 'OP_MAIN' | 'OP_SEPOLIA' | 'CUSTOM';
 	customNetworkId?: string;
 }
 
@@ -253,7 +253,7 @@ export type MonitoringErrorsOverview = {
 	totalErrorsCount: number;
 	uniqueSendersCount: number;
 	latestErrorDate: Date | undefined;
-	network: 'SN_MAIN' | 'SN_TESTNET' | undefined;
+	network: 'OP_MAIN' | 'OP_SEPOLIA' | undefined;
 	projectName?: string;
 };
 

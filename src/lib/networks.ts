@@ -1,4 +1,5 @@
 export enum ChainKey {
+	OP_MAIN = 'OP_MAIN',
 	OP_SEPOLIA = 'OP_SEPOLIA',
 	POWERLOOM_DEVNET = 'POWERLOOM_DEVNET',
 	POWERLOOM_MAINNET = 'POWERLOOM_MAINNET'
@@ -20,6 +21,13 @@ export type ChainMeta = {
 };
 
 export const CHAINS_META: Record<ChainKey, ChainMeta> = {
+	[ChainKey.OP_MAIN]: {
+		key: ChainKey.OP_MAIN,
+		displayName: 'OP Mainnet',
+		chainId: 10,
+		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_MAIN',
+		verificationType: 'sourcify'
+	},
 	[ChainKey.OP_SEPOLIA]: {
 		key: ChainKey.OP_SEPOLIA,
 		displayName: 'OP Sepolia',
@@ -74,6 +82,7 @@ export function getDisplayNameForChain(key: ChainKey): string {
 
 export function mapChainIdToChainKey(chainId: string): ChainKey | undefined {
 	const mapping: Record<string, ChainKey> = {
+		OP_MAIN: ChainKey.OP_MAIN,
 		OP_SEPOLIA: ChainKey.OP_SEPOLIA,
 		POWERLOOM_DEVNET: ChainKey.POWERLOOM_DEVNET,
 		POWERLOOM_MAINNET: ChainKey.POWERLOOM_MAINNET

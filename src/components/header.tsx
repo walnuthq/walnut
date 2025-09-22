@@ -77,7 +77,7 @@ export function HeaderNav({
 											<></>
 										)} */}
 											{/* <Link
-											href="/transactions/SN_MAIN"
+											href="/transactions/OP_MAIN"
 											className={`text-sm font-medium transition-colors hover:text-primary ${
 												pathname.startsWith('/transactions') ? '' : 'text-muted-foreground'
 											}`}
