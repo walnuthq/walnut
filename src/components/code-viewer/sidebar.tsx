@@ -41,11 +41,6 @@ export default function Sidebar({
 				isCallTraceExpanded ? 90 : 5,
 				isFilesExpanded ? 90 : 5
 			];
-		sizes = [
-			isStepDetailsExpanded ? 90 : 5,
-			isCallTraceExpanded ? 90 : 5,
-			isFilesExpanded ? 90 : 5
-		];
 		if (expandedPanels === 2)
 			sizes = [
 				isStepDetailsExpanded ? 47.5 : 5,
@@ -56,8 +51,8 @@ export default function Sidebar({
 		if (expandedPanels === 0) sizes = [5, 5, 90];
 
 		inspectorStepDetailsPanelRef.current?.resize(sizes[0]);
-		inspectorCallTracePanelRef.current?.resize(sizes[0]);
-		inspectorFilePanelRef.current?.resize(sizes[1]);
+		inspectorCallTracePanelRef.current?.resize(sizes[1]);
+		inspectorFilePanelRef.current?.resize(sizes[2]);
 	}, [isFilesExpanded, isCallTraceExpanded, debuggerContext, isStepDetailsExpanded]);
 
 	if (!debuggerContext) {
@@ -67,17 +62,8 @@ export default function Sidebar({
 	const {
 		currentStep,
 		activeFile,
-		setActiveFile,
-		codeLocation,
 		sourceCode,
-		contractCall,
-		isExpressionHover,
 		currentStepIndex,
-		totalSteps,
-		nextStep,
-		prevStep,
-		stepOver,
-		runToBreakpoint,
 		functionCallsMap,
 		contractsDebuggerData
 	} = debuggerContext;
