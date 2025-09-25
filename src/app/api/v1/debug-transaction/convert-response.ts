@@ -137,66 +137,98 @@ const debugCallResponseToTransactionSimulationResult = ({
 		}
 	}
 
-	// 2. debuggerTrace with optimized deduplication
+	// 2. debuggerTrace - Process steps in execution order
 	const debuggerTrace: any[] = [];
-	const processedLocations = new Set<string>(); // Track processed locations to avoid duplicates
+	// Process all steps in execution order (not by call hierarchy)
+	steps.forEach((step, stepIndex) => {
+		const traceCallIndex = step.traceCallIndex;
+		const contractCall = contractCallsMap[traceCallIndex];
+		const functionCall = functionCallsMap[traceCallIndex];
 
-	steps.forEach((step) => {
-		const contractCall = contractCallsMap[step.traceCallIndex];
-		const functionCall = functionCallsMap[step.traceCallIndex];
 		let contractCallId = 0;
 		let functionCallId = 0;
+
 		if (contractCall) {
-			contractCallId = step.traceCallIndex;
+			contractCallId = traceCallIndex;
 		} else if (functionCall) {
-			functionCallId = step.traceCallIndex;
+			functionCallId = traceCallIndex;
+			// For function calls, we need the parent contract call ID
+			contractCallId = functionCall.contractCallId;
 		}
 
-		// Only skip 0th call trace if it has no meaningful debugger data
-		// Check if this step has valid PC mapping and source code information
-		const hasValidDebuggerData = Object.values(contractDebuggerData).some(
-			(classData) => classData.pcToCodeInfo && classData.pcToCodeInfo[step.pc]
-		);
+		// Check if debugInfo is false - if so, add as withContractCall
+		if ((step as any).debugInfo === false) {
+			// Find contract call by targetContract address
+			let targetContractCallId = 0;
+			if ((step as any).targetContract) {
+				const targetContract = (step as any).targetContract;
+				const foundContractCall = Object.entries(contractCallsMap).find(
+					([callId, contractCall]) =>
+						contractCall.classHash?.toLowerCase() === targetContract.toLowerCase() ||
+						contractCall.entryPoint?.storageAddress?.toLowerCase() === targetContract.toLowerCase()
+				);
+				if (foundContractCall) {
+					targetContractCallId = Number(foundContractCall[0]);
+				}
+			}
 
-		if (contractCallId === 0 && !functionCall && !hasValidDebuggerData) {
+			debuggerTrace.push({
+				withContractCall: {
+					contractCallId: targetContractCallId,
+					reason: `No debug info available for PC ${step.pc}`
+				}
+			});
 			return;
 		}
 
-		// For each contract address check if there is pcToCodeInfo for this pc
-		for (const [address, classData] of Object.entries(contractDebuggerData)) {
-			const pcInfo = classData.pcToCodeInfo[step.pc];
-			if (pcInfo && Array.isArray(pcInfo.codeLocations)) {
-				pcInfo.codeLocations.forEach((location: any, locationIndex: number) => {
-					// Skip dispatcher-related locations
-					if (
-						location.filePath === 'unknown' ||
-						(location.start.line === 0 && location.end.line === 0)
-					) {
-						return;
-					}
-
-					// Create unique key that includes contractCallId to preserve different call contexts
-					const locationKey = `${address}:${location.filePath}:${location.start.line}:${location.start.col}:${location.end.line}:${location.end.col}:${contractCallId}:${functionCallId}`;
-
-					if (!processedLocations.has(locationKey)) {
-						processedLocations.add(locationKey);
-						debuggerTrace.push({
-							withLocation: {
-								pcIndex: step.pc,
-								locationIndex,
-								results: functionCall?.results ?? [],
-								arguments: functionCall?.arguments ?? [],
-								argumentsDecoded: functionCall?.argumentsDecoded ?? [],
-								resultsDecoded: functionCall?.resultsDecoded ?? [],
-								contractCallId,
-								fp: 0,
-								functionCallId
-							}
-						});
-					}
-				});
-			}
+		// Get contract address from contractCall
+		let contractAddress: string | null = null;
+		if (contractCall) {
+			contractAddress = contractCall.entryPoint?.storageAddress || null;
+		} else if (functionCall) {
+			// For function calls, get parent contract address
+			const parentContractCall = contractCallsMap[contractCallId];
+			contractAddress = parentContractCall?.entryPoint?.storageAddress || null;
 		}
+
+		// Skip if no contract address or no debugger data for this contract
+		if (!contractAddress || !contractDebuggerData[contractAddress]) {
+			return;
+		}
+
+		const classData = contractDebuggerData[contractAddress];
+		const pcInfo = classData.pcToCodeInfo[step.pc];
+
+		// Skip if no PC mapping for this step
+		if (!pcInfo || !Array.isArray(pcInfo.codeLocations)) {
+			return;
+		}
+
+		// Process each code location for this PC
+		pcInfo.codeLocations.forEach((location: any, locationIndex: number) => {
+			// Skip dispatcher-related locations
+			if (
+				location.filePath === 'unknown' ||
+				(location.start.line === 0 && location.end.line === 0)
+			) {
+				return;
+			}
+
+			// Add every step to debuggerTrace (no duplicate checking)
+			debuggerTrace.push({
+				withLocation: {
+					pcIndex: step.pc,
+					locationIndex,
+					results: functionCall?.results ?? [],
+					arguments: functionCall?.arguments ?? [],
+					argumentsDecoded: functionCall?.argumentsDecoded ?? [],
+					resultsDecoded: functionCall?.resultsDecoded ?? [],
+					contractCallId,
+					fp: 0,
+					functionCallId
+				}
+			});
+		});
 	});
 
 	return {

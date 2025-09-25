@@ -198,7 +198,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 					(tc.calls || []).find((c: any) => c.type === 'INTERNALCALL')?.callId ?? null,
 				eventCallIds: [],
 				entryPoint: {
-					classHash: '',
+					classHash: contractAddress,
 					codeAddress: contractAddress,
 					entryPointType: tc.type === 'ENTRY' ? EntryPointType.EXTERNAL : EntryPointType.EXTERNAL,
 					entryPointSelector: tc.input?.slice(0, 10) || '',
@@ -238,7 +238,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 						? tc.input?.slice(0, 10) || ''
 						: parseFunctionName(tc.functionName),
 				isErc20Token: false,
-				classHash: '',
+				classHash: contractAddress,
 				isDeepestPanicResult: tc.isRevertedFrame ?? false,
 				errorMessage: tc.isRevertedFrame ? error || 'Transaction reverted' : null,
 				nestingLevel: 0,
@@ -304,7 +304,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 				callId: tc.callId,
 				parentCallId: tc.parentCallId,
 				childrenCallIds,
-				contractCallId: tc.parentContractCallId,
+				contractCallId: tc.contractCallId,
 				eventCallIds: [],
 				fnName: `${sourcifyContract?.name || to}::${tc.functionName}`,
 				fp: 0,
