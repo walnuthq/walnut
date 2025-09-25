@@ -530,18 +530,42 @@ function getDebuggerDataForStep(
 	let contractDebuggerData: any = undefined;
 
 	// Enhanced contract detection logic
-	if (classHash && simulationDebuggerData?.contractDebuggerData?.[classHash]) {
-		contractDebuggerData = simulationDebuggerData.contractDebuggerData[classHash];
-	} else if (step?.withLocation?.pcIndex !== undefined) {
-		// Try to find contract by PC mapping
-		for (const [hash, data] of Object.entries(simulationDebuggerData?.contractDebuggerData ?? {})) {
-			if (data.pcToCodeInfo && data.pcToCodeInfo[step.withLocation!.pcIndex]) {
-				classHash = hash;
-				contractDebuggerData = data;
-				break;
+
+	const findContractByClassHash = (targetClassHash: string) => {
+		if (!targetClassHash || !simulationDebuggerData?.contractDebuggerData) return undefined;
+
+		const normalizedTarget = targetClassHash.toUpperCase();
+		for (const [key, data] of Object.entries(simulationDebuggerData.contractDebuggerData)) {
+			if (key.toUpperCase() === normalizedTarget) {
+				return { key, data };
 			}
 		}
+		return undefined;
+	};
+
+	if (classHash) {
+		const foundContract = findContractByClassHash(classHash);
+		if (foundContract) {
+			classHash = foundContract.key; // Use the exact key from the data
+			contractDebuggerData = foundContract.data;
+		}
 	}
+
+	// if (classHash && simulationDebuggerData?.contractDebuggerData?.[classHash]) {
+	// 	contractDebuggerData = simulationDebuggerData.contractDebuggerData[classHash];
+	// 	console.log('Found contract by classHash:', classHash);
+	// } else if (step?.withLocation?.pcIndex !== undefined) {
+	// 	// Try to find contract by PC mapping
+	// 	console.log('Searching by PC mapping for PC:', step.withLocation.pcIndex);
+	// 	for (const [hash, data] of Object.entries(simulationDebuggerData?.contractDebuggerData ?? {})) {
+	// 		if (data.pcToCodeInfo && data.pcToCodeInfo[step.withLocation!.pcIndex]) {
+	// 			classHash = hash;
+	// 			contractDebuggerData = data;
+	// 			console.log('Found contract by PC mapping:', hash);
+	// 			break;
+	// 		}
+	// 	}
+	// }
 
 	// Fallback: take first contractDebuggerData from object
 	if (!contractDebuggerData) {
