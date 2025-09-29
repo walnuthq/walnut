@@ -10,6 +10,11 @@ import {
 import { getServerSession } from '@/lib/auth-server';
 import { AuthType } from '@/lib/types';
 import { checkPublicNetworkRequest, getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
+import {
+	sanitizeError,
+	isSourcifyABILoaderError,
+	isDebugTraceCallError
+} from '@/lib/utils/error-sanitization';
 
 type WithTxHash = {
 	tx_hash: Hash;
@@ -190,10 +195,7 @@ export const POST = async (request: NextRequest) => {
 		}
 	} catch (err: any) {
 		// Handle SourcifyABILoader errors specifically to avoid logging full call traces
-		if (
-			err?.message?.includes('SourcifyABILoaderError') ||
-			err?.message?.includes('SourcifyABILoader')
-		) {
+		if (isSourcifyABILoaderError(err)) {
 			console.error('SOURCIFY ABI LOADER ERROR:', err.message);
 			return NextResponse.json(
 				{
@@ -204,8 +206,21 @@ export const POST = async (request: NextRequest) => {
 			);
 		}
 
-		// Handle other errors with limited logging
-		console.error('DEBUG TRANSACTION ERROR:', err?.message || String(err));
+		// Handle debug_traceCall method not supported errors
+		if (isDebugTraceCallError(err)) {
+			console.error('DEBUG TRANSACTION ERROR: Debug tracing not supported on this network');
+			return NextResponse.json(
+				{
+					error: 'Debug tracing not supported on this network',
+					details: 'The RPC endpoint does not support debug_traceCall method'
+				},
+				{ status: 400 }
+			);
+		}
+
+		// Handle other errors with limited logging - sanitize error message
+		const sanitizedError = sanitizeError(err);
+		console.error('DEBUG TRANSACTION ERROR:', sanitizedError.message);
 
 		// Don't log the full error object to avoid call traces
 		if (err?.stack) {
@@ -214,7 +229,8 @@ export const POST = async (request: NextRequest) => {
 
 		return NextResponse.json(
 			{
-				error: err?.message || 'Unknown error occurred during debug transaction processing'
+				error:
+					sanitizedError.message || 'Unknown error occurred during debug transaction processing'
 			},
 			{ status: 400 }
 		);

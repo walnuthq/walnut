@@ -6,6 +6,7 @@ import createTracingClient, { flattenTraceCall } from '@/app/api/v1/tracing-clie
 import fetchContract from '@/app/api/v1/fetch-contract';
 import { compileContracts } from '@/app/api/v1/utils/contract-compiler';
 import { rm } from 'node:fs/promises';
+import { sanitizeError, isDebugTraceCallError } from '@/lib/utils/error-sanitization';
 
 export interface TransactionProcessingResult {
 	chainId: number;
@@ -33,6 +34,23 @@ export interface TransactionParameters {
 }
 
 /**
+ * Wraps viem client calls with error sanitization
+ */
+const safeViemCall = async <T>(callFn: () => Promise<T>, operation: string): Promise<T> => {
+	try {
+		return await callFn();
+	} catch (error: any) {
+		// Check for debug_traceCall errors
+		if (isDebugTraceCallError(error)) {
+			throw new Error('Debug tracing not supported on this network.');
+		}
+
+		// For other errors, sanitize and re-throw
+		throw sanitizeError(error);
+	}
+};
+
+/**
  * Fetches transaction and trace data from the blockchain
  */
 export const fetchTransactionAndTrace = async (
@@ -42,10 +60,14 @@ export const fetchTransactionAndTrace = async (
 ) => {
 	const [chainId, transaction, traceResult] = await Promise.all([
 		parameters.chainId
-			? mapChainIdStringToNumber(parameters.chainId) || publicClient.getChainId()
-			: publicClient.getChainId(),
+			? mapChainIdStringToNumber(parameters.chainId) ||
+			  safeViemCall(() => publicClient.getChainId(), 'getChainId')
+			: safeViemCall(() => publicClient.getChainId(), 'getChainId'),
 		parameters.txHash
-			? publicClient.getTransaction({ hash: parameters.txHash })
+			? safeViemCall(
+					() => publicClient.getTransaction({ hash: parameters.txHash }),
+					'getTransaction'
+			  )
 			: {
 					to: parameters.to,
 					blockNumber: parameters.blockNumber,
@@ -54,23 +76,32 @@ export const fetchTransactionAndTrace = async (
 					transactionIndex: 0
 			  },
 		parameters.txHash
-			? tracingClient.traceTransaction({
-					transactionHash: parameters.txHash,
-					tracer: 'callTracer'
-			  })
-			: tracingClient.traceCall({
-					from: parameters.from,
-					to: parameters.to,
-					data: parameters.calldata,
-					blockNrOrHash: parameters.blockNumber
-						? `0x${parameters.blockNumber.toString(16)}`
-						: 'latest',
-					tracer: 'callTracer'
-			  })
+			? safeViemCall(
+					() =>
+						tracingClient.traceTransaction({
+							transactionHash: parameters.txHash,
+							tracer: 'callTracer'
+						}),
+					'traceTransaction'
+			  )
+			: safeViemCall(
+					() =>
+						tracingClient.traceCall({
+							from: parameters.from,
+							to: parameters.to,
+							data: parameters.calldata,
+							blockNrOrHash: parameters.blockNumber
+								? `0x${parameters.blockNumber.toString(16)}`
+								: 'latest',
+							tracer: 'callTracer'
+						}),
+					'traceCall'
+			  )
 	]);
 
 	// Validate transaction and trace result
-	if (!transaction.to && traceResult && traceResult.type !== 'CREATE') {
+	const tx = transaction as any; // Type assertion for transaction object
+	if (!tx.to && traceResult && (traceResult as any).type !== 'CREATE') {
 		throw new Error(
 			'ERROR: eth_getTransactionByHash failed - missing to address and not a CREATE transaction'
 		);
@@ -79,7 +110,7 @@ export const fetchTransactionAndTrace = async (
 		throw new Error('ERROR: debug_traceTransaction/debug_traceCall failed');
 	}
 
-	return { chainId, transaction, traceResult };
+	return { chainId: chainId as number, transaction: tx, traceResult };
 };
 
 /**
