@@ -87,7 +87,7 @@ export function SetupMonitoringCard({
 					setOrganizationId(newOrganizationId);
 					organizationIdToUse = newOrganizationId;
 				}
-				const chainId: 'SN_MAIN' | 'SN_SEPOLIA' | 'CUSTOM' = (chain.chainId as any) ?? 'CUSTOM';
+				const chainId: 'OP_MAIN' | 'OP_SEPOLIA' | 'CUSTOM' = (chain.chainId as any) ?? 'CUSTOM';
 				const apiKeyRes = await createMonitoringApiKeyApi(
 					chainId,
 					organizationIdToUse,

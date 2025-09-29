@@ -100,18 +100,14 @@ export function formatTimestampToUTC(timestamp: number): string {
 
 export function extractChainId(chainIdStr: string): ChainId | undefined {
 	switch (chainIdStr) {
-		case ChainId.SN_MAIN:
-			return ChainId.SN_MAIN;
-		case ChainId.SN_SEPOLIA:
-			return ChainId.SN_SEPOLIA;
-		case ChainId.ETH_MAIN:
-			return ChainId.ETH_MAIN;
-		case ChainId.ETH_SEPOLIA:
-			return ChainId.ETH_SEPOLIA;
 		case ChainId.OP_MAIN:
 			return ChainId.OP_MAIN;
 		case ChainId.OP_SEPOLIA:
 			return ChainId.OP_SEPOLIA;
+		case ChainId.ETH_MAIN:
+			return ChainId.ETH_MAIN;
+		case ChainId.ETH_SEPOLIA:
+			return ChainId.ETH_SEPOLIA;
 		default:
 			return undefined;
 	}

@@ -270,8 +270,14 @@ export const compileContracts = async (
 
 		// Only include debug dirs for successfully compiled contracts
 		if (compiled.length === 1) {
-			ethdebugDirs = [`${tmpDir}/${compiled[0].address}/debug`];
-			cwd = `${tmpDir}/${compiled[0].address}`;
+			// Single contract: use address:name:path format
+			const contract = compiled[0];
+			ethdebugDirs = [
+				contract.name
+					? `${contract.address}:${contract.name}:${tmpDir}/${contract.address}/debug`
+					: `${contract.address}:${tmpDir}/${contract.address}/debug`
+			];
+			cwd = `${tmpDir}/${contract.address}`;
 		} else if (compiled.length > 1) {
 			ethdebugDirs = compiled.map((c) =>
 				c.name
