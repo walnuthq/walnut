@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { type Hash, type Address, type Hex, getAddress } from 'viem';
 import soldb from '@/app/api/v1/soldb';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
+import { getRpcUrlForChainSafe, getDisplayNameForChainIdNumber } from '@/lib/networks';
 import { createCompilationSummary } from '@/app/api/v1/utils/compilation-status-utils';
 import {
 	processTransactionRequest,
@@ -201,10 +202,12 @@ export const POST = async (request: NextRequest) => {
 
 		// Handle debug_traceCall method not supported errors
 		if (isDebugTraceCallError(err)) {
-			console.error('SIMULATE TRANSACTION ERROR: Debug tracing not supported on this network');
+			// Sanitize the error message to remove API keys and sensitive data
+			const sanitizedError = sanitizeError(err);
+			console.error('SIMULATE TRANSACTION ERROR:', sanitizedError.message);
 			return NextResponse.json(
 				{
-					error: 'Debug tracing not supported on this network',
+					error: sanitizedError.message,
 					details: 'The RPC endpoint does not support debug_traceCall method'
 				},
 				{ status: 400 }

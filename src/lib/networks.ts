@@ -97,6 +97,20 @@ export function getDisplayNameForChainId(chainId: string): string {
 	return chainId;
 }
 
+/**
+ * Gets the display name for a chain ID number
+ * @param chainIdNumber - The numeric chain ID
+ * @returns The display name for the chain or the chain ID as string if not found
+ */
+export function getDisplayNameForChainIdNumber(chainIdNumber: number): string {
+	const chainKey = getChainKeyByNumber(chainIdNumber);
+	if (chainKey) {
+		return getDisplayNameForChain(chainKey);
+	}
+	// Fallback for unmapped chain IDs
+	return chainIdNumber.toString();
+}
+
 export function getExplorerApiForChain(
 	key: ChainKey
 ): { baseUrl: string; type: NonNullable<ChainMeta['explorerType']> } | undefined {
