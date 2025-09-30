@@ -143,7 +143,7 @@ const soldb = async ({
 		return rawDebugCallResponseToDebugCallResponse(rawDebugCallResponse);
 	} catch (err: any) {
 		console.error('soldb error:', err);
-		throw new Error('Failed to fetch debugger call trace');
+		throw new Error(`soldb debugger failed: ${err.message || 'Unknown error occurred'}`);
 	}
 };
 

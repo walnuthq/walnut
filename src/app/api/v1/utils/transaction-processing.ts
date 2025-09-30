@@ -7,6 +7,7 @@ import fetchContract from '@/app/api/v1/fetch-contract';
 import { compileContracts } from '@/app/api/v1/utils/contract-compiler';
 import { rm } from 'node:fs/promises';
 import { sanitizeError, isDebugTraceCallError } from '@/lib/utils/error-sanitization';
+import { getDisplayNameForChainIdNumber } from '@/lib/networks';
 
 export interface TransactionProcessingResult {
 	chainId: number;
@@ -36,13 +37,20 @@ export interface TransactionParameters {
 /**
  * Wraps viem client calls with error sanitization
  */
-const safeViemCall = async <T>(callFn: () => Promise<T>, operation: string): Promise<T> => {
+const safeViemCall = async <T>(
+	callFn: () => Promise<T>,
+	operation: string,
+	chainId?: number
+): Promise<T> => {
 	try {
 		return await callFn();
 	} catch (error: any) {
 		// Check for debug_traceCall errors
 		if (isDebugTraceCallError(error)) {
-			throw new Error('Debug tracing not supported on this network.');
+			const networkName = chainId ? getDisplayNameForChainIdNumber(chainId) : 'this network';
+			throw new Error(
+				`Debug tracing not supported on ${networkName}. The RPC endpoint does not support the debug_traceCall method.`
+			);
 		}
 
 		// For other errors, sanitize and re-throw
@@ -58,15 +66,18 @@ export const fetchTransactionAndTrace = async (
 	publicClient: any,
 	tracingClient: any
 ) => {
-	const [chainId, transaction, traceResult] = await Promise.all([
-		parameters.chainId
-			? mapChainIdStringToNumber(parameters.chainId) ||
-			  safeViemCall(() => publicClient.getChainId(), 'getChainId')
-			: safeViemCall(() => publicClient.getChainId(), 'getChainId'),
+	// Get chainId first to use in error messages
+	const chainId = parameters.chainId
+		? mapChainIdStringToNumber(parameters.chainId) ||
+		  (await safeViemCall(() => publicClient.getChainId(), 'getChainId'))
+		: await safeViemCall(() => publicClient.getChainId(), 'getChainId');
+
+	const [transaction, traceResult] = await Promise.all([
 		parameters.txHash
 			? safeViemCall(
 					() => publicClient.getTransaction({ hash: parameters.txHash }),
-					'getTransaction'
+					'getTransaction',
+					chainId as number
 			  )
 			: {
 					to: parameters.to,
@@ -82,7 +93,8 @@ export const fetchTransactionAndTrace = async (
 							transactionHash: parameters.txHash,
 							tracer: 'callTracer'
 						}),
-					'traceTransaction'
+					'traceTransaction',
+					chainId as number
 			  )
 			: safeViemCall(
 					() =>
@@ -95,7 +107,8 @@ export const fetchTransactionAndTrace = async (
 								: 'latest',
 							tracer: 'callTracer'
 						}),
-					'traceCall'
+					'traceCall',
+					chainId as number
 			  )
 	]);
 

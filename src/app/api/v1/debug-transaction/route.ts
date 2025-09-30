@@ -7,7 +7,7 @@ import {
 	processTransactionRequest,
 	cleanupOldTempDirs
 } from '@/app/api/v1/utils/transaction-processing';
-import { getRpcUrlForChainSafe } from '@/lib/networks';
+import { getRpcUrlForChainSafe, getDisplayNameForChainIdNumber } from '@/lib/networks';
 import {
 	sanitizeError,
 	isSourcifyABILoaderError,
@@ -189,10 +189,12 @@ export const POST = async (request: NextRequest) => {
 
 		// Handle debug_traceCall method not supported errors
 		if (isDebugTraceCallError(err)) {
-			console.error('DEBUG TRANSACTION ERROR: Debug tracing not supported on this network');
+			// Sanitize the error message to remove API keys and sensitive data
+			const sanitizedError = sanitizeError(err);
+			console.error('DEBUG TRANSACTION ERROR:', sanitizedError.message);
 			return NextResponse.json(
 				{
-					error: 'Debug tracing not supported on this network',
+					error: sanitizedError.message,
 					details: 'The RPC endpoint does not support debug_traceCall method'
 				},
 				{ status: 400 }
