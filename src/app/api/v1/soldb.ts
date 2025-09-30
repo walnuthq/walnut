@@ -134,7 +134,10 @@ const soldb = async ({
 				rpcUrl,
 				'--json'
 			],
-			{ cwd }
+			{
+				cwd,
+				maxBuffer: 50 * 1024 * 1024 // 50MB buffer for large traces
+			}
 		);
 		const rawDebugCallResponse = JSON.parse(stdout) as RawDebugCallResponse;
 		return rawDebugCallResponseToDebugCallResponse(rawDebugCallResponse);

@@ -115,7 +115,7 @@ export const POST = async (request: NextRequest) => {
 		});
 
 		try {
-			const { traceCall, steps, contracts, status, error } = await soldb({
+			const soldbResult = await soldb({
 				command: parameters.txHash ? 'trace' : 'simulate',
 				txHash: parameters.txHash,
 				to: transaction.to || undefined,
@@ -126,6 +126,8 @@ export const POST = async (request: NextRequest) => {
 				ethdebugDirs,
 				cwd
 			});
+
+			const { traceCall, steps, contracts, status, error } = soldbResult;
 			const { l2TransactionData } = traceCallResponseToTransactionSimulationResult({
 				status: status === 'reverted' ? 'REVERTED' : 'SUCCEEDED',
 				error: error ?? '',
