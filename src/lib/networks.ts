@@ -18,6 +18,8 @@ export type ChainMeta = {
 	explorerType?: 'blockscout_v2' | 'etherscan_proxy';
 	// Preferred verification method for contracts
 	verificationType: 'sourcify' | 'blockscout';
+	// Provider label for better rpc identification
+	label: string;
 };
 
 export const CHAINS_META: Record<ChainKey, ChainMeta> = {
@@ -26,14 +28,16 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		displayName: 'OP Mainnet',
 		chainId: 10,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_MAIN',
-		verificationType: 'sourcify'
+		verificationType: 'sourcify',
+		label: 'Optimism Mainnet Alchemy RPC'
 	},
 	[ChainKey.OP_SEPOLIA]: {
 		key: ChainKey.OP_SEPOLIA,
 		displayName: 'OP Sepolia',
 		chainId: 11155420,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_SEPOLIA',
-		verificationType: 'sourcify'
+		verificationType: 'sourcify',
+		label: 'Optimism Sepolia Alchemy RPC'
 	},
 	[ChainKey.POWERLOOM_DEVNET]: {
 		key: ChainKey.POWERLOOM_DEVNET,
@@ -42,7 +46,8 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_POWERLOOM_DEVNET',
 		explorerApiEnvVar: 'NEXT_PUBLIC_EXPLORER_API_POWERLOOM_DEVNET',
 		explorerType: 'blockscout_v2',
-		verificationType: 'blockscout'
+		verificationType: 'blockscout',
+		label: 'PowerLoom Devnet RPC'
 	},
 	[ChainKey.POWERLOOM_MAINNET]: {
 		key: ChainKey.POWERLOOM_MAINNET,
@@ -51,7 +56,8 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_POWERLOOM_MAINNET',
 		explorerApiEnvVar: 'NEXT_PUBLIC_EXPLORER_API_POWERLOOM_MAINNET',
 		explorerType: 'blockscout_v2',
-		verificationType: 'blockscout'
+		verificationType: 'blockscout',
+		label: 'PowerLoom Mainnet RPC'
 	}
 };
 
@@ -80,6 +86,19 @@ export function getDisplayNameForChain(key: ChainKey): string {
 	return CHAINS_META[key]?.displayName ?? key;
 }
 
+export function getLabelForChain(key: ChainKey): string {
+	return CHAINS_META[key]?.label ?? key;
+}
+
+export function getLabelForChainIdNumber(chainIdNumber: number): string {
+	const chainKey = getChainKeyByNumber(chainIdNumber);
+	if (chainKey) {
+		return getLabelForChain(chainKey);
+	}
+	// Fallback for unmapped chain IDs
+	return `Chain ${chainIdNumber}`;
+}
+
 export function mapChainIdToChainKey(chainId: string): ChainKey | undefined {
 	const mapping: Record<string, ChainKey> = {
 		OP_MAIN: ChainKey.OP_MAIN,
@@ -97,6 +116,20 @@ export function getDisplayNameForChainId(chainId: string): string {
 	}
 	// Fallback for unmapped chain IDs (like Starknet chains)
 	return chainId;
+}
+
+/**
+ * Gets the display name for a chain ID number
+ * @param chainIdNumber - The numeric chain ID
+ * @returns The display name for the chain or the chain ID as string if not found
+ */
+export function getDisplayNameForChainIdNumber(chainIdNumber: number): string {
+	const chainKey = getChainKeyByNumber(chainIdNumber);
+	if (chainKey) {
+		return getDisplayNameForChain(chainKey);
+	}
+	// Fallback for unmapped chain IDs
+	return chainIdNumber.toString();
 }
 
 export function getExplorerApiForChain(

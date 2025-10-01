@@ -2,12 +2,17 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { type Hash, type Address, type Hex, getAddress } from 'viem';
 import soldb from '@/app/api/v1/soldb';
 import traceCallResponseToTransactionSimulationResult from '@/app/api/v1/simulate-transaction/convert-response';
-import { getRpcUrlForChainSafe } from '@/lib/networks';
+import { getRpcUrlForChainSafe, getDisplayNameForChainIdNumber } from '@/lib/networks';
 import { createCompilationSummary } from '@/app/api/v1/utils/compilation-status-utils';
 import {
 	processTransactionRequest,
 	cleanupOldTempDirs
 } from '@/app/api/v1/utils/transaction-processing';
+import {
+	sanitizeError,
+	isDebugTraceCallError,
+	isSourcifyABILoaderError
+} from '@/lib/utils/error-sanitization';
 
 type WithTxHash = {
 	tx_hash: Hash;
@@ -114,19 +119,22 @@ export const POST = async (request: NextRequest) => {
 				blockNumber: parameters.blockNumber,
 				rpcUrl: parameters.rpcUrl,
 				ethdebugDirs,
-				cwd
+				cwd,
+				chainId
 			};
 
 			walnutCliResult = await soldb(walnutParams);
 		} catch (walnutError: any) {
+			// Sanitize the error message to remove sensitive data like RPC URLs
+			const sanitizedError = sanitizeError(walnutError);
 			console.error(
 				`SOLDB failed. Compilation errors prevented debug data: ${compilationErrors.join(
 					'; '
-				)}. Execution error: ${walnutError?.message || String(walnutError)}`
+				)}. Execution error: ${sanitizedError.message}`
 			);
 			// If we have compilation errors, include them in the error message
 			if (compilationErrors.length > 0) {
-				const errorMsg = `SOLDB execution failed: ${walnutError?.message || String(walnutError)}`;
+				const errorMsg = `${sanitizedError.message}`;
 				return NextResponse.json({ error: errorMsg }, { status: 400 });
 			}
 
@@ -164,10 +172,7 @@ export const POST = async (request: NextRequest) => {
 		return NextResponse.json(response);
 	} catch (err: any) {
 		// Handle SourcifyABILoader errors specifically to avoid logging full call traces
-		if (
-			err?.message?.includes('SourcifyABILoaderError') ||
-			err?.message?.includes('SourcifyABILoader')
-		) {
+		if (isSourcifyABILoaderError(err)) {
 			console.error('SOURCIFY ABI LOADER ERROR:', err.message);
 			return NextResponse.json(
 				{
@@ -178,8 +183,23 @@ export const POST = async (request: NextRequest) => {
 			);
 		}
 
-		// Handle other errors with limited logging
-		console.error('SIMULATE TRANSACTION ERROR:', err?.message || String(err));
+		// Handle debug_traceCall method not supported errors
+		if (isDebugTraceCallError(err)) {
+			// Sanitize the error message to remove API keys and sensitive data
+			const sanitizedError = sanitizeError(err);
+			console.error('SIMULATE TRANSACTION ERROR:', sanitizedError.message);
+			return NextResponse.json(
+				{
+					error: sanitizedError.message,
+					details: 'The RPC endpoint does not support debug_traceCall method'
+				},
+				{ status: 400 }
+			);
+		}
+
+		// Handle other errors with limited logging - sanitize error message
+		const sanitizedError = sanitizeError(err);
+		console.error('SIMULATE TRANSACTION ERROR:', sanitizedError.message);
 
 		// Don't log the full error object to avoid call traces
 		if (err?.stack) {
@@ -188,7 +208,7 @@ export const POST = async (request: NextRequest) => {
 
 		return NextResponse.json(
 			{
-				error: err?.message || 'Unknown error occurred during transaction simulation'
+				error: sanitizedError.message || 'Unknown error occurred during transaction simulation'
 			},
 			{ status: 400 }
 		);

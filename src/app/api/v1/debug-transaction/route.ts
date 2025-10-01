@@ -7,7 +7,12 @@ import {
 	processTransactionRequest,
 	cleanupOldTempDirs
 } from '@/app/api/v1/utils/transaction-processing';
-import { getRpcUrlForChainSafe } from '@/lib/networks';
+import { getRpcUrlForChainSafe, getDisplayNameForChainIdNumber } from '@/lib/networks';
+import {
+	sanitizeError,
+	isSourcifyABILoaderError,
+	isDebugTraceCallError
+} from '@/lib/utils/error-sanitization';
 
 type WithTxHash = {
 	tx_hash: Hash;
@@ -124,7 +129,8 @@ export const POST = async (request: NextRequest) => {
 				blockNumber: parameters.blockNumber,
 				rpcUrl: parameters.rpcUrl,
 				ethdebugDirs,
-				cwd
+				cwd,
+				chainId
 			});
 
 			const { traceCall, steps, contracts, status, error } = soldbResult;
@@ -160,21 +166,20 @@ export const POST = async (request: NextRequest) => {
 			return NextResponse.json(response);
 		} catch (e: any) {
 			// Handle soldb errors with limited logging to avoid call traces
-			console.error('Error running soldb:', e?.message || String(e));
+			// Sanitize the error message to remove sensitive data like RPC URLs
+			const sanitizedError = sanitizeError(e);
+			console.error('Error running soldb:', sanitizedError.message);
 			return NextResponse.json(
 				{
-					error: 'Failed to run soldb',
-					details: e?.message || 'Unknown soldb error'
+					error: `${sanitizedError.message}`,
+					details: sanitizedError.message
 				},
 				{ status: 500 }
 			);
 		}
 	} catch (err: any) {
 		// Handle SourcifyABILoader errors specifically to avoid logging full call traces
-		if (
-			err?.message?.includes('SourcifyABILoaderError') ||
-			err?.message?.includes('SourcifyABILoader')
-		) {
+		if (isSourcifyABILoaderError(err)) {
 			console.error('SOURCIFY ABI LOADER ERROR:', err.message);
 			return NextResponse.json(
 				{
@@ -185,8 +190,23 @@ export const POST = async (request: NextRequest) => {
 			);
 		}
 
-		// Handle other errors with limited logging
-		console.error('DEBUG TRANSACTION ERROR:', err?.message || String(err));
+		// Handle debug_traceCall method not supported errors
+		if (isDebugTraceCallError(err)) {
+			// Sanitize the error message to remove API keys and sensitive data
+			const sanitizedError = sanitizeError(err);
+			console.error('DEBUG TRANSACTION ERROR:', sanitizedError.message);
+			return NextResponse.json(
+				{
+					error: sanitizedError.message,
+					details: 'The RPC endpoint does not support debug_traceCall method'
+				},
+				{ status: 400 }
+			);
+		}
+
+		// Handle other errors with limited logging - sanitize error message
+		const sanitizedError = sanitizeError(err);
+		console.error('DEBUG TRANSACTION ERROR:', sanitizedError.message);
 
 		// Don't log the full error object to avoid call traces
 		if (err?.stack) {
@@ -195,7 +215,8 @@ export const POST = async (request: NextRequest) => {
 
 		return NextResponse.json(
 			{
-				error: err?.message || 'Unknown error occurred during debug transaction processing'
+				error:
+					sanitizedError.message || 'Unknown error occurred during debug transaction processing'
 			},
 			{ status: 400 }
 		);
