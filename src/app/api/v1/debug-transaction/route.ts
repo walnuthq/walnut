@@ -148,7 +148,8 @@ export const POST = async (request: NextRequest) => {
 				blockNumber: parameters.blockNumber,
 				rpcUrl: parameters.rpcUrl,
 				ethdebugDirs,
-				cwd
+				cwd,
+				chainId
 			});
 
 			const { traceCall, steps, contracts, status, error } = soldbResult;
@@ -184,11 +185,13 @@ export const POST = async (request: NextRequest) => {
 			return NextResponse.json(response);
 		} catch (e: any) {
 			// Handle soldb errors with limited logging to avoid call traces
-			console.error('Error running soldb:', e?.message || String(e));
+			// Sanitize the error message to remove sensitive data like RPC URLs
+			const sanitizedError = sanitizeError(e);
+			console.error('Error running soldb:', sanitizedError.message);
 			return NextResponse.json(
 				{
-					error: 'Failed to run soldb',
-					details: e?.message || 'Unknown soldb error'
+					error: `${sanitizedError.message}`,
+					details: sanitizedError.message
 				},
 				{ status: 500 }
 			);

@@ -139,19 +139,22 @@ export const POST = async (request: NextRequest) => {
 				blockNumber: parameters.blockNumber,
 				rpcUrl: parameters.rpcUrl,
 				ethdebugDirs,
-				cwd
+				cwd,
+				chainId
 			};
 
 			walnutCliResult = await soldb(walnutParams);
 		} catch (walnutError: any) {
+			// Sanitize the error message to remove sensitive data like RPC URLs
+			const sanitizedError = sanitizeError(walnutError);
 			console.error(
 				`SOLDB failed. Compilation errors prevented debug data: ${compilationErrors.join(
 					'; '
-				)}. Execution error: ${walnutError?.message || String(walnutError)}`
+				)}. Execution error: ${sanitizedError.message}`
 			);
 			// If we have compilation errors, include them in the error message
 			if (compilationErrors.length > 0) {
-				const errorMsg = `SOLDB execution failed: ${walnutError?.message || String(walnutError)}`;
+				const errorMsg = `${sanitizedError.message}`;
 				return NextResponse.json({ error: errorMsg }, { status: 400 });
 			}
 
