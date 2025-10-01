@@ -70,16 +70,12 @@ function decodeCalldata(abiFunction: any, args: any[]) {
 }
 
 // Helper function to convert decoded values to InternalFnCallIO format
-function convertToInternalFnCallIO(
-	values: any[],
-	types: string[],
-	names: string[]
-): InternalFnCallIO[] {
+function convertToInternalFnCallIO(values: any[], types: string[], names: string[]) {
 	return values.map((value, index) => ({
 		typeName: replaceNullWithUnknown(types[index]),
 		value: Array.isArray(value)
 			? processArrayReplaceNulls(value).map((v) => String(v))
-			: [String(replaceNullWithUnknown(value))],
+			: String(replaceNullWithUnknown(value)),
 		internalIODecoded: null
 	}));
 }
