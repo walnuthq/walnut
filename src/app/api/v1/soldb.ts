@@ -7,8 +7,35 @@ import {
 	type DebugCallResponse
 } from '@/app/api/v1/types';
 import { type Hash, type Hex, type Address } from 'viem';
+import { sanitizeError } from '@/lib/utils/error-sanitization';
+import { getLabelForChainIdNumber } from '@/lib/networks';
 
 const execFile = promisify(execFileCb);
+
+/**
+ * Checks if an error is a timeout error from soldb
+ * @param error - The error to check
+ * @returns True if the error is a timeout error
+ */
+const isTimeoutError = (error: any): boolean => {
+	if (!error) return false;
+
+	const message = error.message || String(error);
+	const stdout = error.stdout || '';
+
+	// Check for timeout indicators in the error message or stdout
+	return message.includes('timeout') || stdout.includes('timeout');
+};
+
+const isConnectionError = (error: any): boolean => {
+	if (!error) return false;
+
+	const message = error.message || String(error);
+	const stdout = error.stdout || '';
+
+	// Check for connection error indicators
+	return message.includes('connect') || stdout.includes('connect');
+};
 
 const flattenTraceCalls = (traceCalls: WalnutTraceCall[], parent: WalnutTraceCall) =>
 	traceCalls.reduce<WalnutTraceCall[]>((accumulator, currentValue) => {
@@ -90,7 +117,8 @@ const soldb = async ({
 	blockNumber,
 	rpcUrl,
 	ethdebugDirs,
-	cwd
+	cwd,
+	chainId
 }: {
 	command: 'trace' | 'simulate';
 	txHash?: Hash;
@@ -101,6 +129,7 @@ const soldb = async ({
 	rpcUrl: string;
 	ethdebugDirs?: string[];
 	cwd?: string;
+	chainId?: number;
 }): Promise<DebugCallResponse> => {
 	const args =
 		command === 'trace'
@@ -143,7 +172,48 @@ const soldb = async ({
 		return rawDebugCallResponseToDebugCallResponse(rawDebugCallResponse);
 	} catch (err: any) {
 		console.error('soldb error:', err);
-		throw new Error(`soldb debugger failed: ${err.message || 'Unknown error occurred'}`);
+
+		// Check if this is a timeout error
+		if (isTimeoutError(err)) {
+			const chainLabel = chainId ? ` on ${getLabelForChainIdNumber(chainId)}` : '';
+			throw new Error(`Failed with execution timeout${chainLabel}.`);
+		}
+
+		// Check if this is a connection error
+		if (isConnectionError(err)) {
+			const chainLabel = chainId ? getLabelForChainIdNumber(chainId) : 'network';
+			throw new Error(`Failed to connect to${chainLabel}`);
+		}
+
+		// Extract the actual error message from soldb
+		let errorMessage = '';
+		if (err.stdout) {
+			errorMessage = err.stdout.trim();
+		} else if (err.message) {
+			errorMessage = err.message;
+		} else {
+			errorMessage = 'Unknown error occurred';
+		}
+
+		// Try to parse JSON response and extract relevant fields
+		try {
+			const jsonResponse = JSON.parse(errorMessage);
+			if (jsonResponse.soldbFailed || jsonResponse.error?.message) {
+				const parts = [];
+				if (jsonResponse.soldbFailed) {
+					parts.push(jsonResponse.soldbFailed);
+				}
+				if (jsonResponse.error?.message) {
+					parts.push(jsonResponse.error.message);
+				}
+				errorMessage = parts.join(' - ');
+			}
+		} catch {
+			// If not JSON, use the original message
+		}
+
+		const chainLabel = chainId ? ` on ${getLabelForChainIdNumber(chainId)}` : '';
+		throw new Error(`${errorMessage}${chainLabel}`);
 	}
 };
 

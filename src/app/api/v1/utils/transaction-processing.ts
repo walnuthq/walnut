@@ -7,7 +7,7 @@ import fetchContract from '@/app/api/v1/fetch-contract';
 import { compileContracts } from '@/app/api/v1/utils/contract-compiler';
 import { rm } from 'node:fs/promises';
 import { sanitizeError, isDebugTraceCallError } from '@/lib/utils/error-sanitization';
-import { getDisplayNameForChainIdNumber } from '@/lib/networks';
+import { getLabelForChainIdNumber } from '@/lib/networks';
 
 export interface TransactionProcessingResult {
 	chainId: number;
@@ -47,7 +47,7 @@ const safeViemCall = async <T>(
 	} catch (error: any) {
 		// Check for debug_traceCall errors
 		if (isDebugTraceCallError(error)) {
-			const networkName = chainId ? getDisplayNameForChainIdNumber(chainId) : 'this network';
+			const networkName = chainId ? getLabelForChainIdNumber(chainId) : 'this network';
 			throw new Error(
 				`Debug tracing not supported on ${networkName}. The RPC endpoint does not support the debug_traceCall method.`
 			);

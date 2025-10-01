@@ -13,17 +13,20 @@ export const sanitizeError = (error: any): Error => {
 	let message = error.message || String(error);
 
 	// Remove any URL (http or https) - this will catch RPC URLs with API keys
-	message = message.replace(/https?:\/\/[^\s]+/g, '[REDACTED_URL]');
+	message = message.replace(/https?:\/\/[^\s]+/g, '');
 
 	// Remove very long alphanumeric strings that look like API keys (40+ chars)
-	message = message.replace(/[a-zA-Z0-9]{40,}/g, '[REDACTED_KEY]');
+	message = message.replace(/[a-zA-Z0-9]{40,}/g, '');
 
 	// Remove request body details that might contain sensitive data
-	message = message.replace(/Request body: \{[^}]*\}/g, 'Request body: [REDACTED]');
+	message = message.replace(/Request body: \{[^}]*\}/g, '');
 
 	// Remove specific viem error details that might contain sensitive information
-	message = message.replace(/URL: [^\s]+/g, 'URL: [REDACTED]');
-	message = message.replace(/Version: [^\s]+/g, 'Version: [REDACTED]');
+	message = message.replace(/URL: [^\s]+/g, '');
+	message = message.replace(/Version: [^\s]+/g, '');
+
+	// Clean up multiple spaces and trim
+	message = message.replace(/\s+/g, ' ').trim();
 
 	return new Error(message);
 };
