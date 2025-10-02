@@ -2,7 +2,8 @@ export enum ChainKey {
 	OP_MAIN = 'OP_MAIN',
 	OP_SEPOLIA = 'OP_SEPOLIA',
 	POWERLOOM_DEVNET = 'POWERLOOM_DEVNET',
-	POWERLOOM_MAINNET = 'POWERLOOM_MAINNET'
+	POWERLOOM_MAINNET = 'POWERLOOM_MAINNET',
+	ARBITRUM_ONE = 'ARBITRUM_ONE'
 }
 
 export type ChainMeta = {
@@ -50,6 +51,15 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		chainId: 11155420,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_POWERLOOM_MAINNET',
 		explorerApiEnvVar: 'NEXT_PUBLIC_EXPLORER_API_POWERLOOM_MAINNET',
+		explorerType: 'blockscout_v2',
+		verificationType: 'blockscout'
+	},
+	[ChainKey.ARBITRUM_ONE]: {
+		key: ChainKey.ARBITRUM_ONE,
+		displayName: 'Arbitrum One',
+		chainId: 42161,
+		rpcEnvVar: '',
+		explorerApiEnvVar: '',
 		explorerType: 'blockscout_v2',
 		verificationType: 'blockscout'
 	}

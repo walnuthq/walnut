@@ -2,13 +2,16 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import { formatTimestampToUTC } from '@/lib/utils';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { L2TransactionData } from '@/lib/simulation';
+import { chain } from 'lodash';
 
 export function TransactionDetails({
 	transactionData,
-	rpcUrl
+	rpcUrl,
+	isDemo
 }: {
 	transactionData: L2TransactionData;
 	rpcUrl?: string;
+	isDemo?: boolean;
 }) {
 	const { getNetworkByRpcUrl } = useSettings();
 	let details: InfoBoxItem[] = [];
@@ -86,30 +89,43 @@ export function TransactionDetails({
 		transactionData.transactionIndexInBlock !== null &&
 		transactionData.totalTransactionsInBlock
 	) {
-		const index = transactionData.transactionIndexInBlock + 1;
-		const suffix =
-			index % 100 >= 11 && index % 100 <= 13
-				? 'th'
-				: index % 10 === 1
-				? 'st'
-				: index % 10 === 2
-				? 'nd'
-				: index % 10 === 3
-				? 'rd'
-				: 'th';
+		if (isDemo) {
+			details.push({
+				name: 'Position in block',
+				value: `1st of 2`
+			});
+		} else {
+			const index = transactionData.transactionIndexInBlock + 1;
+			const suffix =
+				index % 100 >= 11 && index % 100 <= 13
+					? 'th'
+					: index % 10 === 1
+					? 'st'
+					: index % 10 === 2
+					? 'nd'
+					: index % 10 === 3
+					? 'rd'
+					: 'th';
 
-		details.push({
-			name: 'Position in block',
-			value: `${index}${suffix} out of ${transactionData.totalTransactionsInBlock}`
-		});
+			details.push({
+				name: 'Position in block',
+				value: `${index}${suffix} out of ${transactionData.totalTransactionsInBlock}`
+			});
+		}
 	}
 
 	// 6. Timestamp
 	if (transactionData.blockTimestamp) {
-		details.push({
-			name: 'Timestamp',
-			value: formatTimestampToUTC(transactionData.blockTimestamp)
-		});
+		if (isDemo)
+			details.push({
+				name: 'Timestamp',
+				value: '19 Aug 2025'
+			});
+		else
+			details.push({
+				name: 'Timestamp',
+				value: formatTimestampToUTC(transactionData.blockTimestamp)
+			});
 	}
 
 	// 7. Addresses

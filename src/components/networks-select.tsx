@@ -19,14 +19,41 @@ export function NetworksSelect({
 	simulationPayload,
 	onChainChangedCallback,
 	selectedChain,
-	isLoading
+	isLoading,
+	isDemo
 }: {
 	simulationPayload?: SimulationPayloadWithCalldata | SimulationPayload;
 	onChainChangedCallback: (chain: Chain) => void;
 	selectedChain?: Chain;
 	isLoading?: boolean;
+	isDemo?: string;
 }) {
 	const { networks } = useSettings();
+
+	const defaultChain = extractChain(networks, simulationPayload);
+
+	const [_chain, _setChain] = useState<Chain>(defaultChain);
+
+	useEffect(() => {
+		if (simulationPayload?.chainId) {
+			_setChain({
+				chainId: simulationPayload?.chainId
+			});
+			onChainChangedCallback({ chainId: simulationPayload?.chainId });
+		} else {
+			_setChain({ chainId: 'OP_MAIN' });
+			onChainChangedCallback({ chainId: 'OP_MAIN' });
+		}
+	}, [simulationPayload]);
+	if (isDemo)
+		return (
+			<Select value={'Arbitrum One'}>
+				<SelectTrigger className="col-span-3 font-mono">
+					Arbitrum One
+					<SelectValue placeholder="Select a chain" />
+				</SelectTrigger>
+			</Select>
+		);
 
 	function extractChain(
 		networks: Network[],
@@ -55,9 +82,6 @@ export function NetworksSelect({
 		...networks.map((network) => ({ value: network.networkName, label: network.networkName }))
 	];
 
-	const defaultChain = extractChain(networks, simulationPayload);
-	const [_chain, _setChain] = useState<Chain>(defaultChain);
-
 	function handleChainChange(value: string) {
 		if (value === 'OP_MAIN' || value === 'OP_SEPOLIA') {
 			_setChain({ chainId: value });
@@ -73,18 +97,6 @@ export function NetworksSelect({
 			}
 		}
 	}
-
-	useEffect(() => {
-		if (simulationPayload?.chainId) {
-			_setChain({
-				chainId: simulationPayload?.chainId
-			});
-			onChainChangedCallback({ chainId: simulationPayload?.chainId });
-		} else {
-			_setChain({ chainId: 'OP_MAIN' });
-			onChainChangedCallback({ chainId: 'OP_MAIN' });
-		}
-	}, [simulationPayload]);
 
 	return (
 		<Select

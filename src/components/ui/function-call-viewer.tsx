@@ -53,9 +53,9 @@ const FunctionCallViewer = ({
 	}, [debuggerContext]);
 
 	function extractCodeFragment(sourceCode: string, start: TextPosition, end: TextPosition): string {
-		const lines = sourceCode.split('\n');
-		const startLine = start.line;
-		const endLine = end.line;
+		const lines = sourceCode?.split('\n');
+		const startLine = start?.line;
+		const endLine = end?.line;
 		if (startLine === endLine) {
 			return lines[startLine]?.substring(start.col, end.col);
 		}

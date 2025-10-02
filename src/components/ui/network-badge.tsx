@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import optimismLogo from '@/assets/network-logos/optimism.svg';
 import ethLogo from '@/assets/network-logos/eth.svg';
+import arbitrumLogo from '@/assets/network-logos/arbitrum.svg';
 import Image from 'next/image';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -25,6 +26,14 @@ function getNetworkStyle(network: Network) {
 			logo: ethLogo,
 			class:
 				'bg-gray-100 border-gray-400 hover:!bg-gray-200  dark:hover:!bg-gray-600 text-gray-900 dark:bg-opacity-40 dark:bg-gray-500 dark:text-white'
+		};
+	}
+
+	if (network.stack === 'Arbitrum' && !network.customNetworkName) {
+		return {
+			logo: arbitrumLogo,
+			class:
+				'bg-blue-100 border-blue-400 hover:!bg-blue-200 text-variable dark:hover:!bg-blue-600 dark:bg-opacity-40 dark:bg-blue-500 dark:text-white'
 		};
 	}
 

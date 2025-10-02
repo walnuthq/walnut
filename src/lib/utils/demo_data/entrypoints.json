@@ -1,0 +1,320 @@
+{
+  "address": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+  "chainId": "OP_SEPOLIA",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_taxCalc",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_logger",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_shipping",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_payments",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "customer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tax",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "shippingCost",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "total",
+          "type": "uint256"
+        }
+      ],
+      "name": "OrderProcessed",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "base",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tax",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "shippingCost",
+          "type": "uint256"
+        }
+      ],
+      "name": "finalizeAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "logger",
+      "outputs": [
+        {
+          "internalType": "contract ILogger",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "payments",
+      "outputs": [
+        {
+          "internalType": "contract IPaymentProcessor",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "orderType",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "shippingMethod",
+          "type": "string"
+        }
+      ],
+      "name": "processOrder",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "shipping",
+      "outputs": [
+        {
+          "internalType": "contract IShippingManager",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "taxCalculator",
+      "outputs": [
+        {
+          "internalType": "contract ITaxCalculator",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "entrypoints": [
+    {
+      "name": "admin",
+      "selector": "0xeb8325fb",
+      "inputs": [],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "name": "finalizeAmount",
+      "selector": "0xd81e1d73",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "base",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tax",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "shippingCost",
+          "type": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "name": "logger",
+      "selector": "0x6e8fdff3",
+      "inputs": [],
+      "outputs": [
+        {
+          "internalType": "contract ILogger",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "name": "payments",
+      "selector": "0x7fd55056",
+      "inputs": [],
+      "outputs": [
+        {
+          "internalType": "contract IPaymentProcessor",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "name": "processOrder",
+      "selector": "0xf8901e4b",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "orderType",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "shippingMethod",
+          "type": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "name": "shipping",
+      "selector": "0x8dd55192",
+      "inputs": [],
+      "outputs": [
+        {
+          "internalType": "contract IShippingManager",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "name": "taxCalculator",
+      "selector": "0x07bd79f7",
+      "inputs": [],
+      "outputs": [
+        {
+          "internalType": "contract ITaxCalculator",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    }
+  ],
+  "contractName": "OrderProcessor",
+  "verified": true,
+  "verificationSource": "sourcify"
+}

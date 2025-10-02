@@ -49,10 +49,12 @@ const ErrorAlert = ({
 
 export function GasProfiler({
 	l2Flamegraph,
-	l1DataFlamegraph
+	l1DataFlamegraph,
+	isDemo
 }: {
 	l2Flamegraph: FlameNode | undefined;
 	l1DataFlamegraph: FlameNode | undefined;
+	isDemo?: boolean;
 }) {
 	const { chosenCallName } = useCallTrace();
 	const isL2FlamegraphEmpty =
@@ -65,8 +67,8 @@ export function GasProfiler({
 		<div className="flex flex-col">
 			{!isL2FlamegraphEmpty && (
 				<div className="px-4">
-					<div className="gap-2 flex flex-col pt-2 pb-4  border-b">
-						<div className="font-medium text-sm">L2 Flamegraph</div>
+					<div className={`gap-2 flex flex-col pt-2 pb-4  ${!isDemo && 'border-b'}`}>
+						{!isDemo && <div className="font-medium text-sm">L2 Flamegraph</div>}
 						<div className="">
 							<FlameGraph data={l2Flamegraph} activeName={chosenCallName} />
 						</div>
@@ -87,7 +89,7 @@ export function GasProfiler({
 					</div>
 				</div>
 			)}
-			{isL1DataFlamegraphEmpty && !isL2FlamegraphEmpty && (
+			{!isDemo && isL1DataFlamegraphEmpty && !isL2FlamegraphEmpty && (
 				<ErrorAlert error={FLAMEGRAPH_ERRORS.L1_DATA_NOT_SUPPORTED} />
 			)}
 

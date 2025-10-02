@@ -14,6 +14,7 @@ export default function Page({
 	const [simulationPayload, setSimulationPayload] = useState<SimulationPayload | undefined>(
 		undefined
 	);
+	const isDemo = searchParams?.demo as string;
 	const [txHash, setTxHash] = useState<string | undefined>(undefined);
 	useEffect(() => {
 		if (searchParams && Object.keys(searchParams).length > 0) {
@@ -57,6 +58,7 @@ export default function Page({
 
 	return (
 		<SimulateTransactionPage
+			isDemo={isDemo}
 			txHash={txHash}
 			simulationPayload={simulationPayload}
 			title={simulationPayload && 'Re-simulate'}
