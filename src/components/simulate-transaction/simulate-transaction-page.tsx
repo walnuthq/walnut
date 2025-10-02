@@ -203,32 +203,32 @@ export function SimulateTransactionPage({
 		_setEditableArgs(newArgs);
 
 		// Auto-re-encode when args change
-		// try {
-		// 	const abi = await getContractABI(_contractCalls[0]?.address || '');
-		// 	const updatedDecoded = {
-		// 		..._decodedCalldata,
-		// 		args: newArgs
-		// 	};
+		try {
+			const abi = await getContractABI(_contractCalls[0]?.address || '');
+			const updatedDecoded = {
+				..._decodedCalldata,
+				args: newArgs
+			};
 
-		// 	const encoded = await calldataDecoder.encode(
-		// 		updatedDecoded,
-		// 		_contractCalls[0]?.address,
-		// 		abi || undefined
-		// 	);
+			const encoded = await calldataDecoder.encode(
+				updatedDecoded,
+				_contractCalls[0]?.address,
+				abi || undefined
+			);
 
-		// 	if (encoded) {
-		// 		// Update the contract call with new encoded calldata
-		// 		_setContractCalls((prev) => {
-		// 			const newCalls = [...prev];
-		// 			if (newCalls[0]) {
-		// 				newCalls[0] = { ...newCalls[0], calldata: encoded };
-		// 			}
-		// 			return newCalls;
-		// 		});
-		// 	}
-		// } catch (error) {
-		// 	console.error('Error re-encoding calldata:', error);
-		// }
+			if (encoded) {
+				// Update the contract call with new encoded calldata
+				_setContractCalls((prev) => {
+					const newCalls = [...prev];
+					if (newCalls[0]) {
+						newCalls[0] = { ...newCalls[0], calldata: encoded };
+					}
+					return newCalls;
+				});
+			}
+		} catch (error) {
+			console.error('Error re-encoding calldata:', error);
+		}
 	};
 
 	// Function to get ABI for a contract address
