@@ -35,6 +35,7 @@ import {
 	fetchABIFromInternalAPI,
 	fetchABIFromSourcify
 } from '@/lib/calldata-utils';
+import responseEntrypoints from '@/lib/utils/demo_data/entrypoints.json';
 
 export function SimulateTransactionPage({
 	txHash,
@@ -234,13 +235,15 @@ export function SimulateTransactionPage({
 	const getContractABI = async (contractAddress: string): Promise<any[] | null> => {
 		try {
 			// Try internal API first (uses soldb response)
-			let abi = await fetchABIFromInternalAPI(contractAddress, _chain?.chainId || '');
+			// let abi = await fetchABIFromInternalAPI(contractAddress, _chain?.chainId || '');
+
+			const abi = responseEntrypoints.abi;
 
 			// Fallback to Sourcify if internal API fails
-			if (!abi) {
-				console.log('Internal API failed, trying Sourcify...');
-				abi = await fetchABIFromSourcify(contractAddress, _chain?.chainId || '');
-			}
+			// if (!abi) {
+			// 	console.log('Internal API failed, trying Sourcify...');
+			// 	abi = await fetchABIFromSourcify(contractAddress, _chain?.chainId || '');
+			// }
 
 			console.log('ABI:', abi);
 			_setContractABI(abi);

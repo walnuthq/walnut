@@ -851,7 +851,7 @@
 		"transactionType": "INVOKE",
 		"transactionIndexInBlock": 4,
 		"totalTransactionsInBlock": 1,
-		"l2TxHash": "0xc1b5345f62e1170c3bc246d931f806db1becfb480a15e4085daf55d61c660ecc",
+		"l2TxHash": "0xc1b5345f62e1170c3bc246d931f806db1becfb480a15e4085daf55d61c660ecb",
 		"flamechart": {
 			"callId": 0,
 			"rawValue": 71895,

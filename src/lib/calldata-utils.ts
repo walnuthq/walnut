@@ -28,7 +28,7 @@ export async function fetchABIFromInternalAPI(
 ): Promise<any[] | null> {
 	try {
 		const response = await fetch(
-			`/api/v1/contracts/${contractAddress}/entrypoints?chain_id=OP_SEPOLIA`,
+			`/api/v1/contracts/${contractAddress}/entrypoints?chain_id=${chainId}`,
 			{
 				headers: {
 					accept: 'application/json'

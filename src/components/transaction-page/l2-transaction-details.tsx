@@ -62,7 +62,6 @@ export function TransactionDetails({
 	// 	});
 	// }
 
-	console.log(transactionData.chainId);
 	// 4. Chain and Block info
 	if (transactionData.chainId) {
 		details.push({
@@ -117,10 +116,16 @@ export function TransactionDetails({
 
 	// 6. Timestamp
 	if (transactionData.blockTimestamp) {
-		details.push({
-			name: 'Timestamp',
-			value: formatTimestampToUTC(transactionData.blockTimestamp)
-		});
+		if (isDemo)
+			details.push({
+				name: 'Timestamp',
+				value: '19 Aug 2025'
+			});
+		else
+			details.push({
+				name: 'Timestamp',
+				value: formatTimestampToUTC(transactionData.blockTimestamp)
+			});
 	}
 
 	// 7. Addresses

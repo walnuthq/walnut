@@ -80,7 +80,7 @@ export function SimulationPage({
 	} else if (l2TransactionData) {
 		content = (
 			<>
-				<TransactionDetails transactionData={l2TransactionData} />
+				<TransactionDetails transactionData={l2TransactionData} isDemo />
 				<CallTraceRoot
 					simulationResult={l2TransactionData.simulationResult}
 					l2Flamegraph={l2TransactionData?.flamechart}
@@ -116,7 +116,8 @@ export function SimulationPage({
 				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
 					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
 						<h1 className="text-xl font-medium leading-6 mb-2">
-							Transaction simulation {chainDetails && <NetworkBadge network={chainDetails} />}
+							Transaction simulation{' '}
+							{<NetworkBadge network={{ stack: 'Arbitrum', chain: 'One' }} />}
 						</h1>
 						<Button
 							variant="outline"
