@@ -199,7 +199,7 @@ export function TransactionPage({
 								)}
 							</div>
 
-							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} />
+							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} isDemo />
 
 							<CallTraceRoot
 								simulationResult={l2TransactionData.simulationResult}

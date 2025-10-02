@@ -146,6 +146,8 @@ export function mapChainIdStringToNumber(chainIdString: string): number | undefi
 			return 23448594291968334;
 		case ChainId.SN_SEPOLIA:
 			return 1536727068981429685;
+		case ChainId.ARBITRUM_ONE:
+			return 42161;
 		default:
 			return undefined;
 	}

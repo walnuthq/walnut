@@ -196,7 +196,11 @@ function CallTraceRootContent() {
 					>
 						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
 							<ScrollArea className="flex-1 overflow-auto dark:bg-card">
-								<GasProfiler l2Flamegraph={l2Flamegraph} l1DataFlamegraph={l1DataFlamegraph} />
+								<GasProfiler
+									isDemo
+									l2Flamegraph={l2Flamegraph}
+									l1DataFlamegraph={l1DataFlamegraph}
+								/>
 							</ScrollArea>
 						</div>
 					</TabsContent>
