@@ -26,10 +26,15 @@ export function SimulationPage({
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const [error, setError] = useState<string | undefined>();
+	const [isLoading, setIsLoading] = useState(true);
 	const router = useRouter();
 	const { parseChain, getNetworkByRpcUrl } = useSettings();
 
 	useEffect(() => {
+		const minLoadingTime = setTimeout(() => {
+			setIsLoading(false);
+		}, 3000);
+
 		try {
 			const data = simulationData as any;
 
@@ -56,6 +61,8 @@ export function SimulationPage({
 		} catch (e: any) {
 			setError(e?.message || String(e));
 		}
+
+		return () => clearTimeout(minLoadingTime);
 	}, []);
 
 	const network = simulationPayload?.rpcUrl ? getNetworkByRpcUrl(simulationPayload?.rpcUrl) : null;
@@ -66,7 +73,9 @@ export function SimulationPage({
 		: undefined;
 
 	let content = null;
-	if (error) {
+	if (isLoading) {
+		content = <Loader />;
+	} else if (error) {
 		// content = <Error message={error} />;
 	} else if (l2TransactionData) {
 		content = (
@@ -80,8 +89,6 @@ export function SimulationPage({
 				/>
 			</>
 		);
-	} else {
-		content = <Loader />;
 	}
 
 	const handleReSimulateClick = () => {

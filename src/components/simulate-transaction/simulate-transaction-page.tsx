@@ -29,6 +29,12 @@ import {
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useRouter } from 'next/navigation';
+import {
+	createCalldataDecoder,
+	DecodedCalldata,
+	fetchABIFromInternalAPI,
+	fetchABIFromSourcify
+} from '@/lib/calldata-utils';
 
 export function SimulateTransactionPage({
 	txHash,
@@ -77,6 +83,14 @@ export function SimulateTransactionPage({
 
 	const [_chain, _setChain] = useState<Chain | undefined>();
 
+	// Calldata decoding state
+	const [_decodedCalldata, _setDecodedCalldata] = useState<DecodedCalldata | null>(null);
+	const [_showDecoded, _setShowDecoded] = useState<boolean>(false);
+	const [_contractABI, _setContractABI] = useState<any[] | null>(null);
+	const [_editableArgs, _setEditableArgs] = useState<any[]>([]);
+	const [_isEditingCalldata, _setIsEditingCalldata] = useState<boolean>(false);
+	const calldataDecoder = createCalldataDecoder();
+
 	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
 		_setContractCalls((prev) => {
@@ -85,6 +99,156 @@ export function SimulateTransactionPage({
 			}));
 			return newCalls;
 		});
+	};
+
+	// Auto-decode calldata when it changes
+	useEffect(() => {
+		const autoDecodeCalldata = async () => {
+			if (
+				_contractCalls.length > 0 &&
+				_contractCalls[0].calldata &&
+				_contractCalls[0].calldata.trim() !== ''
+			) {
+				try {
+					const call = _contractCalls[0];
+					const abi = await getContractABI(call.address);
+
+					const decoded = await calldataDecoder.decode(
+						call.calldata.trim(),
+						call.address,
+						abi || undefined
+					);
+
+					if (decoded) {
+						console.log('AUTO-DECODED CALLDATA:', {
+							contractAddress: call.address,
+							functionName: decoded.functionName,
+							args: decoded.args,
+							rawCalldata: decoded.rawCalldata,
+							abi: abi
+						});
+
+						_setDecodedCalldata(decoded);
+						_setEditableArgs([...decoded.args]);
+						_setIsEditingCalldata(true);
+					} else {
+						// Clear decoded data
+						_setDecodedCalldata(null);
+						_setEditableArgs([]);
+						_setIsEditingCalldata(false);
+					}
+				} catch (error) {
+					console.warn('Auto-decode failed:', error);
+					_setDecodedCalldata(null);
+					_setEditableArgs([]);
+					_setIsEditingCalldata(false);
+				}
+			} else {
+				// Clear decoded data if no calldata
+				_setDecodedCalldata(null);
+				_setEditableArgs([]);
+				_setIsEditingCalldata(false);
+			}
+		};
+
+		autoDecodeCalldata();
+	}, [_contractCalls[0]?.calldata, _contractCalls[0]?.address]);
+
+	const handleEncodeCalldata = async () => {
+		if (!_decodedCalldata) return;
+
+		try {
+			// Get ABI for the contract
+			const abi = await getContractABI(_contractCalls[0]?.address || '');
+
+			const encoded = await calldataDecoder.encode(
+				_decodedCalldata,
+				_contractCalls[0]?.address,
+				abi || undefined
+			);
+
+			if (encoded) {
+				// Update the first contract call with encoded calldata
+				_setContractCalls((prev) => {
+					const newCalls = [...prev];
+					if (newCalls[0]) {
+						newCalls[0] = { ...newCalls[0], calldata: encoded };
+					}
+					return newCalls;
+				});
+				_setShowDecoded(false);
+				_setDecodedCalldata(null);
+			} else {
+				console.warn('Failed to encode calldata');
+			}
+		} catch (error) {
+			console.error('Error encoding calldata:', error);
+		}
+	};
+
+	const handleDecodedCalldata = () => {
+		_setShowDecoded(false);
+		_setDecodedCalldata(null);
+		_setIsEditingCalldata(false);
+		_setEditableArgs([]);
+	};
+
+	// Handle editing of decoded parameters
+	const handleArgChange = async (index: number, value: any) => {
+		if (!_decodedCalldata) return;
+
+		const newArgs = [..._editableArgs];
+		newArgs[index] = value;
+		_setEditableArgs(newArgs);
+
+		// Auto-re-encode when args change
+		// try {
+		// 	const abi = await getContractABI(_contractCalls[0]?.address || '');
+		// 	const updatedDecoded = {
+		// 		..._decodedCalldata,
+		// 		args: newArgs
+		// 	};
+
+		// 	const encoded = await calldataDecoder.encode(
+		// 		updatedDecoded,
+		// 		_contractCalls[0]?.address,
+		// 		abi || undefined
+		// 	);
+
+		// 	if (encoded) {
+		// 		// Update the contract call with new encoded calldata
+		// 		_setContractCalls((prev) => {
+		// 			const newCalls = [...prev];
+		// 			if (newCalls[0]) {
+		// 				newCalls[0] = { ...newCalls[0], calldata: encoded };
+		// 			}
+		// 			return newCalls;
+		// 		});
+		// 	}
+		// } catch (error) {
+		// 	console.error('Error re-encoding calldata:', error);
+		// }
+	};
+
+	// Function to get ABI for a contract address
+	const getContractABI = async (contractAddress: string): Promise<any[] | null> => {
+		try {
+			// Try internal API first (uses soldb response)
+			let abi = await fetchABIFromInternalAPI(contractAddress, _chain?.chainId || '');
+
+			// Fallback to Sourcify if internal API fails
+			if (!abi) {
+				console.log('Internal API failed, trying Sourcify...');
+				abi = await fetchABIFromSourcify(contractAddress, _chain?.chainId || '');
+			}
+
+			console.log('ABI:', abi);
+			_setContractABI(abi);
+			return abi;
+		} catch (error) {
+			console.warn('Failed to get contract ABI:', error);
+			return null;
+		}
 	};
 	const handleNumberOfContractsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const inputValue = e.target.value;
@@ -597,31 +761,90 @@ export function SimulateTransactionPage({
 													isError={alert && call.function_name === ''}
 													onChange={(value) => handleFunctionNameChange(index, value)}
 												/> */}
+												{/* Editable Parameters Section - Above Calldata */}
+												{isDemo && (
+													<div className="mb-4">
+														<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2 mb-3">
+															<Label className="text-right">Parameters</Label>
+															<div className="col-span-3 flex justify-between items-center">
+																{_decodedCalldata && _isEditingCalldata && index === 0 ? (
+																	<>
+																		<span className="text-sm text-muted-foreground font-mono">
+																			{_decodedCalldata.functionName}
+																		</span>
+																		<Button
+																			type="button"
+																			variant="ghost"
+																			size="sm"
+																			onClick={handleDecodedCalldata}
+																			className="text-muted-foreground hover:text-foreground h-6 w-6 p-0"
+																		>
+																			×
+																		</Button>
+																	</>
+																) : (
+																	<div className="flex items-center gap-2">
+																		<div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+																		<span className="text-sm text-muted-foreground"></span>
+																	</div>
+																)}
+															</div>
+														</div>
+
+														{_decodedCalldata &&
+															_editableArgs.map((arg, argIndex) => (
+																<div
+																	key={argIndex}
+																	className="grid grid-cols-4 items-center gap-x-4 gap-y-2 mb-2"
+																>
+																	<Label className="text-right text-sm">Parameter {argIndex}</Label>
+																	<Input
+																		value={typeof arg === 'bigint' ? arg.toString() : String(arg)}
+																		onChange={(e) => {
+																			let newValue: any = e.target.value;
+
+																			// Try to parse as number if it looks like one
+																			if (!isNaN(Number(newValue)) && newValue !== '') {
+																				newValue = Number(newValue);
+																			}
+
+																			handleArgChange(argIndex, newValue);
+																		}}
+																		className="col-span-3 font-mono"
+																		placeholder={`arg${argIndex}`}
+																	/>
+																</div>
+															))}
+													</div>
+												)}
+
 												<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
 													<Label htmlFor={`calldata-${index}`} className="text-right">
 														Calldata
 													</Label>
-													<Textarea
-														// disabled={call.function_name === ''}
-														id={`calldata-${index}`}
-														value={call.calldata}
-														placeholder="Enter raw calldata here."
-														required
-														className={`col-span-3 font-mono h-32 ${
-															alert &&
-															call.address &&
-															call.calldata.trim() !== '' &&
-															!validateCalldata(
-																call.calldata
-																	.trim()
-																	.split('\n')
-																	.filter((line) => line.trim() !== '')
-															)
-																? 'border-red-500'
-																: ''
-														}`}
-														onChange={(e) => handleCalldataChange(index, e.target.value)}
-													/>
+													<div className="col-span-3 space-y-2">
+														<Textarea
+															// disabled={call.function_name === ''}
+															id={`calldata-${index}`}
+															value={call.calldata}
+															placeholder="Enter raw calldata here."
+															required
+															className={`col-span-3 font-mono h-32 ${
+																alert &&
+																call.address &&
+																call.calldata.trim() !== '' &&
+																!validateCalldata(
+																	call.calldata
+																		.trim()
+																		.split('\n')
+																		.filter((line) => line.trim() !== '')
+																)
+																	? 'border-red-500'
+																	: ''
+															}`}
+															onChange={(e) => handleCalldataChange(index, e.target.value)}
+														/>
+													</div>
 													{(() => {
 														/* const calldataLines = call.calldata.trim()
 															? call.calldata
