@@ -24,7 +24,9 @@ import {
 	DebuggerInfo
 } from '@/lib/debugger';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import debugData from '@/lib/utils/demo_data/reverted_debug_response.json';
+import debugSimulationData from '@/lib/utils/demo_data/debug_resposne.json';
 
 interface DebuggerContextProps {
 	functionCallsMap: { [key: number]: FunctionCall };
@@ -87,7 +89,7 @@ export const DebuggerContextProvider = ({
 	const [sourceCode, setSourceCode] = useState<Record<string, string>>({});
 	const [isExpressionHover, setExpressionHover] = useState(false);
 	const [hasDebuggableContract, setHasDebuggableContract] = useState(false);
-
+	const pathname = usePathname();
 	const { contractCallsMap: callTraceContractCalls, functionCallsMap: callTraceFunctionCalls } =
 		useContext(CallTraceContext);
 	const CACHE_TTL_MS = 0; //15 * 60 * 1000;
@@ -182,11 +184,32 @@ export const DebuggerContextProvider = ({
 
 	useEffect(() => {
 		const fetch = async () => {
-			if (!debuggerPayload) return;
-
 			setLoading(true);
 
 			try {
+				const isDemoPage = pathname === '/demo';
+				const isDemoSimulationPage = pathname === '/demo/simulation';
+
+				if (isDemoPage || isDemoSimulationPage) {
+					const result = isDemoPage ? debugData : debugSimulationData;
+
+					setDebuggerInfo(result as any);
+
+					if ((result as any)?.simulationDebuggerData?.debuggerTrace) {
+						const i = findInitialIndex((result as any).simulationDebuggerData.debuggerTrace);
+						_setCurrentStepIndex(i);
+						_setCurrentStep((result as any).simulationDebuggerData.debuggerTrace[i]);
+					}
+
+					setLoading(false);
+					return;
+				}
+
+				if (!debuggerPayload) {
+					setLoading(false);
+					return;
+				}
+
 				const hasDebuggableContract_ = Object.values(callTraceContractCalls).some(
 					(call) => call?.callDebuggerDataAvailable
 				);
@@ -218,6 +241,7 @@ export const DebuggerContextProvider = ({
 							txHash
 					  })
 					: await debugTransactionByData(debuggerPayload);
+
 				setDebuggerInfo(result);
 				setCachedDebuggerInfo(cacheKey, result);
 
@@ -235,6 +259,7 @@ export const DebuggerContextProvider = ({
 
 		fetch();
 	}, [debuggerPayload]);
+
 	const simulationDebuggerData = debuggerInfo?.simulationDebuggerData;
 	const contractCallsMap = debuggerInfo?.contractCallsMap || {};
 	const functionCallsMap = debuggerInfo?.functionCallsMap || {};

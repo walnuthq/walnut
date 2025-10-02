@@ -1,0 +1,4884 @@
+{
+	"contractCallsMap": {
+		"0": {
+			"callId": 0,
+			"parentCallId": null,
+			"childrenCallIds": [1],
+			"functionCallId": null,
+			"eventCallIds": [],
+			"entryPoint": {
+				"classHash": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+				"codeAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+				"entryPointType": "EXTERNAL",
+				"entryPointSelector": "0x6f10e157",
+				"calldata": [
+					"0x6f10e1570000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000b656c656374726f6e69637300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000076578707265737300000000000000000000000000000000000000000000000000"
+				],
+				"storageAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+				"callerAddress": "0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29",
+				"callType": "Call",
+				"initialGas": 477704
+			},
+			"result": {
+				"Success": {
+					"retData": []
+				}
+			},
+			"argumentsNames": [],
+			"argumentsTypes": [],
+			"calldataDecoded": [],
+			"resultTypes": [],
+			"decodedResult": [],
+			"contractName": "OrderProcessor",
+			"entryPointName": "0x6f10e157",
+			"isErc20Token": false,
+			"classHash": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"nestingLevel": 0,
+			"callDebuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"1": {
+			"callId": 1,
+			"parentCallId": 0,
+			"childrenCallIds": [2, 3, 5, 8, 10, 13, 16],
+			"functionCallId": 2,
+			"eventCallIds": [],
+			"entryPoint": {
+				"classHash": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+				"codeAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+				"entryPointType": "EXTERNAL",
+				"entryPointSelector": "0x6f10e157",
+				"calldata": [
+					"0x6f10e1570000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000b656c656374726f6e69637300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000076578707265737300000000000000000000000000000000000000000000000000"
+				],
+				"storageAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+				"callerAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+				"callType": "Call",
+				"initialGas": 477704
+			},
+			"result": {
+				"Success": {
+					"retData": []
+				}
+			},
+			"argumentsNames": ["value", "orderType", "shippingMethod"],
+			"argumentsTypes": ["uint256", "string", "string"],
+			"calldataDecoded": [
+				{
+					"typeName": "uint256",
+					"name": "value",
+					"value": "1000000000000000000"
+				},
+				{
+					"typeName": "string",
+					"name": "orderType",
+					"value": "electronics"
+				},
+				{
+					"typeName": "string",
+					"name": "shippingMethod",
+					"value": "express"
+				}
+			],
+			"resultTypes": [],
+			"decodedResult": [],
+			"contractName": "OrderProcessor",
+			"entryPointName": "processOrder(uint256,string,string)",
+			"isErc20Token": false,
+			"classHash": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"nestingLevel": 0,
+			"callDebuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"3": {
+			"callId": 3,
+			"parentCallId": 1,
+			"childrenCallIds": [4],
+			"functionCallId": 4,
+			"eventCallIds": [],
+			"entryPoint": {
+				"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"codeAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"entryPointType": "EXTERNAL",
+				"entryPointSelector": "0x41304fac",
+				"calldata": ["0x41304fac0000000000000000000000000000000000000000000000000000000000000000"],
+				"storageAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"callerAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"callType": "Call",
+				"initialGas": 471559
+			},
+			"result": {
+				"Success": {
+					"retData": []
+				}
+			},
+			"argumentsNames": ["message"],
+			"argumentsTypes": ["string"],
+			"calldataDecoded": [
+				{
+					"typeName": "string",
+					"name": "message",
+					"value": "Starting order processing"
+				}
+			],
+			"resultTypes": [],
+			"decodedResult": [],
+			"contractName": "Logger",
+			"entryPointName": "log",
+			"isErc20Token": false,
+			"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"nestingLevel": 0,
+			"callDebuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"5": {
+			"callId": 5,
+			"parentCallId": 1,
+			"childrenCallIds": [6],
+			"functionCallId": 6,
+			"eventCallIds": [],
+			"entryPoint": {
+				"classHash": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+				"codeAddress": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+				"entryPointType": "EXTERNAL",
+				"entryPointSelector": "0x55ec8a03",
+				"calldata": [
+					"0x55ec8a030000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"
+				],
+				"storageAddress": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+				"callerAddress": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+				"callType": "Call",
+				"initialGas": 465563
+			},
+			"result": {
+				"Success": {
+					"retData": []
+				}
+			},
+			"argumentsNames": ["value", "orderType"],
+			"argumentsTypes": ["uint256", "string"],
+			"calldataDecoded": [
+				{
+					"typeName": "uint256",
+					"name": "value",
+					"value": "1000000000000000000"
+				},
+				{
+					"typeName": "string",
+					"name": "orderType",
+					"value": "electronics"
+				}
+			],
+			"resultTypes": [],
+			"decodedResult": [],
+			"contractName": "TaxCalculator",
+			"entryPointName": "calculateTax",
+			"isErc20Token": false,
+			"classHash": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"nestingLevel": 0,
+			"callDebuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"8": {
+			"callId": 8,
+			"parentCallId": 1,
+			"childrenCallIds": [9],
+			"functionCallId": 9,
+			"eventCallIds": [],
+			"entryPoint": {
+				"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"codeAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"entryPointType": "EXTERNAL",
+				"entryPointSelector": "0xfc8a475f",
+				"calldata": ["0xfc8a475f000000000000000000000000000000000000000000000000016345785d8a0000"],
+				"storageAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"callerAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"callType": "Call",
+				"initialGas": 457552
+			},
+			"result": {
+				"Success": {
+					"retData": []
+				}
+			},
+			"argumentsNames": ["value"],
+			"argumentsTypes": ["uint256"],
+			"calldataDecoded": [
+				{
+					"typeName": "uint256",
+					"name": "value",
+					"value": "100000000000000000"
+				}
+			],
+			"resultTypes": [],
+			"decodedResult": [],
+			"contractName": "Logger",
+			"entryPointName": "logValue",
+			"isErc20Token": false,
+			"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"nestingLevel": 0,
+			"callDebuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"10": {
+			"callId": 10,
+			"parentCallId": 1,
+			"childrenCallIds": [11],
+			"functionCallId": 11,
+			"eventCallIds": [],
+			"entryPoint": {
+				"classHash": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+				"codeAddress": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+				"entryPointType": "EXTERNAL",
+				"entryPointSelector": "0x01567ce2",
+				"calldata": [
+					"0x01567ce2000000000000000000000000286af310ea3303c80ebe9a66f6998b21bd8c1c290000000000000000000000000000000000000000000000000000000000000000"
+				],
+				"storageAddress": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+				"callerAddress": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+				"callType": "Call",
+				"initialGas": 452208
+			},
+			"result": {
+				"Success": {
+					"retData": []
+				}
+			},
+			"argumentsNames": ["customer", "method"],
+			"argumentsTypes": ["address", "string"],
+			"calldataDecoded": [
+				{
+					"typeName": "address",
+					"name": "customer",
+					"value": "0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"
+				},
+				{
+					"typeName": "string",
+					"name": "method",
+					"value": "express"
+				}
+			],
+			"resultTypes": [],
+			"decodedResult": [],
+			"contractName": "ShippingManager",
+			"entryPointName": "initiateShipping",
+			"isErc20Token": false,
+			"classHash": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"nestingLevel": 0,
+			"callDebuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"13": {
+			"callId": 13,
+			"parentCallId": 1,
+			"childrenCallIds": [14],
+			"functionCallId": 14,
+			"eventCallIds": [],
+			"entryPoint": {
+				"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"codeAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"entryPointType": "EXTERNAL",
+				"entryPointSelector": "0xfc8a475f",
+				"calldata": ["0xfc8a475f0000000000000000000000000000000000000000000000000000000000000032"],
+				"storageAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"callerAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+				"callType": "Call",
+				"initialGas": 443332
+			},
+			"result": {
+				"Success": {
+					"retData": []
+				}
+			},
+			"argumentsNames": ["value"],
+			"argumentsTypes": ["uint256"],
+			"calldataDecoded": [
+				{
+					"typeName": "uint256",
+					"name": "value",
+					"value": "50"
+				}
+			],
+			"resultTypes": [],
+			"decodedResult": [],
+			"contractName": "Logger",
+			"entryPointName": "logValue",
+			"isErc20Token": false,
+			"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"nestingLevel": 0,
+			"callDebuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"16": {
+			"callId": 16,
+			"parentCallId": 1,
+			"childrenCallIds": [],
+			"functionCallId": null,
+			"eventCallIds": [],
+			"entryPoint": {
+				"classHash": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+				"codeAddress": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+				"entryPointType": "EXTERNAL",
+				"entryPointSelector": "0x0b63fe95",
+				"calldata": [
+					"0x0b63fe95000000000000000000000000286af310ea3303c80ebe9a66f6998b21bd8c1c290000000000000000000000000000000000000000000000000f43fc2c04ee0000"
+				],
+				"storageAddress": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+				"callerAddress": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+				"callType": "Call",
+				"initialGas": 434985
+			},
+			"result": {
+				"Success": {
+					"retData": []
+				}
+			},
+			"argumentsNames": ["from", "amount"],
+			"argumentsTypes": ["address", "uint256"],
+			"calldataDecoded": [
+				{
+					"typeName": "address",
+					"name": "from",
+					"value": "0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"
+				},
+				{
+					"typeName": "uint256",
+					"name": "amount",
+					"value": "1100000000000000000"
+				}
+			],
+			"resultTypes": [],
+			"decodedResult": [],
+			"contractName": "PaymentProcessor",
+			"entryPointName": "processPayment",
+			"isErc20Token": false,
+			"classHash": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+			"isDeepestPanicResult": true,
+			"errorMessage": "Execution reverted",
+			"nestingLevel": 0,
+			"callDebuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		}
+	},
+	"functionCallsMap": {
+		"2": {
+			"callId": 2,
+			"parentCallId": 1,
+			"childrenCallIds": [],
+			"contractCallId": 1,
+			"eventCallIds": [],
+			"fnName": "OrderProcessor::processOrder",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [],
+			"argumentsDecoded": [],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"4": {
+			"callId": 4,
+			"parentCallId": 3,
+			"childrenCallIds": [],
+			"contractCallId": 3,
+			"eventCallIds": [],
+			"fnName": "Logger::log",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [
+				{
+					"typeName": "string",
+					"value": ["Starting order processing"],
+					"internalIODecoded": null
+				}
+			],
+			"argumentsDecoded": [
+				{
+					"typeName": "string",
+					"value": ["Starting order processing"],
+					"internalIODecoded": null
+				}
+			],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"6": {
+			"callId": 6,
+			"parentCallId": 5,
+			"childrenCallIds": [7],
+			"contractCallId": 5,
+			"eventCallIds": [],
+			"fnName": "TaxCalculator::calculateTax",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [
+				{
+					"typeName": "uint256",
+					"value": ["1000000000000000000"],
+					"internalIODecoded": null
+				},
+				{
+					"typeName": "string",
+					"value": ["electronics"],
+					"internalIODecoded": null
+				}
+			],
+			"argumentsDecoded": [
+				{
+					"typeName": "uint256",
+					"value": ["1000000000000000000"],
+					"internalIODecoded": null
+				},
+				{
+					"typeName": "string",
+					"value": ["electronics"],
+					"internalIODecoded": null
+				}
+			],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"7": {
+			"callId": 7,
+			"parentCallId": 6,
+			"childrenCallIds": [],
+			"contractCallId": 5,
+			"eventCallIds": [],
+			"fnName": "TaxCalculator::getBaseRate",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [],
+			"argumentsDecoded": [],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"9": {
+			"callId": 9,
+			"parentCallId": 8,
+			"childrenCallIds": [],
+			"contractCallId": 8,
+			"eventCallIds": [],
+			"fnName": "Logger::logValue",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [
+				{
+					"typeName": "uint256",
+					"value": ["100000000000000000"],
+					"internalIODecoded": null
+				}
+			],
+			"argumentsDecoded": [
+				{
+					"typeName": "uint256",
+					"value": ["100000000000000000"],
+					"internalIODecoded": null
+				}
+			],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"11": {
+			"callId": 11,
+			"parentCallId": 10,
+			"childrenCallIds": [12, 15],
+			"contractCallId": 10,
+			"eventCallIds": [],
+			"fnName": "ShippingManager::initiateShipping",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [
+				{
+					"typeName": "address",
+					"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+					"internalIODecoded": null
+				},
+				{
+					"typeName": "string",
+					"value": ["express"],
+					"internalIODecoded": null
+				}
+			],
+			"argumentsDecoded": [
+				{
+					"typeName": "address",
+					"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+					"internalIODecoded": null
+				},
+				{
+					"typeName": "string",
+					"value": ["express"],
+					"internalIODecoded": null
+				}
+			],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"12": {
+			"callId": 12,
+			"parentCallId": 11,
+			"childrenCallIds": [],
+			"contractCallId": 10,
+			"eventCallIds": [],
+			"fnName": "ShippingManager::estimateShipping",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [],
+			"argumentsDecoded": [],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"14": {
+			"callId": 14,
+			"parentCallId": 13,
+			"childrenCallIds": [],
+			"contractCallId": 13,
+			"eventCallIds": [],
+			"fnName": "Logger::logValue",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [
+				{
+					"typeName": "uint256",
+					"value": ["50"],
+					"internalIODecoded": null
+				}
+			],
+			"argumentsDecoded": [
+				{
+					"typeName": "uint256",
+					"value": ["50"],
+					"internalIODecoded": null
+				}
+			],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		},
+		"15": {
+			"callId": 15,
+			"parentCallId": 11,
+			"childrenCallIds": [],
+			"contractCallId": 1,
+			"eventCallIds": [],
+			"fnName": "ShippingManager::finalizeAmount",
+			"fp": 0,
+			"isDeepestPanicResult": false,
+			"errorMessage": null,
+			"results": [],
+			"resultsDecoded": [],
+			"arguments": [
+				{
+					"typeName": "uint256",
+					"value": ["1000000000000000000"],
+					"internalIODecoded": null
+				},
+				{
+					"typeName": "uint256",
+					"value": ["100000000000000000"],
+					"internalIODecoded": null
+				},
+				{
+					"typeName": "uint256",
+					"value": ["50"],
+					"internalIODecoded": null
+				}
+			],
+			"argumentsDecoded": [
+				{
+					"typeName": "uint256",
+					"value": ["1000000000000000000"],
+					"internalIODecoded": null
+				},
+				{
+					"typeName": "uint256",
+					"value": ["100000000000000000"],
+					"internalIODecoded": null
+				},
+				{
+					"typeName": "uint256",
+					"value": ["50"],
+					"internalIODecoded": null
+				}
+			],
+			"debuggerDataAvailable": true,
+			"debuggerTraceStepIndex": null,
+			"isHidden": false
+		}
+	},
+	"simulationDebuggerData": {
+		"contractDebuggerData": {
+			"0x59A714559B46c823d87986b5c5B7C630e2f5668d": {
+				"pcToCodeInfo": {
+					"0": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 21,
+									"col": 0
+								},
+								"end": {
+									"line": 70,
+									"col": 1
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"645": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 27,
+									"col": 4
+								},
+								"end": {
+									"line": 27,
+									"col": 37
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"862": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 26,
+									"col": 4
+								},
+								"end": {
+									"line": 26,
+									"col": 36
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1025": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 24,
+									"col": 4
+								},
+								"end": {
+									"line": 24,
+									"col": 39
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1188": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 25,
+									"col": 4
+								},
+								"end": {
+									"line": 25,
+									"col": 25
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1351": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 22,
+									"col": 4
+								},
+								"end": {
+									"line": 22,
+									"col": 24
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1614": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 63,
+									"col": 4
+								},
+								"end": {
+									"line": 69,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1617": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 63,
+									"col": 98
+								},
+								"end": {
+									"line": 63,
+									"col": 105
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1625": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 64,
+									"col": 12
+								},
+								"end": {
+									"line": 64,
+									"col": 15
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1627": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 64,
+									"col": 12
+								},
+								"end": {
+									"line": 64,
+									"col": 26
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1633": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 64,
+									"col": 18
+								},
+								"end": {
+									"line": 64,
+									"col": 26
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1636": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 64,
+									"col": 18
+								},
+								"end": {
+									"line": 64,
+									"col": 22
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1640": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 64,
+									"col": 25
+								},
+								"end": {
+									"line": 64,
+									"col": 26
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1665": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 64,
+									"col": 8
+								},
+								"end": {
+									"line": 68,
+									"col": 9
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1671": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 65,
+									"col": 27
+								},
+								"end": {
+									"line": 65,
+									"col": 34
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1674": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 65,
+									"col": 19
+								},
+								"end": {
+									"line": 65,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1677": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 65,
+									"col": 19
+								},
+								"end": {
+									"line": 65,
+									"col": 23
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1678": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 65,
+									"col": 27
+								},
+								"end": {
+									"line": 65,
+									"col": 30
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1682": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 65,
+									"col": 33
+								},
+								"end": {
+									"line": 65,
+									"col": 34
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1701": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 65,
+									"col": 12
+								},
+								"end": {
+									"line": 65,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1704": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 67,
+									"col": 19
+								},
+								"end": {
+									"line": 67,
+									"col": 29
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1707": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 67,
+									"col": 19
+								},
+								"end": {
+									"line": 67,
+									"col": 23
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"1713": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 67,
+									"col": 12
+								},
+								"end": {
+									"line": 67,
+									"col": 29
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2447": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 44,
+									"col": 4
+								},
+								"end": {
+									"line": 61,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2451": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 44,
+									"col": 126
+								},
+								"end": {
+									"line": 44,
+									"col": 133
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2459": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 45,
+									"col": 8
+								},
+								"end": {
+									"line": 45,
+									"col": 14
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2460": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 45,
+									"col": 8
+								},
+								"end": {
+									"line": 45,
+									"col": 18
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2484": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 45,
+									"col": 8
+								},
+								"end": {
+									"line": 45,
+									"col": 47
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2542": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 47,
+									"col": 22
+								},
+								"end": {
+									"line": 47,
+									"col": 66
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2550": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 47,
+									"col": 22
+								},
+								"end": {
+									"line": 47,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2551": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 47,
+									"col": 22
+								},
+								"end": {
+									"line": 47,
+									"col": 48
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2581": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 47,
+									"col": 49
+								},
+								"end": {
+									"line": 47,
+									"col": 54
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2582": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 47,
+									"col": 56
+								},
+								"end": {
+									"line": 47,
+									"col": 65
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2633": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 47,
+									"col": 8
+								},
+								"end": {
+									"line": 47,
+									"col": 66
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2634": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 48,
+									"col": 8
+								},
+								"end": {
+									"line": 48,
+									"col": 14
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2635": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 48,
+									"col": 8
+								},
+								"end": {
+									"line": 48,
+									"col": 23
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2659": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 48,
+									"col": 24
+								},
+								"end": {
+									"line": 48,
+									"col": 27
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2660": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 48,
+									"col": 8
+								},
+								"end": {
+									"line": 48,
+									"col": 28
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2719": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 50,
+									"col": 31
+								},
+								"end": {
+									"line": 50,
+									"col": 84
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2727": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 50,
+									"col": 31
+								},
+								"end": {
+									"line": 50,
+									"col": 39
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2728": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 50,
+									"col": 31
+								},
+								"end": {
+									"line": 50,
+									"col": 56
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2758": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 50,
+									"col": 57
+								},
+								"end": {
+									"line": 50,
+									"col": 67
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2759": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 50,
+									"col": 69
+								},
+								"end": {
+									"line": 50,
+									"col": 83
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2810": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 50,
+									"col": 8
+								},
+								"end": {
+									"line": 50,
+									"col": 84
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2811": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 51,
+									"col": 8
+								},
+								"end": {
+									"line": 51,
+									"col": 14
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2812": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 51,
+									"col": 8
+								},
+								"end": {
+									"line": 51,
+									"col": 23
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2835": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 51,
+									"col": 24
+								},
+								"end": {
+									"line": 51,
+									"col": 36
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2836": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 51,
+									"col": 8
+								},
+								"end": {
+									"line": 51,
+									"col": 37
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2899": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 53,
+									"col": 39
+								},
+								"end": {
+									"line": 53,
+									"col": 44
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2900": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 53,
+									"col": 24
+								},
+								"end": {
+									"line": 53,
+									"col": 64
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2904": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 53,
+									"col": 46
+								},
+								"end": {
+									"line": 53,
+									"col": 49
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2905": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 53,
+									"col": 51
+								},
+								"end": {
+									"line": 53,
+									"col": 63
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2912": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 55,
+									"col": 8
+								},
+								"end": {
+									"line": 55,
+									"col": 16
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2913": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 55,
+									"col": 8
+								},
+								"end": {
+									"line": 55,
+									"col": 31
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2936": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 55,
+									"col": 39
+								},
+								"end": {
+									"line": 55,
+									"col": 44
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2937": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 55,
+									"col": 8
+								},
+								"end": {
+									"line": 55,
+									"col": 45
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2940": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 55,
+									"col": 46
+								},
+								"end": {
+									"line": 55,
+									"col": 56
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2942": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 55,
+									"col": 58
+								},
+								"end": {
+									"line": 55,
+									"col": 63
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"2944": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 55,
+									"col": 8
+								},
+								"end": {
+									"line": 55,
+									"col": 64
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3007": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 56,
+									"col": 8
+								},
+								"end": {
+									"line": 56,
+									"col": 14
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3008": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 56,
+									"col": 8
+								},
+								"end": {
+									"line": 56,
+									"col": 22
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3031": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 56,
+									"col": 41
+								},
+								"end": {
+									"line": 56,
+									"col": 46
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3032": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 56,
+									"col": 8
+								},
+								"end": {
+									"line": 56,
+									"col": 47
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3095": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 58,
+									"col": 28
+								},
+								"end": {
+									"line": 58,
+									"col": 38
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3096": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 58,
+									"col": 13
+								},
+								"end": {
+									"line": 58,
+									"col": 72
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3100": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 58,
+									"col": 40
+								},
+								"end": {
+									"line": 58,
+									"col": 45
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3101": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 58,
+									"col": 47
+								},
+								"end": {
+									"line": 58,
+									"col": 50
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3102": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 58,
+									"col": 52
+								},
+								"end": {
+									"line": 58,
+									"col": 64
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3103": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 58,
+									"col": 66
+								},
+								"end": {
+									"line": 58,
+									"col": 71
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					},
+					"3159": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 60,
+									"col": 8
+								},
+								"end": {
+									"line": 60,
+									"col": 20
+								},
+								"filePath": "examples/multiContract2/OrderProcessor.sol"
+							}
+						]
+					}
+				},
+				"sourceCode": {
+					"examples/multiContract2/OrderProcessor.sol": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ninterface ITaxCalculator {\n    function calculateTax(uint256 value, string calldata orderType) external returns (uint256);\n}\n\ninterface IShippingManager {\n    function initiateShipping(address customer, string calldata method) external returns (uint256);\n}\n\ninterface IPaymentProcessor {\n    function processPayment(address from, uint256 amount) external payable;\n}\n\ninterface ILogger {\n    function log(string calldata message) external;\n    function logValue(uint256 value) external;\n    function logBoth(string calldata message, uint256 value) external;\n}\n\ncontract OrderProcessor {\n    address public admin;\n\n    ITaxCalculator public taxCalculator;\n    ILogger public logger;\n    IShippingManager public shipping;\n    IPaymentProcessor public payments;\n\n    event OrderProcessed(address customer, uint256 value, uint256 tax, uint256 shippingCost, uint256 total);\n\n    constructor(\n        address _taxCalc,\n        address _logger,\n        address _shipping,\n        address _payments\n    ) {\n        admin = msg.sender;\n        taxCalculator = ITaxCalculator(_taxCalc);\n        logger = ILogger(_logger);\n        shipping = IShippingManager(_shipping);\n        payments = IPaymentProcessor(_payments);\n    }\n\n    function processOrder(uint256 value, string calldata orderType, string calldata shippingMethod) external payable returns (uint256) {\n        logger.log(\"Starting order processing\");\n\n        uint256 tax = taxCalculator.calculateTax(value, orderType);\n        logger.logValue(tax);\n\n        uint256 shippingCost = shipping.initiateShipping(msg.sender, shippingMethod);\n        logger.logValue(shippingCost);\n\n        uint256 total = finalizeAmount(value, tax, shippingCost);\n\n        payments.processPayment{value: total}(msg.sender, total);\n        logger.logBoth(\"Order complete\", total);\n\n        emit OrderProcessed(msg.sender, value, tax, shippingCost, total);\n\n        return total;\n    }\n\n    function finalizeAmount(uint256 base, uint256 tax, uint256 shippingCost) public pure returns (uint256) {\n        if (tax > base / 2) {\n            return base + (tax / 2);  // discounting if tax is high\n        } else {\n            return base + tax;\n        }\n    }\n}\n",
+					"metadata.json": "{\"compiler\":{\"version\":\"0.8.30+commit.73712a01\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_taxCalc\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_logger\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_shipping\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_payments\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"customer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tax\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"shippingCost\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"total\",\"type\":\"uint256\"}],\"name\":\"OrderProcessed\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"base\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tax\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"shippingCost\",\"type\":\"uint256\"}],\"name\":\"finalizeAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"logger\",\"outputs\":[{\"internalType\":\"contract ILogger\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"payments\",\"outputs\":[{\"internalType\":\"contract IPaymentProcessor\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"orderType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"shippingMethod\",\"type\":\"string\"}],\"name\":\"processOrder\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"shipping\",\"outputs\":[{\"internalType\":\"contract IShippingManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taxCalculator\",\"outputs\":[{\"internalType\":\"contract ITaxCalculator\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"examples/multi_contract_2/OrderProcessor.sol\":\"OrderProcessor\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"examples/multi_contract_2/OrderProcessor.sol\":{\"keccak256\":\"0x3dd1214181cfdd50b92fdbe530e9c851ddad6a7df11e58e71886179e812460b6\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://21df75f966a7bdf2c0d79d0b503e5a986c141eb6b6d7909ac38ace4317add17f\",\"dweb:/ipfs/QmQmFLVrSw1RLVAdEDFGnHZvuSMuY8EqzMqpUmPchgyST9\"]}},\"version\":1}",
+					"constructor-args.txt": "0x0000000000000000000000006a85ebf0eba5307943bdf27d02d198bc64e9ffed000000000000000000000000dcdd1dd0ff17043f8bcd1ac9e5be20bbed4fac0a000000000000000000000000be734ad6434e16f6be04706005faed6fd38eb2b2000000000000000000000000f776ff56e2400e31f3070c1ac70ab80433b01823",
+					"creator-tx-hash.txt": "0x085721ed4e993150c32934d130df792c4c73bb2422fe915708a2d1274e99fda7"
+				}
+			},
+			"0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A": {
+				"pcToCodeInfo": {
+					"0": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 3,
+									"col": 0
+								},
+								"end": {
+									"line": 19,
+									"col": 1
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"671": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 4
+								},
+								"end": {
+									"line": 9,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"673": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 8,
+									"col": 24
+								},
+								"end": {
+									"line": 8,
+									"col": 34
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"674": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 8,
+									"col": 36
+								},
+								"end": {
+									"line": 8,
+									"col": 43
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"676": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 8,
+									"col": 13
+								},
+								"end": {
+									"line": 8,
+									"col": 44
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"783": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 15,
+									"col": 4
+								},
+								"end": {
+									"line": 18,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"785": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 16,
+									"col": 24
+								},
+								"end": {
+									"line": 16,
+									"col": 34
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"786": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 16,
+									"col": 36
+								},
+								"end": {
+									"line": 16,
+									"col": 43
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"788": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 16,
+									"col": 13
+								},
+								"end": {
+									"line": 16,
+									"col": 44
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"846": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 25
+								},
+								"end": {
+									"line": 17,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"847": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 37
+								},
+								"end": {
+									"line": 17,
+									"col": 42
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"848": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 13
+								},
+								"end": {
+									"line": 17,
+									"col": 43
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"906": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 11,
+									"col": 4
+								},
+								"end": {
+									"line": 13,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"907": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 12,
+									"col": 25
+								},
+								"end": {
+									"line": 12,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"908": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 12,
+									"col": 37
+								},
+								"end": {
+									"line": 12,
+									"col": 42
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					},
+					"909": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 12,
+									"col": 13
+								},
+								"end": {
+									"line": 12,
+									"col": 43
+								},
+								"filePath": "examples/multiContract2/logger.sol"
+							}
+						]
+					}
+				},
+				"sourceCode": {
+					"examples/multiContract2/logger.sol": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract Logger {\n    event LogMessage(address user, string message);\n    event ValueLogged(address user, uint256 value);\n\n    function log(string calldata message) external {\n        emit LogMessage(msg.sender, message);\n    }\n\n    function logValue(uint256 value) external {\n        emit ValueLogged(msg.sender, value);\n    }\n\n    function logBoth(string calldata message, uint256 value) external {\n        emit LogMessage(msg.sender, message);\n        emit ValueLogged(msg.sender, value);\n    }\n}\n",
+					"metadata.json": "{\"compiler\":{\"version\":\"0.8.30+commit.73712a01\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"message\",\"type\":\"string\"}],\"name\":\"LogMessage\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ValueLogged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"message\",\"type\":\"string\"}],\"name\":\"log\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"message\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"logBoth\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"logValue\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"examples/multi_contract_2/Logger.sol\":\"Logger\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"examples/multi_contract_2/Logger.sol\":{\"keccak256\":\"0x21828aae81962e471600e82be7f0732ce90be310718b2117df29e3a21831a45a\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://56798cdf6076369b62d9b4e4522c88af0560fcc26d615eead5037bfe8bfc7566\",\"dweb:/ipfs/Qma7wC4F6jByiRgwfRkkw5JiihA94tbd2dJzWMuaE6UoQd\"]}},\"version\":1}",
+					"creator-tx-hash.txt": "0xe4f3e12ebde8405dedeaa4fcd158576fb0e391d9cf39862ba4e288bbf7f6007b"
+				}
+			},
+			"0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd": {
+				"pcToCodeInfo": {
+					"0": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 3,
+									"col": 0
+								},
+								"end": {
+									"line": 27,
+									"col": 1
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"888": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 6,
+									"col": 4
+								},
+								"end": {
+									"line": 15,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"890": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 9,
+									"col": 23
+								},
+								"end": {
+									"line": 9,
+									"col": 45
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"893": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 10,
+									"col": 23
+								},
+								"end": {
+									"line": 10,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"897": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 10,
+									"col": 22
+								},
+								"end": {
+									"line": 10,
+									"col": 42
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"901": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 6,
+									"col": 86
+								},
+								"end": {
+									"line": 6,
+									"col": 93
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"909": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 16
+								},
+								"end": {
+									"line": 7,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"910": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 8
+								},
+								"end": {
+									"line": 7,
+									"col": 58
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"914": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 16
+								},
+								"end": {
+									"line": 7,
+									"col": 25
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"920": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 24
+								},
+								"end": {
+									"line": 7,
+									"col": 25
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"943": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 10,
+									"col": 23
+								},
+								"end": {
+									"line": 10,
+									"col": 28
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"952": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 10,
+									"col": 39
+								},
+								"end": {
+									"line": 10,
+									"col": 42
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"965": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 12,
+									"col": 25
+								},
+								"end": {
+									"line": 12,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"967": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 12,
+									"col": 37
+								},
+								"end": {
+									"line": 12,
+									"col": 42
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"968": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 12,
+									"col": 44
+								},
+								"end": {
+									"line": 12,
+									"col": 47
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"969": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 12,
+									"col": 13
+								},
+								"end": {
+									"line": 12,
+									"col": 48
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1027": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 14,
+									"col": 8
+								},
+								"end": {
+									"line": 14,
+									"col": 18
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1348": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 4
+								},
+								"end": {
+									"line": 26,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1349": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 18,
+									"col": 24
+								},
+								"end": {
+									"line": 18,
+									"col": 51
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1353": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 18,
+									"col": 34
+								},
+								"end": {
+									"line": 18,
+									"col": 50
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1357": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 73
+								},
+								"end": {
+									"line": 17,
+									"col": 80
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1365": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 18,
+									"col": 40
+								},
+								"end": {
+									"line": 18,
+									"col": 49
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1396": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 12
+								},
+								"end": {
+									"line": 19,
+									"col": 17
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1397": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 12
+								},
+								"end": {
+									"line": 19,
+									"col": 41
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1403": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 21
+								},
+								"end": {
+									"line": 19,
+									"col": 41
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1448": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 8
+								},
+								"end": {
+									"line": 25,
+									"col": 9
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1454": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 20,
+									"col": 19
+								},
+								"end": {
+									"line": 20,
+									"col": 20
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1455": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 20,
+									"col": 12
+								},
+								"end": {
+									"line": 20,
+									"col": 20
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1468": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 21,
+									"col": 19
+								},
+								"end": {
+									"line": 21,
+									"col": 49
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1474": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 21,
+									"col": 28
+								},
+								"end": {
+									"line": 21,
+									"col": 49
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1519": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 21,
+									"col": 15
+								},
+								"end": {
+									"line": 25,
+									"col": 9
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1525": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 22,
+									"col": 12
+								},
+								"end": {
+									"line": 22,
+									"col": 20
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1528": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 22,
+									"col": 19
+								},
+								"end": {
+									"line": 22,
+									"col": 20
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1538": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 24,
+									"col": 12
+								},
+								"end": {
+									"line": 24,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					},
+					"1541": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 24,
+									"col": 19
+								},
+								"end": {
+									"line": 24,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/taxcalculator.sol"
+							}
+						]
+					}
+				},
+				"sourceCode": {
+					"examples/multiContract2/taxcalculator.sol": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract TaxCalculator {\n    event TaxComputed(address caller, uint256 orderValue, uint256 taxAmount);\n\n    function calculateTax(uint256 value, string calldata orderType) external returns (uint256) {\n        require(value > 0, \"Order value must be positive\");\n\n        uint256 rate = getBaseRate(orderType);\n        uint256 tax = (value * rate) / 100;\n\n        emit TaxComputed(msg.sender, value, tax);\n\n        return tax;\n    }\n\n    function getBaseRate(string calldata orderType) public pure returns (uint256) {\n        bytes32 otype = keccak256(bytes(orderType));\n        if (otype == keccak256(\"digital\")) {\n            return 5;\n        } else if (otype == keccak256(\"physical\")) {\n            return 8;\n        } else {\n            return 10;\n        }\n    }\n}\n",
+					"metadata.json": "{\"compiler\":{\"version\":\"0.8.30+commit.73712a01\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"orderValue\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taxAmount\",\"type\":\"uint256\"}],\"name\":\"TaxComputed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"orderType\",\"type\":\"string\"}],\"name\":\"calculateTax\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"orderType\",\"type\":\"string\"}],\"name\":\"getBaseRate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"examples/multi_contract_2/TaxCalculator.sol\":\"TaxCalculator\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"examples/multi_contract_2/TaxCalculator.sol\":{\"keccak256\":\"0x6d94ad525fed6fd0957d0e0bbe395e0970c318c609c0d2a138e066ac9a202445\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d7e9bf1e329d13ef6f39b902e4fe73b9d83eae5b36ce673de8ee4228ea9fa381\",\"dweb:/ipfs/QmeYsi74iBRGJ4UDnT8GT1jUkC1WXfc1jYojnPEDpp8vKn\"]}},\"version\":1}",
+					"creator-tx-hash.txt": "0x34e4dda71108080eb37d6654e28a4e3854c81d9ee3bf154fdffbb4ed4620749b"
+				}
+			},
+			"0xbE734aD6434E16f6bE04706005faED6fD38eb2B2": {
+				"pcToCodeInfo": {
+					"0": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 3,
+									"col": 0
+								},
+								"end": {
+									"line": 25,
+									"col": 1
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"612": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 4
+								},
+								"end": {
+									"line": 14,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"614": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 10,
+									"col": 23
+								},
+								"end": {
+									"line": 10,
+									"col": 47
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"619": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 90
+								},
+								"end": {
+									"line": 7,
+									"col": 97
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"627": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 8,
+									"col": 29
+								},
+								"end": {
+									"line": 8,
+									"col": 37
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"628": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 8,
+									"col": 39
+								},
+								"end": {
+									"line": 8,
+									"col": 45
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"630": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 8,
+									"col": 13
+								},
+								"end": {
+									"line": 8,
+									"col": 46
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"693": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 11,
+									"col": 30
+								},
+								"end": {
+									"line": 11,
+									"col": 34
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"694": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 11,
+									"col": 13
+								},
+								"end": {
+									"line": 11,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"751": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 13,
+									"col": 8
+								},
+								"end": {
+									"line": 13,
+									"col": 19
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1054": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 16,
+									"col": 4
+								},
+								"end": {
+									"line": 24,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1055": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 16,
+									"col": 75
+								},
+								"end": {
+									"line": 16,
+									"col": 82
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1063": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 28
+								},
+								"end": {
+									"line": 17,
+									"col": 34
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1064": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 12
+								},
+								"end": {
+									"line": 17,
+									"col": 36
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1067": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 22
+								},
+								"end": {
+									"line": 17,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1103": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 12
+								},
+								"end": {
+									"line": 17,
+									"col": 60
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1109": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 40
+								},
+								"end": {
+									"line": 17,
+									"col": 60
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1154": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 17,
+									"col": 8
+								},
+								"end": {
+									"line": 23,
+									"col": 9
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1160": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 18,
+									"col": 19
+								},
+								"end": {
+									"line": 18,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1162": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 18,
+									"col": 12
+								},
+								"end": {
+									"line": 18,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1175": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 19
+								},
+								"end": {
+									"line": 19,
+									"col": 43
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1178": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 35
+								},
+								"end": {
+									"line": 19,
+									"col": 41
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1179": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 29
+								},
+								"end": {
+									"line": 19,
+									"col": 42
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1213": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 19
+								},
+								"end": {
+									"line": 19,
+									"col": 68
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1219": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 47
+								},
+								"end": {
+									"line": 19,
+									"col": 68
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1264": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 19,
+									"col": 15
+								},
+								"end": {
+									"line": 23,
+									"col": 9
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1270": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 20,
+									"col": 12
+								},
+								"end": {
+									"line": 20,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1273": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 20,
+									"col": 19
+								},
+								"end": {
+									"line": 20,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1283": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 22,
+									"col": 12
+								},
+								"end": {
+									"line": 22,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					},
+					"1286": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 22,
+									"col": 19
+								},
+								"end": {
+									"line": 22,
+									"col": 21
+								},
+								"filePath": "examples/multiContract2/shippingmanager.sol"
+							}
+						]
+					}
+				},
+				"sourceCode": {
+					"examples/multiContract2/shippingmanager.sol": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract ShippingManager {\n    event ShippingStarted(address to, string method);\n    event ShippingEstimate(uint256 cost);\n\n    function initiateShipping(address customer, string calldata method) external returns (uint256) {\n        emit ShippingStarted(customer, method);\n\n        uint256 cost = estimateShipping(method);\n        emit ShippingEstimate(cost);\n\n        return cost;\n    }\n\n    function estimateShipping(string calldata method) public pure returns (uint256) {\n        if (keccak256(bytes(method)) == keccak256(\"express\")) {\n            return 50;\n        } else if (keccak256(bytes(method)) == keccak256(\"standard\")) {\n            return 20;\n        } else {\n            return 30;\n        }\n    }\n}\n",
+					"metadata.json": "{\"compiler\":{\"version\":\"0.8.30+commit.73712a01\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cost\",\"type\":\"uint256\"}],\"name\":\"ShippingEstimate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"method\",\"type\":\"string\"}],\"name\":\"ShippingStarted\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"method\",\"type\":\"string\"}],\"name\":\"estimateShipping\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"customer\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"method\",\"type\":\"string\"}],\"name\":\"initiateShipping\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"examples/multi_contract_2/ShippingManager.sol\":\"ShippingManager\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"examples/multi_contract_2/ShippingManager.sol\":{\"keccak256\":\"0xa7e7ae79ff6cfcfa05813ace28cd7980e5e5e1f4262f5ba2edbf344aef852463\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b2c34932e2a96ef0a7c15fbbbf2864336f12d336e01f7f3ad00d84cbcac0e92f\",\"dweb:/ipfs/QmRUksVvLzMbsFG9isgurCvcHjmpngBJaqiRvJagw7BvZB\"]}},\"version\":1}",
+					"creator-tx-hash.txt": "0x6f0e23c5801aece5f2f69c29150226368b1611cffe136aee51b664473937c2f9"
+				}
+			},
+			"0xf776FF56e2400e31f3070c1ac70Ab80433B01823": {
+				"pcToCodeInfo": {
+					"0": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 3,
+									"col": 0
+								},
+								"end": {
+									"line": 10,
+									"col": 1
+								},
+								"filePath": "examples/multiContract2/paymentprocessor.sol"
+							}
+						]
+					},
+					"452": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 6,
+									"col": 4
+								},
+								"end": {
+									"line": 9,
+									"col": 5
+								},
+								"filePath": "examples/multiContract2/paymentprocessor.sol"
+							}
+						]
+					},
+					"453": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 8
+								},
+								"end": {
+									"line": 7,
+									"col": 56
+								},
+								"filePath": "examples/multiContract2/paymentprocessor.sol"
+							}
+						]
+					},
+					"456": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 16
+								},
+								"end": {
+									"line": 7,
+									"col": 25
+								},
+								"filePath": "examples/multiContract2/paymentprocessor.sol"
+							}
+						]
+					},
+					"457": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 16
+								},
+								"end": {
+									"line": 7,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/paymentprocessor.sol"
+							}
+						]
+					},
+					"463": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 7,
+									"col": 29
+								},
+								"end": {
+									"line": 7,
+									"col": 35
+								},
+								"filePath": "examples/multiContract2/paymentprocessor.sol"
+							}
+						]
+					},
+					"482": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 8,
+									"col": 35
+								},
+								"end": {
+									"line": 8,
+									"col": 41
+								},
+								"filePath": "examples/multiContract2/paymentprocessor.sol"
+							}
+						]
+					},
+					"483": {
+						"codeLocations": [
+							{
+								"start": {
+									"line": 8,
+									"col": 13
+								},
+								"end": {
+									"line": 8,
+									"col": 42
+								},
+								"filePath": "examples/multiContract2/paymentprocessor.sol"
+							}
+						]
+					}
+				},
+				"sourceCode": {
+					"examples/multiContract2/paymentprocessor.sol": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract PaymentProcessor {\n    event PaymentReceived(address from, uint256 amount);\n\n    function processPayment(address from, uint256 amount) external payable {\n        require(msg.value >= amount, \"Not enough funds\");\n        emit PaymentReceived(from, amount);\n    }\n}\n",
+					"metadata.json": "{\"compiler\":{\"version\":\"0.8.30+commit.73712a01\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"PaymentReceived\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"processPayment\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"examples/multi_contract_2/PaymentProcessor.sol\":\"PaymentProcessor\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"examples/multi_contract_2/PaymentProcessor.sol\":{\"keccak256\":\"0xfa253d4b16d43bda0754ab2c20d25559a4b3c2e078924e7bb1827a56a257917c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9c430a9def60ee1e188e97b281471c33e36541530d418c3a8b376641ccf4bc12\",\"dweb:/ipfs/Qmci5azHfM4i7BvWC7cuPgSzh66TN2XAHgFwmpeYeHAYqw\"]}},\"version\":1}",
+					"creator-tx-hash.txt": "0x694706e7a04b514428219ae9e4c6064c1b46af0cc5b76e95872f58eeee56a894"
+				}
+			}
+		},
+		"debuggerTrace": [
+			{
+				"withLocation": {
+					"pcIndex": 0,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 0
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2447,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2451,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2459,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2460,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2484,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 0,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2542,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2550,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2551,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2581,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 2582,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 0,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 1,
+					"fp": 0,
+					"functionCallId": 2
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 671,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 3,
+					"fp": 0,
+					"functionCallId": 4
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 673,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 3,
+					"fp": 0,
+					"functionCallId": 4
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 674,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 3,
+					"fp": 0,
+					"functionCallId": 4
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 676,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 3,
+					"fp": 0,
+					"functionCallId": 4
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 888,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 890,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 893,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 897,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 901,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 909,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 910,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 914,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 920,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 0,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 888,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1365,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 0,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 6
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1348,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1349,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1353,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1357,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1365,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1396,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1397,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1403,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1448,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1468,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1474,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1519,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1538,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1541,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 943,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 952,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 965,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 967,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 968,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 969,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1027,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 5,
+					"fp": 0,
+					"functionCallId": 7
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 906,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 8,
+					"fp": 0,
+					"functionCallId": 9
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 907,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 8,
+					"fp": 0,
+					"functionCallId": 9
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 908,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 8,
+					"fp": 0,
+					"functionCallId": 9
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 909,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 8,
+					"fp": 0,
+					"functionCallId": 9
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 612,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 614,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 619,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 627,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 628,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 630,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 693,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 694,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1213,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 0,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 693,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 694,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 11
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1054,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1055,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1063,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1064,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1067,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1103,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1109,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1154,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1160,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 1162,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 693,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 694,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 751,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"resultsDecoded": [],
+					"contractCallId": 10,
+					"fp": 0,
+					"functionCallId": 12
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 906,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 13,
+					"fp": 0,
+					"functionCallId": 14
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 907,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 13,
+					"fp": 0,
+					"functionCallId": 14
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 908,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 13,
+					"fp": 0,
+					"functionCallId": 14
+				}
+			},
+			{
+				"withLocation": {
+					"pcIndex": 909,
+					"locationIndex": 0,
+					"results": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"resultsDecoded": [],
+					"contractCallId": 13,
+					"fp": 0,
+					"functionCallId": 14
+				}
+			}
+		]
+	}
+}

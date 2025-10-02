@@ -1,0 +1,1015 @@
+{
+	"l2TransactionData": {
+		"simulationResult": {
+			"contractCallsMap": {
+				"0": {
+					"callId": 0,
+					"parentCallId": null,
+					"childrenCallIds": [1],
+					"functionCallId": null,
+					"eventCallIds": [],
+					"entryPoint": {
+						"classHash": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+						"codeAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0x6f10e157",
+						"calldata": [
+							"0x6f10e1570000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000b656c656374726f6e69637300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000076578707265737300000000000000000000000000000000000000000000000000"
+						],
+						"storageAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+						"callerAddress": "0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29",
+						"callType": "Call",
+						"initialGas": 477704
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": [],
+					"argumentsTypes": [],
+					"calldataDecoded": [],
+					"resultTypes": [],
+					"decodedResult": [],
+					"contractName": "OrderProcessor",
+					"entryPointName": "0x6f10e157",
+					"isErc20Token": false,
+					"classHash": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"1": {
+					"callId": 1,
+					"parentCallId": 0,
+					"childrenCallIds": [2, 3, 5, 8, 10, 13, 16],
+					"functionCallId": 2,
+					"eventCallIds": [],
+					"entryPoint": {
+						"classHash": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+						"codeAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0x6f10e157",
+						"calldata": [
+							"0x6f10e1570000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000b656c656374726f6e69637300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000076578707265737300000000000000000000000000000000000000000000000000"
+						],
+						"storageAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+						"callerAddress": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+						"callType": "Call",
+						"initialGas": 477704
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": ["value", "orderType", "shippingMethod"],
+					"argumentsTypes": ["uint256", "string", "string"],
+					"calldataDecoded": [
+						{
+							"typeName": "uint256",
+							"name": "value",
+							"value": "1000000000000000000"
+						},
+						{
+							"typeName": "string",
+							"name": "orderType",
+							"value": "electronics"
+						},
+						{
+							"typeName": "string",
+							"name": "shippingMethod",
+							"value": "express"
+						}
+					],
+					"resultTypes": [],
+					"decodedResult": [],
+					"contractName": "OrderProcessor",
+					"entryPointName": "processOrder(uint256,string,string)",
+					"isErc20Token": false,
+					"classHash": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"3": {
+					"callId": 3,
+					"parentCallId": 1,
+					"childrenCallIds": [4],
+					"functionCallId": 4,
+					"eventCallIds": [],
+					"entryPoint": {
+						"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"codeAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0x41304fac",
+						"calldata": [
+							"0x41304fac0000000000000000000000000000000000000000000000000000000000000000"
+						],
+						"storageAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"callerAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"callType": "Call",
+						"initialGas": 471559
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": ["message"],
+					"argumentsTypes": ["string"],
+					"calldataDecoded": [
+						{
+							"typeName": "string",
+							"name": "message",
+							"value": "Starting order processing"
+						}
+					],
+					"resultTypes": [],
+					"decodedResult": [],
+					"contractName": "Logger",
+					"entryPointName": "log",
+					"isErc20Token": false,
+					"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"5": {
+					"callId": 5,
+					"parentCallId": 1,
+					"childrenCallIds": [6],
+					"functionCallId": 6,
+					"eventCallIds": [],
+					"entryPoint": {
+						"classHash": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+						"codeAddress": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0x55ec8a03",
+						"calldata": [
+							"0x55ec8a030000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"
+						],
+						"storageAddress": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+						"callerAddress": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+						"callType": "Call",
+						"initialGas": 465563
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": ["value", "orderType"],
+					"argumentsTypes": ["uint256", "string"],
+					"calldataDecoded": [
+						{
+							"typeName": "uint256",
+							"name": "value",
+							"value": "1000000000000000000"
+						},
+						{
+							"typeName": "string",
+							"name": "orderType",
+							"value": "electronics"
+						}
+					],
+					"resultTypes": [],
+					"decodedResult": [],
+					"contractName": "TaxCalculator",
+					"entryPointName": "calculateTax",
+					"isErc20Token": false,
+					"classHash": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"8": {
+					"callId": 8,
+					"parentCallId": 1,
+					"childrenCallIds": [9],
+					"functionCallId": 9,
+					"eventCallIds": [],
+					"entryPoint": {
+						"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"codeAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0xfc8a475f",
+						"calldata": [
+							"0xfc8a475f000000000000000000000000000000000000000000000000016345785d8a0000"
+						],
+						"storageAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"callerAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"callType": "Call",
+						"initialGas": 457552
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": ["value"],
+					"argumentsTypes": ["uint256"],
+					"calldataDecoded": [
+						{
+							"typeName": "uint256",
+							"name": "value",
+							"value": "100000000000000000"
+						}
+					],
+					"resultTypes": [],
+					"decodedResult": [],
+					"contractName": "Logger",
+					"entryPointName": "logValue",
+					"isErc20Token": false,
+					"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"10": {
+					"callId": 10,
+					"parentCallId": 1,
+					"childrenCallIds": [11],
+					"functionCallId": 11,
+					"eventCallIds": [],
+					"entryPoint": {
+						"classHash": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+						"codeAddress": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0x01567ce2",
+						"calldata": [
+							"0x01567ce2000000000000000000000000286af310ea3303c80ebe9a66f6998b21bd8c1c290000000000000000000000000000000000000000000000000000000000000000"
+						],
+						"storageAddress": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+						"callerAddress": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+						"callType": "Call",
+						"initialGas": 452208
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": ["customer", "method"],
+					"argumentsTypes": ["address", "string"],
+					"calldataDecoded": [
+						{
+							"typeName": "address",
+							"name": "customer",
+							"value": "0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"
+						},
+						{
+							"typeName": "string",
+							"name": "method",
+							"value": "express"
+						}
+					],
+					"resultTypes": [],
+					"decodedResult": [],
+					"contractName": "ShippingManager",
+					"entryPointName": "initiateShipping",
+					"isErc20Token": false,
+					"classHash": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"13": {
+					"callId": 13,
+					"parentCallId": 1,
+					"childrenCallIds": [14],
+					"functionCallId": 14,
+					"eventCallIds": [],
+					"entryPoint": {
+						"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"codeAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0xfc8a475f",
+						"calldata": [
+							"0xfc8a475f0000000000000000000000000000000000000000000000000000000000000032"
+						],
+						"storageAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"callerAddress": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"callType": "Call",
+						"initialGas": 443332
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": ["value"],
+					"argumentsTypes": ["uint256"],
+					"calldataDecoded": [
+						{
+							"typeName": "uint256",
+							"name": "value",
+							"value": "50"
+						}
+					],
+					"resultTypes": [],
+					"decodedResult": [],
+					"contractName": "Logger",
+					"entryPointName": "logValue",
+					"isErc20Token": false,
+					"classHash": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"16": {
+					"callId": 16,
+					"parentCallId": 1,
+					"childrenCallIds": [],
+					"functionCallId": null,
+					"eventCallIds": [],
+					"entryPoint": {
+						"classHash": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+						"codeAddress": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+						"entryPointType": "EXTERNAL",
+						"entryPointSelector": "0x0b63fe95",
+						"calldata": [
+							"0x0b63fe95000000000000000000000000286af310ea3303c80ebe9a66f6998b21bd8c1c290000000000000000000000000000000000000000000000000f43fc2c04ee0000"
+						],
+						"storageAddress": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+						"callerAddress": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+						"callType": "Call",
+						"initialGas": 434985
+					},
+					"result": {
+						"Success": {
+							"retData": []
+						}
+					},
+					"argumentsNames": ["from", "amount"],
+					"argumentsTypes": ["address", "uint256"],
+					"calldataDecoded": [
+						{
+							"typeName": "address",
+							"name": "from",
+							"value": "0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"
+						},
+						{
+							"typeName": "uint256",
+							"name": "amount",
+							"value": "1100000000000000000"
+						}
+					],
+					"resultTypes": [],
+					"decodedResult": [],
+					"contractName": "PaymentProcessor",
+					"entryPointName": "processPayment",
+					"isErc20Token": false,
+					"classHash": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+					"isDeepestPanicResult": true,
+					"errorMessage": "Execution reverted: Not enough funds",
+					"nestingLevel": 0,
+					"callDebuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				}
+			},
+			"functionCallsMap": {
+				"2": {
+					"callId": 2,
+					"parentCallId": 1,
+					"childrenCallIds": [],
+					"contractCallId": 1,
+					"eventCallIds": [],
+					"fnName": "OrderProcessor::processOrder",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"4": {
+					"callId": 4,
+					"parentCallId": 3,
+					"childrenCallIds": [],
+					"contractCallId": 3,
+					"eventCallIds": [],
+					"fnName": "Logger::log",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "string",
+							"value": ["Starting order processing"],
+							"internalIODecoded": null
+						}
+					],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"6": {
+					"callId": 6,
+					"parentCallId": 5,
+					"childrenCallIds": [7],
+					"contractCallId": 5,
+					"eventCallIds": [],
+					"fnName": "TaxCalculator::calculateTax",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["electronics"],
+							"internalIODecoded": null
+						}
+					],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"7": {
+					"callId": 7,
+					"parentCallId": 6,
+					"childrenCallIds": [],
+					"contractCallId": 5,
+					"eventCallIds": [],
+					"fnName": "TaxCalculator::getBaseRate",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"9": {
+					"callId": 9,
+					"parentCallId": 8,
+					"childrenCallIds": [],
+					"contractCallId": 8,
+					"eventCallIds": [],
+					"fnName": "Logger::logValue",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						}
+					],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"11": {
+					"callId": 11,
+					"parentCallId": 10,
+					"childrenCallIds": [12, 15],
+					"contractCallId": 10,
+					"eventCallIds": [],
+					"fnName": "ShippingManager::initiateShipping",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "address",
+							"value": ["0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "string",
+							"value": ["express"],
+							"internalIODecoded": null
+						}
+					],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"12": {
+					"callId": 12,
+					"parentCallId": 11,
+					"childrenCallIds": [],
+					"contractCallId": 10,
+					"eventCallIds": [],
+					"fnName": "ShippingManager::estimateShipping",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [],
+					"argumentsDecoded": [],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"14": {
+					"callId": 14,
+					"parentCallId": 13,
+					"childrenCallIds": [],
+					"contractCallId": 13,
+					"eventCallIds": [],
+					"fnName": "Logger::logValue",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				},
+				"15": {
+					"callId": 15,
+					"parentCallId": 11,
+					"childrenCallIds": [],
+					"contractCallId": 1,
+					"eventCallIds": [],
+					"fnName": "ShippingManager::finalizeAmount",
+					"fp": 0,
+					"isDeepestPanicResult": false,
+					"errorMessage": null,
+					"results": [],
+					"resultsDecoded": [],
+					"arguments": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"argumentsDecoded": [
+						{
+							"typeName": "uint256",
+							"value": ["1000000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "uint256",
+							"value": ["100000000000000000"],
+							"internalIODecoded": null
+						},
+						{
+							"typeName": "uint256",
+							"value": ["50"],
+							"internalIODecoded": null
+						}
+					],
+					"debuggerDataAvailable": true,
+					"debuggerTraceStepIndex": null,
+					"isHidden": false
+				}
+			},
+			"eventCallsMap": {},
+			"events": [
+				{
+					"contractCallId": 3,
+					"contractAddress": "0xdcdd1dd0ff17043f8bcd1ac9e5be20bbed4fac0a",
+					"contractName": "Logger",
+					"name": "LogMessage",
+					"selector": "0xdf2f43000ad262ff927c671ed83129f9054af075e5d3add03a2ba7116e719a51",
+					"datas": [
+						{
+							"name": "user",
+							"typeName": "address",
+							"value": "0x59a714559b46c823d87986b5c5b7c630e2f5668d"
+						},
+						{
+							"name": "message",
+							"typeName": "string",
+							"value": "Starting order processing"
+						}
+					]
+				},
+				{
+					"contractCallId": 5,
+					"contractAddress": "0x6a85ebf0eba5307943bdf27d02d198bc64e9ffed",
+					"contractName": "TaxCalculator",
+					"name": "TaxComputed",
+					"selector": "0x02d5554e2af6025118aa4eaf18a3923aacfae979280c8be954792212a17ba58a",
+					"datas": [
+						{
+							"name": "caller",
+							"typeName": "address",
+							"value": "0x59a714559b46c823d87986b5c5b7c630e2f5668d"
+						},
+						{
+							"name": "orderValue",
+							"typeName": "uint256",
+							"value": "1000000000000000000"
+						},
+						{
+							"name": "taxAmount",
+							"typeName": "uint256",
+							"value": "100000000000000000"
+						}
+					]
+				},
+				{
+					"contractCallId": 8,
+					"contractAddress": "0xdcdd1dd0ff17043f8bcd1ac9e5be20bbed4fac0a",
+					"contractName": "Logger",
+					"name": "ValueLogged",
+					"selector": "0x29c44a39e8532b4217116f0df1e627d35a994882005f6a710764fcefcd4feef4",
+					"datas": [
+						{
+							"name": "user",
+							"typeName": "address",
+							"value": "0x59a714559b46c823d87986b5c5b7c630e2f5668d"
+						},
+						{
+							"name": "value",
+							"typeName": "uint256",
+							"value": "100000000000000000"
+						}
+					]
+				},
+				{
+					"contractCallId": 10,
+					"contractAddress": "0xbe734ad6434e16f6be04706005faed6fd38eb2b2",
+					"contractName": "ShippingManager",
+					"name": "ShippingInitiated",
+					"selector": "0x78302c0b02740c4c38cc7b7088fba887830825c761f3ef6754e8ea1b3179f885",
+					"datas": [
+						{
+							"name": "customer",
+							"typeName": "address",
+							"value": "0x286af310ea3303c80ebe9a66f6998b21bd8c1c29"
+						},
+						{
+							"name": "method",
+							"typeName": "string",
+							"value": "express"
+						}
+					]
+				},
+				{
+					"contractCallId": 10,
+					"contractAddress": "0xbe734ad6434e16f6be04706005faed6fd38eb2b2",
+					"contractName": "ShippingManager",
+					"name": "ShippingEstimated",
+					"selector": "0xd3b74a10a734fb26e308ebf8f33cf773856aca1f8aef8b3e5d90d535a5f7b1cf",
+					"datas": [
+						{
+							"name": "cost",
+							"typeName": "uint256",
+							"value": "50"
+						}
+					]
+				},
+				{
+					"contractCallId": 13,
+					"contractAddress": "0xdcdd1dd0ff17043f8bcd1ac9e5be20bbed4fac0a",
+					"contractName": "Logger",
+					"name": "ValueLogged",
+					"selector": "0x29c44a39e8532b4217116f0df1e627d35a994882005f6a710764fcefcd4feef4",
+					"datas": [
+						{
+							"name": "user",
+							"typeName": "address",
+							"value": "0x59a714559b46c823d87986b5c5b7c630e2f5668d"
+						},
+						{
+							"name": "value",
+							"typeName": "uint256",
+							"value": "50"
+						}
+					]
+				}
+			],
+			"executionResult": {
+				"executionStatus": "REVERTED",
+				"revertReason": "Execution reverted: Not enough funds"
+			},
+			"simulationDebuggerData": {
+				"contractDebuggerData": {},
+				"debuggerTrace": []
+			},
+			"storageChanges": {
+				"16": {
+					"0x0000000000000000000000000000000000000000000000000000000000000000": ["0x0", "0x438"],
+					"0x0000000000000000000000000000000000000000000000000000000000000001": ["0x0", "0x1"]
+				},
+				"1": {
+					"0x0000000000000000000000000000000000000000000000000000000000000000": [
+						"0x0",
+						"0x28f5c28f5c28f5c28f5c28f5c28f5c28f5c28f5c28f5c28f5c28f5c28f5c28f5c"
+					],
+					"0x0000000000000000000000000000000000000000000000000000000000000001": ["0x0", "0x1"]
+				}
+			},
+			"compilationSummary": {
+				"totalContracts": 5,
+				"successfulCompilations": 5,
+				"failedCompilations": 0,
+				"compilationErrors": [],
+				"contractStatuses": [
+					{
+						"address": "0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+						"status": "success",
+						"verificationSource": "sourcify"
+					},
+					{
+						"address": "0xdcDd1dd0ff17043f8bCD1AC9E5Be20BBEd4FAc0A",
+						"status": "success",
+						"verificationSource": "sourcify"
+					},
+					{
+						"address": "0x6a85ebf0Eba5307943bDF27D02d198Bc64e9ffEd",
+						"status": "success",
+						"verificationSource": "sourcify"
+					},
+					{
+						"address": "0xbE734aD6434E16f6bE04706005faED6fD38eb2B2",
+						"status": "success",
+						"verificationSource": "sourcify"
+					},
+					{
+						"address": "0xf776FF56e2400e31f3070c1ac70Ab80433B01823",
+						"status": "success",
+						"verificationSource": "sourcify"
+					}
+				]
+			}
+		},
+		"chainId": "11155420",
+		"blockNumber": 31898949,
+		"blockTimestamp": 1755600438,
+		"nonce": 66,
+		"senderAddress": "0x286AF310eA3303c80eBE9a66F6998B21Bd8c1c29",
+		"calldata": [
+			"0x59A714559B46c823d87986b5c5B7C630e2f5668d",
+			"0x6f10e1570000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000b656c656374726f6e69637300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000076578707265737300000000000000000000000000000000000000000000000000"
+		],
+		"transactionVersion": 1,
+		"transactionType": "INVOKE",
+		"transactionIndexInBlock": 4,
+		"totalTransactionsInBlock": 1,
+		"l2TxHash": "0xc1b5345f62e1170c3bc246d931f806db1becfb480a15e4085daf55d61c660ecc",
+		"flamechart": {
+			"callId": 0,
+			"rawValue": 71895,
+			"value": 1.0,
+			"name": "TotalGas",
+			"nodeType": "Root",
+			"children": [
+				{
+					"callId": 1,
+					"rawValue": 49599,
+					"value": 0.6899,
+					"name": "processOrder",
+					"nodeType": "ContractAddress",
+					"children": [
+						{
+							"callId": 0,
+							"rawValue": 2100,
+							"value": 0.0423,
+							"name": "SLOAD",
+							"nodeType": "Operation",
+							"children": []
+						},
+						{
+							"callId": 3,
+							"rawValue": 2719,
+							"value": 0.0548,
+							"name": "log",
+							"nodeType": "Operation",
+							"children": [
+								{
+									"callId": 3,
+									"rawValue": 1774,
+									"value": 0.0358,
+									"name": "LogMessage",
+									"nodeType": "Event",
+									"children": []
+								}
+							]
+						},
+						{
+							"callId": 0,
+							"rawValue": 2100,
+							"value": 0.0423,
+							"name": "SLOAD",
+							"nodeType": "Operation",
+							"children": []
+						},
+						{
+							"callId": 5,
+							"rawValue": 4202,
+							"value": 0.0847,
+							"name": "calculateTax",
+							"nodeType": "ContractAddress",
+							"children": [
+								{
+									"callId": 7,
+									"rawValue": 946,
+									"value": 0.0191,
+									"name": "getBaseRate",
+									"nodeType": "Function",
+									"children": []
+								},
+								{
+									"callId": 5,
+									"rawValue": 1518,
+									"value": 0.0306,
+									"name": "TaxComputed",
+									"nodeType": "Event",
+									"children": []
+								}
+							]
+						},
+						{
+							"callId": 8,
+							"rawValue": 2020,
+							"value": 0.0407,
+							"name": "logValue",
+							"nodeType": "Operation",
+							"children": [
+								{
+									"callId": 8,
+									"rawValue": 1262,
+									"value": 0.0255,
+									"name": "ValueLogged",
+									"nodeType": "Event",
+									"children": []
+								}
+							]
+						},
+						{
+							"callId": 0,
+							"rawValue": 2100,
+							"value": 0.0423,
+							"name": "SLOAD",
+							"nodeType": "Operation",
+							"children": []
+						},
+						{
+							"callId": 10,
+							"rawValue": 5070,
+							"value": 0.1022,
+							"name": "ShippingManager",
+							"nodeType": "ContractAddress",
+							"children": [
+								{
+									"callId": 10,
+									"rawValue": 1774,
+									"value": 0.0358,
+									"name": "ShippingInitiated",
+									"nodeType": "Event",
+									"children": []
+								},
+								{
+									"callId": 10,
+									"rawValue": 1006,
+									"value": 0.0203,
+									"name": "ShippingEstimated",
+									"nodeType": "Event",
+									"children": []
+								}
+							]
+						},
+						{
+							"callId": 13,
+							"rawValue": 2020,
+							"value": 0.0407,
+							"name": "logValue",
+							"nodeType": "Operation",
+							"children": [
+								{
+									"callId": 13,
+									"rawValue": 1262,
+									"value": 0.0255,
+									"name": "ValueLogged",
+									"nodeType": "Event",
+									"children": []
+								}
+							]
+						},
+						{
+							"callId": 15,
+							"rawValue": 488,
+							"value": 0.0098,
+							"name": "finalizeAmount",
+							"nodeType": "Function",
+							"children": []
+						},
+						{
+							"callId": 0,
+							"rawValue": 2100,
+							"value": 0.0423,
+							"name": "SLOAD",
+							"nodeType": "Operation",
+							"children": []
+						}
+					]
+				}
+			]
+		}
+	}
+}

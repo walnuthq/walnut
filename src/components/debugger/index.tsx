@@ -1,12 +1,13 @@
 import { memo, useContext } from 'react';
 import { DebuggerPayload } from '@/lib/debugger';
-import { DebuggerContext, DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 import { Loader } from '@/components/ui/loader';
 import { DebuggerView } from './view';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { SOURCIFY_VERIFY_DOCS_URL } from '@/lib/config';
+import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { usePathname } from 'next/navigation';
 
 export const Debugger = memo(function Debugger({
 	debuggerPayload
@@ -14,6 +15,8 @@ export const Debugger = memo(function Debugger({
 	debuggerPayload: DebuggerPayload | null;
 }) {
 	const context = useContext(DebuggerContext);
+
+	const pathname = usePathname();
 
 	if (!context) {
 		return (
@@ -56,7 +59,7 @@ export const Debugger = memo(function Debugger({
 		);
 	}
 
-	if (!hasDebuggableContract) {
+	if (!hasDebuggableContract && pathname !== '/demo' && pathname !== '/demo/simulation') {
 		return (
 			<Alert className="m-4 w-fit">
 				<ExclamationTriangleIcon className="h-5 w-5" />

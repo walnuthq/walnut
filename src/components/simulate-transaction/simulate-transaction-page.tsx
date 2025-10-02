@@ -34,12 +34,14 @@ export function SimulateTransactionPage({
 	txHash,
 	title = 'Simulate transaction',
 	description = 'Configure your invoke transaction for simulation.',
-	simulationPayload
+	simulationPayload,
+	isDemo
 }: {
 	txHash?: string;
 	title?: string;
 	description?: string;
 	simulationPayload?: SimulationPayload;
+	isDemo?: string;
 }) {
 	const defaultTransactionVersion = 3;
 	const [alert, setAlert] = useState(false);
@@ -234,57 +236,61 @@ export function SimulateTransactionPage({
 	}, [_numberOfContracts]);
 
 	function onDialogSubmit() {
-		const processedCalls = _contractCalls.map((call) => ({
-			...call,
-			calldata: call.calldata.trim() === '' ? '' : call.calldata
-		}));
+		if (isDemo) {
+			window.location.href = `demo/simulation`;
+		} else {
+			const processedCalls = _contractCalls.map((call) => ({
+				...call,
+				calldata: call.calldata.trim() === '' ? '' : call.calldata
+			}));
 
-		const allCallsValid = processedCalls.every(
-			(call) => validateHexFormat(call.address) // && call.function_name
-		);
+			const allCallsValid = processedCalls.every(
+				(call) => validateHexFormat(call.address) // && call.function_name
+			);
 
-		const allCalldataValid = processedCalls.every((call) => {
-			if (call.calldata.trim() === '') {
-				return false;
+			const allCalldataValid = processedCalls.every((call) => {
+				if (call.calldata.trim() === '') {
+					return false;
+				}
+
+				const calldataLines = call.calldata
+					.trim()
+					.split('\n')
+					.filter((line) => line.trim() !== '');
+				return validateCalldata(calldataLines);
+			});
+
+			if (!allCallsValid || !allCalldataValid) {
+				setAlert(true);
+				return;
 			}
 
-			const calldataLines = call.calldata
-				.trim()
-				.split('\n')
-				.filter((line) => line.trim() !== '');
-			return validateCalldata(calldataLines);
-		});
+			const simulationPayload: SimulationPayload = {
+				senderAddress: _senderAddress,
+				calls: processedCalls,
+				blockNumber: _blockNumber === '' ? undefined : _blockNumber,
+				transactionVersion: _transactionVersion
+			};
 
-		if (!allCallsValid || !allCalldataValid) {
-			setAlert(true);
-			return;
-		}
-
-		const simulationPayload: SimulationPayload = {
-			senderAddress: _senderAddress,
-			calls: processedCalls,
-			blockNumber: _blockNumber === '' ? undefined : _blockNumber,
-			transactionVersion: _transactionVersion
-		};
-
-		if (_chain) {
-			if (_chain.chainId) {
-				simulationPayload.chainId = _chain.chainId;
-			} else if (_chain.network) {
-				simulationPayload.rpcUrl = _chain.network.rpcUrl;
+			if (_chain) {
+				if (_chain.chainId) {
+					simulationPayload.chainId = _chain.chainId;
+				} else if (_chain.network) {
+					simulationPayload.rpcUrl = _chain.network.rpcUrl;
+				}
+			} else {
+				throw new Error('Chain is not defined');
 			}
-		} else {
-			throw new Error('Chain is not defined');
-		}
 
-		if (
-			simulationPayload.senderAddress === '' ||
-			!validateHexFormat(simulationPayload.senderAddress) ||
-			![1, 3].includes(simulationPayload.transactionVersion)
-		) {
-			setAlert(true);
-		} else {
-			openSimulationPage(simulationPayload);
+			if (
+				simulationPayload.senderAddress === '' ||
+				!validateHexFormat(simulationPayload.senderAddress) ||
+				![1, 3].includes(simulationPayload.transactionVersion)
+			) {
+				setAlert(true);
+			} else {
+				openSimulationPage(simulationPayload);
+			}
 		}
 	}
 
@@ -489,10 +495,12 @@ export function SimulateTransactionPage({
 										Network
 									</Label>
 									<NetworksSelect
+										isDemo={isDemo}
 										isLoading={isLoading}
 										simulationPayload={simulationPayload}
 										onChainChangedCallback={onChainChangedCallback}
 									/>
+
 									{alert && !_chain && (
 										<p className="text-xs text-muted-foreground text-red-500 col-span-3 col-start-2">
 											Network is required.
