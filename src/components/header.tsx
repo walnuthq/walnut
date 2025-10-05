@@ -10,7 +10,7 @@ import logoWalnut from '@/assets/walnut-logo-beta.svg';
 import logoWalnutWhite from '@/assets/walnut-logo-beta-white.svg';
 import { Container } from '@/components/ui/container';
 import { UserSection } from '@/components/auth/user-section';
-import { useUserContext } from '@/lib/context/user-context-provider';
+import { authClient } from '@/lib/auth-client';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { isAuthorizationRequiredFeatureActive } from '@/app/api/feature-flag-service';
 import { useTheme } from 'next-themes';
@@ -28,7 +28,7 @@ export function HeaderNav({
 	isMainPage?: boolean;
 	hideUserSection?: boolean;
 }) {
-	const { isLogged } = useUserContext();
+	const { data: session, isPending } = authClient.useSession();
 	const { trackingActive } = useSettings();
 	const { theme, setTheme, resolvedTheme } = useTheme();
 
@@ -78,28 +78,20 @@ export function HeaderNav({
 							)}
 
 							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
-								{!isMainPage && isLogged && (
+								{!isMainPage && (
 									<div className="w-auto max-w-xs md:w-80">
 										<Search className="w-full" placeholder="Search"></Search>
 									</div>
 								)}
 								<div className="hidden md:block">
-									{isLogged ? (
-										<Link href={`/simulate-transaction`}>
-											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-											</Button>
-										</Link>
-									) : (
-										<Link href="/login">
-											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-											</Button>
-										</Link>
-									)}
+									<Link href="/simulate-transaction">
+										<Button variant="outline">
+											<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+										</Button>
+									</Link>
 								</div>
 							</div>
-							{!hideUserSection && isAuthorizationRequiredFeatureActive() && (
+							{!hideUserSection && (
 								<div className="hidden md:block">
 									<div className="flex items-center">
 										<div className="flex flex-row items-center ml-3">
@@ -108,13 +100,15 @@ export function HeaderNav({
 									</div>
 								</div>
 							)}
-							<div className="flex md:hidden">
-								<div className="flex items-center">
-									<div className="flex flex-row items-center">
-										<UserSection />
+							{!hideUserSection && (
+								<div className="flex md:hidden">
+									<div className="flex items-center">
+										<div className="flex flex-row items-center">
+											<UserSection />
+										</div>
 									</div>
 								</div>
-							</div>
+							)}
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<button

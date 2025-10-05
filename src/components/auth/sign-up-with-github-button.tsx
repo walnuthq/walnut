@@ -1,11 +1,18 @@
-import { Button } from '@/components/ui/button';
-import { GitHubLogoIcon } from '@radix-ui/react-icons';
-import { githubSignIn } from '@/components/auth/sign-in-server-action';
+'use client';
 
-export function SignUpWithGithubButton({ redirectUri }: { redirectUri?: string }) {
-    return (
-        <Button variant="outline" onClick={() => githubSignIn(redirectUri)}><GitHubLogoIcon className="mr-2 h-4 w-4"/>
-            Sign in with Github
-        </Button>
-    );
+import { authClient } from '@/lib/auth-client';
+import { Button } from '@/components/ui/button';
+
+export function SignUpWithGithubButton() {
+	const handleGitHubLogin = () => {
+		authClient.signIn.social({
+			provider: 'github'
+		});
+	};
+
+	return (
+		<Button onClick={handleGitHubLogin} variant="outline">
+			Sign up with GitHub
+		</Button>
+	);
 }

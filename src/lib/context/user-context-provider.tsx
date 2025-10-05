@@ -1,6 +1,6 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getLoggedUser } from '@/app/api/auth/auth-service';
+import { authClient } from '@/lib/auth-client';
 
 interface UserContextType {
 	isLoaded: boolean;
@@ -17,55 +17,47 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const [isLoaded, setIsLoaded] = useState(false);
-	const [isLogged, setIsLogged] = useState(false);
-	const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
-	const [name, setName] = useState('');
+	const { data: session, isPending } = authClient.useSession();
 	const [organizationId, setOrganizationId] = useState('');
 	const [isGlobalOrg, setIsGlobalOrg] = useState(false);
 
 	useEffect(() => {
-		const fetchUserProfile = async () => {
-			try {
-				const loggedUser = await getLoggedUser();
-				if (loggedUser) {
-					setIsLogged(true);
-					setAvatarSrc(loggedUser.avatarSrc);
-					setName(loggedUser.name);
+		// User can or not belong to global org
+		// If user does not belong to global org - his organizationId is his userId
+		// If user belongs to global org - get his organizationId
+		if (session?.user) {
+			let userOrganizationId = session.user.id;
+			let isGlobalOrg = false;
 
-					// User can or not belong to global org
-					// If user does not belong to global org - his organizationId is his userId
-					// If user belongs to global org - get his organizationId
-					// Because currently Logto does not support refreshToken on demand,
-					// we need to store user's organizationId after organization creaiton in localStorage before 1st refresh made automatically (~1h)
-					// TODO Remove this localStorage when Logto introduces refreshToken on demand
-					let userOrganizationId = loggedUser.userId;
-					let isGlobalOrg = false;
-					if (loggedUser.organizationIds.length > 0) {
-						userOrganizationId = loggedUser.organizationIds[0];
-						isGlobalOrg = true;
-						localStorage.removeItem('organizationId');
-					} else if (localStorage.getItem('organizationId') !== null) {
-						userOrganizationId = localStorage.getItem('organizationId')!;
-						isGlobalOrg = true;
-					}
-					setOrganizationId(userOrganizationId);
-					setIsGlobalOrg(isGlobalOrg);
-				} else {
-					setIsLogged(false);
-				}
-			} catch (error) {
-				console.error('Failed to fetch profile data', error);
-				setIsLogged(false);
-			} finally {
-				setIsLoaded(true);
+			// Check if user has organization data (you might need to extend Better Auth user model)
+			// For now, we'll use localStorage as fallback
+			if (localStorage.getItem('organizationId') !== null) {
+				userOrganizationId = localStorage.getItem('organizationId')!;
+				isGlobalOrg = true;
 			}
-		};
-		fetchUserProfile();
-	}, []);
+			setOrganizationId(userOrganizationId);
+			setIsGlobalOrg(isGlobalOrg);
+		}
+	}, [session]);
+
+	const isLoaded = !isPending;
+	const isLogged = !!session;
+	const avatarSrc = session?.user?.image || undefined;
+	const name = session?.user?.name || '';
 
 	return (
-		<UserContext.Provider value={{ isLoaded, isLogged, avatarSrc, name, organizationId, isGlobalOrg, setOrganizationId, setIsGlobalOrg }}>
+		<UserContext.Provider
+			value={{
+				isLoaded,
+				isLogged,
+				avatarSrc,
+				name,
+				organizationId,
+				isGlobalOrg,
+				setOrganizationId,
+				setIsGlobalOrg
+			}}
+		>
 			{children}
 		</UserContext.Provider>
 	);
