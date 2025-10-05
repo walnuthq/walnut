@@ -1,13 +1,28 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export const runtime = 'edge';
 
-export default function Page({ params }: { params: { chain_id: string; tx_hash: string } }) {
+export default function Page({
+	params
+}: {
+	params: Promise<{ chain_id: string; tx_hash: string }>;
+}) {
+	const [resolvedParams, setResolvedParams] = useState<{
+		chain_id: string;
+		tx_hash: string;
+	} | null>(null);
+
 	useEffect(() => {
-		window.location.href = `/transactions?chainId=${params.chain_id}&txHash=${params.tx_hash}`;
-	}, [params.chain_id, params.tx_hash]);
+		params.then(setResolvedParams).catch(console.error);
+	}, [params]);
+
+	useEffect(() => {
+		if (resolvedParams) {
+			window.location.href = `/transactions?chainId=${resolvedParams.chain_id}&txHash=${resolvedParams.tx_hash}`;
+		}
+	}, [resolvedParams]);
 
 	return null;
 }

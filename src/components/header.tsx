@@ -64,18 +64,6 @@ export function HeaderNav({
 									</div>
 									<div className="hidden md:block">
 										<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
-											{/* {session.status === 'authenticated' ? (
-											<Link
-												href="/monitoring"
-												className={`text-sm font-medium transition-colors hover:text-primary ${
-													pathname.startsWith('/monitoring') ? '' : 'text-muted-foreground'
-												}`}
-											>
-												Monitoring
-											</Link>
-										) : (
-											<></>
-										)} */}
 											{/* <Link
 											href="/transactions/OP_MAIN"
 											className={`text-sm font-medium transition-colors hover:text-primary ${
@@ -150,13 +138,6 @@ export function HeaderNav({
 
 					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-t shadow-md border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
-							{/* {session.status === 'authenticated' ? (
-								<Link href="/monitoring">
-									<Button variant="ghost">Monitoring</Button>
-								</Link>
-							) : (
-								<></>
-							)} */}
 							<div>
 								<Link href={`/simulate-transaction`}>
 									<Button variant="ghost"> Simulate transaction</Button>

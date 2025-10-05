@@ -7,8 +7,9 @@ import { mapChainIdStringToNumber } from '@/lib/utils';
 
 export const GET = async (
 	request: NextRequest,
-	{ params: { address } }: { params: { address: string } }
+	{ params }: { params: Promise<{ address: string }> }
 ) => {
+	const { address } = await params;
 	try {
 		const chainId = request.nextUrl.searchParams.get('chain_id');
 

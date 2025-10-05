@@ -23,7 +23,7 @@ export function CodeViewer({
 }) {
 	const { theme } = useTheme(); // 'light' | 'dark' | 'system'
 	const isDark = theme === 'dark';
-	const editorRef = useRef<Editor.IStandaloneCodeEditor>();
+	const editorRef = useRef<Editor.IStandaloneCodeEditor | null>(null);
 	const [editorDecorations, setEditorDecorations] =
 		useState<Editor.IEditorDecorationsCollection | null>(null);
 	const breakpointDecorationsRef = useRef<string[]>([]);

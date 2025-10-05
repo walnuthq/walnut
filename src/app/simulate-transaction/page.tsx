@@ -9,25 +9,40 @@ export const runtime = 'edge';
 export default function Page({
 	searchParams
 }: {
-	searchParams?: { [key: string]: string | string[] | undefined };
+	searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
 	const [simulationPayload, setSimulationPayload] = useState<SimulationPayload | undefined>(
 		undefined
 	);
-	const isDemo = searchParams?.demo as string;
+	const [isDemo, setIsDemo] = useState<string | undefined>(undefined);
 	const [txHash, setTxHash] = useState<string | undefined>(undefined);
+	const [resolvedSearchParams, setResolvedSearchParams] = useState<
+		{ [key: string]: string | string[] | undefined } | undefined
+	>(undefined);
+
 	useEffect(() => {
-		if (searchParams && Object.keys(searchParams).length > 0) {
-			const senderAddress = searchParams.senderAddress as string;
-			const calldata = searchParams.calldata as string;
-			const blockNumber = searchParams.blockNumber as string;
-			const transactionVersion = searchParams.transactionVersion as string;
-			const chainId = searchParams.chainId as string;
-			const nonce = searchParams.nonce as string;
-			const txHashParams = searchParams.txHash as string;
+		if (searchParams) {
+			searchParams.then(setResolvedSearchParams);
+		}
+	}, [searchParams]);
+
+	useEffect(() => {
+		if (resolvedSearchParams && Object.keys(resolvedSearchParams).length > 0) {
+			const senderAddress = resolvedSearchParams.senderAddress as string;
+			const calldata = resolvedSearchParams.calldata as string;
+			const blockNumber = resolvedSearchParams.blockNumber as string;
+			const transactionVersion = resolvedSearchParams.transactionVersion as string;
+			const chainId = resolvedSearchParams.chainId as string;
+			const nonce = resolvedSearchParams.nonce as string;
+			const txHashParams = resolvedSearchParams.txHash as string;
+			const demoParam = resolvedSearchParams.demo as string;
 
 			if (txHashParams) {
 				setTxHash(txHashParams);
+			}
+
+			if (demoParam) {
+				setIsDemo(demoParam);
 			}
 
 			if (senderAddress && calldata && transactionVersion) {
@@ -54,7 +69,7 @@ export default function Page({
 				setSimulationPayload(payload);
 			}
 		}
-	}, [searchParams]);
+	}, [resolvedSearchParams]);
 
 	return (
 		<SimulateTransactionPage

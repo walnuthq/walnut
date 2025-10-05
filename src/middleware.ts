@@ -18,9 +18,6 @@ export async function middleware(request: NextRequest) {
 		case '/settings':
 			return openPageOrGoToLoginIfNotLogged(url);
 		default: {
-			if (url.pathname.startsWith('/monitoring')) {
-				return openPageOrGoToLoginIfNotLogged(url);
-			}
 			return NextResponse.next();
 		}
 	}

@@ -43,7 +43,7 @@ interface CallTraceContextProps {
 	l1DataFlamegraph: FlameNode | undefined;
 	debuggerPayload: DebuggerPayload | null;
 	traceLineElementRefs: MutableRefObject<{
-		[key: number]: RefObject<HTMLDivElement>;
+		[key: number]: RefObject<HTMLDivElement | null>;
 	}>;
 	toggleCallCollapse: (id: number) => void;
 	expandAll: () => void;
@@ -158,7 +158,9 @@ export const CallTraceContextProvider: React.FC<
 	const [showEvents, setShowEvents] = useState<boolean>(true);
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
 	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
-	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});
+	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement | null> }>(
+		{}
+	);
 	const [chosenCallName, setChosenCallName] = useState<string | null>(null);
 	const [callWithError, setContractCallWithError] = useState<
 		ContractCall | FunctionCall | undefined

@@ -7,8 +7,10 @@ import { fetchTxFromExplorer } from '@/lib/explorer';
 
 export const GET = async (
 	request: NextRequest,
-	{ params: { hash } }: { params: { hash: Hash } }
+	{ params }: { params: Promise<{ hash: string }> }
 ) => {
+	const { hash } = await params;
+	const hashAsHash = hash as Hash;
 	// Prefer chain keys sent via ?chains=KEY1,KEY2; fallback to rpc_urls; default to all enabled.
 	type Pair = { key?: string; rpcUrl: string };
 	let pairs: Pair[] = [];
@@ -65,7 +67,7 @@ export const GET = async (
 		pairs.map(async ({ rpcUrl, key }) => {
 			const client = createPublicClient({ transport: http(rpcUrl) });
 			try {
-				const transaction = await client.getTransaction({ hash });
+				const transaction = await client.getTransaction({ hash: hashAsHash });
 				let chainIdString = key;
 				if (!chainIdString) {
 					const numeric = await client.getChainId();
@@ -78,11 +80,11 @@ export const GET = async (
 			} catch (error) {
 				// RPC miss → try explorer fallback for chains with explorer configured
 				if (key) {
-					const explorer = await fetchTxFromExplorer(key, hash);
+					const explorer = await fetchTxFromExplorer(key, hashAsHash);
 					if (explorer?.found) {
 						return {
 							source: { chainId: key, rpcUrl: undefined },
-							hash
+							hash: hashAsHash
 						};
 					}
 				}
@@ -101,8 +103,10 @@ export const GET = async (
 
 export const POST = async (
 	request: NextRequest,
-	{ params: { hash } }: { params: { hash: Hash } }
+	{ params }: { params: Promise<{ hash: string }> }
 ) => {
+	const { hash } = await params;
+	const hashAsHash = hash as Hash;
 	try {
 		const body = (await request.json()) as { chains?: string[] } | undefined;
 		const chains = (body?.chains ?? []).map((c) => c.trim()).filter(Boolean);
@@ -149,7 +153,7 @@ export const POST = async (
 			pairs.map(async ({ rpcUrl, key }) => {
 				const client = createPublicClient({ transport: http(rpcUrl) });
 				try {
-					const transaction = await client.getTransaction({ hash });
+					const transaction = await client.getTransaction({ hash: hashAsHash });
 					let chainIdString = key;
 					if (!chainIdString) {
 						const numeric = await client.getChainId();
@@ -161,11 +165,11 @@ export const POST = async (
 					};
 				} catch (error) {
 					if (key) {
-						const explorer = await fetchTxFromExplorer(key, hash);
+						const explorer = await fetchTxFromExplorer(key, hashAsHash);
 						if (explorer?.found) {
 							return {
 								source: { chainId: key, rpcUrl: undefined },
-								hash
+								hash: hashAsHash
 							};
 						}
 					}
