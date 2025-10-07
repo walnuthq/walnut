@@ -1,5 +1,18 @@
 import { pgTable, text, timestamp, boolean, varchar, integer } from 'drizzle-orm/pg-core';
 
+export const tenant = pgTable('tenant', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	name: text('name').unique().notNull(),
+	displayName: text('displayName'),
+	githubEmails: text('githubEmails').array().default([]).notNull(),
+	rpcUrls: text('rpcUrls').array().default([]).notNull(),
+	chainIds: integer('chainIds').array().default([]).notNull(),
+	createdAt: timestamp('createdAt').defaultNow().notNull(),
+	updatedAt: timestamp('updatedAt').defaultNow().notNull()
+});
+
 export const user = pgTable('user', {
 	id: text('id')
 		.primaryKey()
@@ -9,7 +22,8 @@ export const user = pgTable('user', {
 	email: text('email').unique().notNull(),
 	emailVerified: boolean('emailVerified').default(false).notNull(),
 	name: text('name'),
-	image: text('image')
+	image: text('image'),
+	tenantId: text('tenantId').references(() => tenant.id, { onDelete: 'set null' })
 });
 
 export const session = pgTable('session', {

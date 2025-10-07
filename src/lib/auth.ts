@@ -32,7 +32,7 @@ export const auth = betterAuth({
 	plugins: [nextCookies()],
 	logger: {
 		level: 'debug',
-		log(level, message, ...args) {
+		log: (level: string, message: string, ...args: any[]) => {
 			console.log(`[Better Auth ${level.toUpperCase()}]`, message, ...args);
 		}
 	}

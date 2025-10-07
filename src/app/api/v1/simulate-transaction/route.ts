@@ -8,6 +8,8 @@ import {
 	processTransactionRequest,
 	cleanupOldTempDirs
 } from '@/app/api/v1/utils/transaction-processing';
+import { getServerSession } from '@/lib/auth-server';
+import { AuthType } from '@/lib/types';
 
 type WithTxHash = {
 	tx_hash: Hash;
@@ -25,10 +27,12 @@ type WithCalldata = {
 
 const getParameters = ({
 	WithTxHash: withTxHash,
-	WithCalldata: withCalldata
+	WithCalldata: withCalldata,
+	session
 }: {
 	WithTxHash: WithTxHash;
 	WithCalldata: WithCalldata;
+	session: AuthType['session'];
 }) => {
 	if (withTxHash) {
 		// Validate chain_id is not undefined
@@ -38,7 +42,7 @@ const getParameters = ({
 			);
 		}
 
-		const rpcUrl = getRpcUrlForChainSafe(withTxHash.chain_id);
+		const rpcUrl = getRpcUrlForChainSafe(withTxHash.chain_id, session);
 		return { rpcUrl, txHash: withTxHash.tx_hash, chainId: withTxHash.chain_id };
 	}
 	if (withCalldata) {
@@ -49,7 +53,7 @@ const getParameters = ({
 			);
 		}
 
-		const rpcUrl = getRpcUrlForChainSafe(withCalldata.chain_id);
+		const rpcUrl = getRpcUrlForChainSafe(withCalldata.chain_id, session);
 		return {
 			rpcUrl,
 			senderAddress: withCalldata.sender_address as Address,
@@ -64,6 +68,14 @@ const getParameters = ({
 };
 
 export const POST = async (request: NextRequest) => {
+	const authSession = await getServerSession();
+
+	if (!authSession) {
+		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+	}
+
+	const session = authSession.session;
+
 	try {
 		// Periodic cleanup (every 10th request or based on time)
 		const shouldCleanup = Math.random() < 0.1; // 10% chance
@@ -77,7 +89,7 @@ export const POST = async (request: NextRequest) => {
 		}
 
 		const body = await request.json();
-		const parameters = getParameters(body);
+		const parameters = getParameters({ ...body, session });
 
 		// Use shared transaction processing utility
 		const {

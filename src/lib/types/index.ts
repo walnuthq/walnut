@@ -1,3 +1,21 @@
+import { auth } from '../auth';
+import { ChainKey } from '../networks';
+
+export type ChainMeta = {
+	key: ChainKey;
+	displayName: string;
+	chainId: number;
+	// Name of the env var that holds the RPC URL (do NOT put the URL here)
+	rpcEnvVar: string;
+	// Optional explorer API base env var name (Blockscout/Etherscan-compatible)
+	explorerApiEnvVar?: string;
+	// 'blockscout_v2' -> /api/v2/transactions/:hash
+	// 'etherscan_proxy' -> /api?module=proxy&action=eth_getTransactionByHash&txhash=:hash
+	explorerType?: 'blockscout_v2' | 'etherscan_proxy';
+	// Preferred verification method for contracts
+	verificationType: 'sourcify' | 'blockscout';
+};
+
 export enum ChainId {
 	SN_MAIN = 'SN_MAIN',
 	SN_SEPOLIA = 'SN_SEPOLIA',
@@ -8,11 +26,28 @@ export enum ChainId {
 	ARBITRUM_ONE = 'ARBITRUM_ONE'
 }
 
-export interface CommonError {
-	error_message: string;
-	error_count: number;
-	error_contract_address: string;
+export interface CustomSession {
+	tenant?: {
+		name: string;
+		rpcUrls: string[];
+		chainIds: number[];
+	};
 }
+
+declare module 'better-auth' {
+	interface CustomSession {
+		tenant?: {
+			name: string;
+			rpcUrls: string[];
+			chainIds: number[];
+		};
+	}
+}
+
+export type AuthType = {
+	user: typeof auth.$Infer.Session.user | null;
+	session: (typeof auth.$Infer.Session.session & CustomSession) | null;
+};
 
 export interface SimulationListItem {
 	wallet_address: string;
@@ -170,19 +205,8 @@ export interface SearchDataResponse {
 	contracts: SearchData[];
 }
 
-export const systemsTypeNames = [
-	'Const',
-	'Step',
-	'Hole',
-	'RangeCheck',
-	'RangeCheck96',
-	'Pedersen',
-	'Bitwise',
-	'EcOp',
-	'AddMod',
-	'MulMod',
-	'System',
-	'GasBuiltin',
-	'Poseidon',
-	'PanicResult'
-];
+export interface CommonError {
+	error_message: string;
+	error_count: number;
+	error_contract_address: string;
+}

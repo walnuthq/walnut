@@ -4,11 +4,19 @@ import { createPublicClient, http } from 'viem';
 import fetchContract from '@/app/api/v1/fetch-contract';
 import { type Contract } from '@/app/api/v1/types';
 import { mapChainIdStringToNumber } from '@/lib/utils';
+import { getServerSession } from '@/lib/auth-server';
 
 export const GET = async (
 	request: NextRequest,
 	{ params }: { params: Promise<{ address: string }> }
 ) => {
+	const authSession = await getServerSession();
+	if (!authSession) {
+		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+	}
+
+	const session = authSession.session; // Extract the session object
+
 	const { address } = await params;
 	try {
 		const chainId = request.nextUrl.searchParams.get('chain_id');
@@ -18,7 +26,7 @@ export const GET = async (
 		}
 
 		// Get RPC URL for the chain
-		const rpcUrl = getRpcUrlForChainSafe(chainId);
+		const rpcUrl = getRpcUrlForChainSafe(chainId, session);
 		const publicClient = createPublicClient({ transport: http(rpcUrl) });
 		const contractAddress = address as `0x${string}`;
 
