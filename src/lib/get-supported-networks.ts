@@ -4,27 +4,23 @@ import { AuthType, ChainMeta } from './types';
 export function getSupportedNetworks(session: AuthType['session']): ChainMeta[] {
 	const staticNetworks = getEnabledChainKeys().map((key) => CHAINS_META[key]);
 
+	// Map all tenant networks from session
 	const tenantNetworks: ChainMeta[] =
-		(session?.tenant?.rpcUrls
-			.map((rpcUrl: string, index: number) => {
-				const tenantChainKey = `TENANT_${session.tenant?.name.toUpperCase()}` as ChainKey;
-				const tenantDisplayName = `${session.tenant?.name}`;
-				const chainId = session.tenant?.chainIds[index];
+		session?.tenantNetworks?.map((network) => {
+			// Key = DISPLAY_NAME in CAPS with underscores (fallback to tenantName)
+			const base = (network.displayName || network.tenantName).toUpperCase();
+			const tenantChainKey = base.replace(/[^A-Z0-9]+/g, '_') as ChainKey;
 
-				if (typeof chainId === 'undefined') {
-					console.warn(`ChainId not found for tenant RPC URL at index ${index}. Skipping.`);
-					return null; // Skip this network if chainId is not defined
-				}
+			return {
+				key: tenantChainKey,
+				displayName: network.displayName,
+				chainId: network.chainId,
+				rpcEnvVar: network.rpcUrl, // Direktno koristimo RPC URL iz baze
+				verificationType: 'blockscout' as const
+			};
+		}) || [];
 
-				return {
-					key: tenantChainKey,
-					displayName: tenantDisplayName,
-					chainId: chainId,
-					rpcEnvVar: rpcUrl,
-					verificationType: 'blockscout'
-				};
-			})
-			.filter(Boolean) as ChainMeta[]) || [];
+	console.log('tenantNetworks:', tenantNetworks);
 
 	return [...staticNetworks, ...tenantNetworks];
 }
@@ -33,12 +29,10 @@ export function getRpcUrlForTenantChain(
 	chainKey: ChainKey,
 	session: AuthType['session']
 ): string | undefined {
-	// Assume tenant chainKeys are in the format TENANT_TENANTNAME_INDEX
-	if (chainKey.startsWith('TENANT_')) {
-		const meta = getSupportedNetworks(session).find((n) => n.key === chainKey);
-		if (meta && meta.rpcEnvVar.startsWith('http')) {
-			return meta.rpcEnvVar;
-		}
+	// Find network by key and return direct RPC URL if present (tenant networks)
+	const meta = getSupportedNetworks(session).find((n) => n.key === chainKey);
+	if (meta && typeof meta.rpcEnvVar === 'string' && meta.rpcEnvVar.startsWith('http')) {
+		return meta.rpcEnvVar;
 	}
 	return undefined;
 }

@@ -36,12 +36,26 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 	const [trackingActive, setTrackingActive] = useState<boolean>(true);
 	const [trackingFlagLoaded, setTrackingFlagLoaded] = useState<boolean>(false);
 
-	// Initialize with some default networks
+	// Load networks from server (includes tenant networks from session)
 	useEffect(() => {
-		if (networks.length === 0) {
-			setNetworks([]);
+		let cancelled = false;
+		const loadNetworks = async () => {
+			try {
+				const res = await fetch('/api/v1/networks', { cache: 'no-store' });
+				if (!res.ok) return;
+				const json = (await res.json()) as { networks: Network[] };
+				if (!cancelled && json?.networks) {
+					setNetworks(json.networks);
+				}
+			} catch (error) {
+				console.error('Failed to load networks:', error);
+			}
+		};
+
+		if (isLogged) {
+			loadNetworks();
 		}
-	}, [networks.length]);
+	}, [isLogged]);
 
 	useEffect(() => {
 		setTrackingActive(isTrackingActive());

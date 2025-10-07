@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1759762243769,
-      "tag": "0000_workable_pepper_potts",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1759763254364,
-      "tag": "0001_volatile_quentin_quire",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1759778814861,
-      "tag": "0002_robust_gabe_jones",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1759819443459,
-      "tag": "0003_odd_shard",
+      "when": 1759860094219,
+      "tag": "0000_rainy_shatterstar",
       "breakpoints": true
     }
   ]

@@ -1,10 +1,10 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { AuthType } from './types';
+import { AuthType, TenantNetwork } from './types';
 import { db } from '@/db';
-import { tenant, user } from '@/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { tenant, tenantRpcConfig, user } from '@/db/schema';
+import { eq, sql, inArray } from 'drizzle-orm';
 
 export async function getServerSession(): Promise<AuthType | null> {
 	const betterAuthResponse = await auth.api.getSession({
@@ -15,26 +15,48 @@ export async function getServerSession(): Promise<AuthType | null> {
 		return null;
 	}
 
-	// Get tenant data and enrich session
+	// Get all tenant data and RPC configs for the user
 	if (betterAuthResponse.user?.email) {
-		const tenantData = await db
-			.select()
-			.from(tenant)
-			.where(sql`${betterAuthResponse.user.email} = ANY(${tenant.githubEmails})`)
-			.limit(1);
+		try {
+			// Find all tenants where user's email is in the githubEmails array
+			const tenantsData = await db
+				.select()
+				.from(tenant)
+				.where(sql`${betterAuthResponse.user.email} = ANY(${tenant.githubEmails})`);
 
-		if (tenantData.length > 0) {
-			// Dodaj tenant podatke u session objekat
-			(betterAuthResponse.session as AuthType['session'])!.tenant = {
-				name: tenantData[0].name,
-				rpcUrls: tenantData[0].rpcUrls,
-				chainIds: tenantData[0].chainIds
-			};
-			// Ažuriraj tenantId u user tabeli
-			await db
-				.update(user)
-				.set({ tenantId: tenantData[0].id })
-				.where(eq(user.id, betterAuthResponse.user.id));
+			console.debug('[auth] user email:', betterAuthResponse.user.email);
+			console.debug('[auth] tenants found:', tenantsData.length);
+
+			if (tenantsData.length > 0) {
+				const tenantIds = tenantsData.map((t) => t.id);
+
+				const rpcConfigs = await db
+					.select()
+					.from(tenantRpcConfig)
+					.where(inArray(tenantRpcConfig.tenantId, tenantIds));
+				// Create tenant networks array
+				const tenantNetworks: TenantNetwork[] = rpcConfigs.map((rpcConfig) => {
+					const tenantInfo = tenantsData.find((t) => t.id === rpcConfig.tenantId);
+					return {
+						tenantId: rpcConfig.tenantId!,
+						tenantName: tenantInfo?.name || 'Unknown Tenant',
+						rpcUrl: rpcConfig.rpcUrl,
+						chainId: rpcConfig.chainId,
+						displayName: rpcConfig.displayName || `${tenantInfo?.name} - Chain ${rpcConfig.chainId}`
+					};
+				});
+
+				// Add tenant networks to session object
+				(betterAuthResponse.session as AuthType['session'])!.tenantNetworks = tenantNetworks;
+
+				// Update tenantId in user table (use first tenant if there are multiple)
+				await db
+					.update(user)
+					.set({ tenantId: tenantsData[0].id })
+					.where(eq(user.id, betterAuthResponse.user.id));
+			}
+		} catch (error) {
+			console.error('Error fetching tenant data:', error);
 		}
 	}
 

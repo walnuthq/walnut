@@ -5,10 +5,19 @@ export const tenant = pgTable('tenant', {
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	name: text('name').unique().notNull(),
+	githubEmails: text('githubEmails').array(),
+	createdAt: timestamp('createdAt').defaultNow().notNull(),
+	updatedAt: timestamp('updatedAt').defaultNow().notNull()
+});
+
+export const tenantRpcConfig = pgTable('tenantrpcconfig', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	tenantId: text('tenantId').references(() => tenant.id),
+	rpcUrl: text('rpcUrl').notNull(),
+	chainId: integer('chainId').notNull(),
 	displayName: text('displayName'),
-	githubEmails: text('githubEmails').array().default([]).notNull(),
-	rpcUrls: text('rpcUrls').array().default([]).notNull(),
-	chainIds: integer('chainIds').array().default([]).notNull(),
 	createdAt: timestamp('createdAt').defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt').defaultNow().notNull()
 });

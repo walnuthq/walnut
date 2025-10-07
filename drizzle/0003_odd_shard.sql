@@ -1,1 +1,0 @@
-ALTER TABLE "tenant" ADD COLUMN "displayName" text;

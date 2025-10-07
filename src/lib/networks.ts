@@ -36,7 +36,7 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 	[ChainKey.POWERLOOM_MAINNET]: {
 		key: ChainKey.POWERLOOM_MAINNET,
 		displayName: 'PowerLoom Mainnet',
-		chainId: 11155420,
+		chainId: 7865,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_POWERLOOM_MAINNET',
 		explorerApiEnvVar: 'NEXT_PUBLIC_EXPLORER_API_POWERLOOM_MAINNET',
 		explorerType: 'blockscout_v2',
@@ -170,7 +170,6 @@ export function getRpcUrlForChainSafe(
 	session: AuthType['session']
 ): string {
 	const chainKey = resolveChainKey(chainIdentifier, session);
-	console.log('chainKey:', chainKey);
 	if (!chainKey) {
 		throw new Error(`Invalid chain identifier: ${chainIdentifier}`);
 	}

@@ -2,18 +2,31 @@ import { createPublicClient, http, type GetTransactionErrorType, type Hash } fro
 import { type NextRequest, NextResponse } from 'next/server';
 import { type SearchDataResponse, type SearchData, AuthType } from '@/lib/types';
 import { mapChainIdNumberToEnum } from '@/lib/utils';
-import { getRpcUrlForChainSafe, ChainKey } from '@/lib/networks';
+import { ChainKey, CHAINS_META } from '@/lib/networks';
 import { getSupportedNetworks } from '@/lib/get-supported-networks';
 import { fetchTxFromExplorer } from '@/lib/explorer';
 import { getServerSession } from '@/lib/auth-server';
+import {
+	checkPublicNetworkRequest,
+	getUnauthorizedErrorMessage,
+	getRpcUrlForChainOptimized
+} from '@/lib/public-network-utils';
 
 export const GET = async (
 	request: NextRequest,
 	{ params }: { params: Promise<{ hash: string }> }
 ) => {
 	const authSession = await getServerSession();
-	if (!authSession) {
-		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+	// Check if request is for a public network
+	const chainsParam = request.nextUrl.searchParams.get('chains');
+	const isPublicNetworkRequest = chainsParam
+		? chainsParam.split(',').some((chain) => ['OP_SEPOLIA', 'OP_MAIN'].includes(chain.trim()))
+		: true; // If no chains specified, allow public access to check all networks
+
+	// Require authentication only for non-public network requests
+	if (!authSession && !isPublicNetworkRequest) {
+		return NextResponse.json({ error: getUnauthorizedErrorMessage() }, { status: 401 });
 	}
 
 	const { hash } = await params;
@@ -21,8 +34,6 @@ export const GET = async (
 	// Prefer chain keys sent via ?chains=KEY1,KEY2; fallback to rpc_urls; default to all enabled.
 	type Pair = { key?: string; rpcUrl: string };
 	let pairs: Pair[] = [];
-
-	const chainsParam = request.nextUrl.searchParams.get('chains');
 	if (chainsParam) {
 		const keys = chainsParam
 			.split(',')
@@ -31,7 +42,8 @@ export const GET = async (
 		const built: Pair[] = [];
 		for (const k of keys) {
 			try {
-				const url = getRpcUrlForChainSafe(k, authSession.session);
+				// Use optimized RPC URL resolution
+				const url = getRpcUrlForChainOptimized(k, authSession?.session || null);
 				built.push({ key: k, rpcUrl: url });
 			} catch (error) {
 				console.warn(
@@ -54,8 +66,11 @@ export const GET = async (
 		}
 	}
 
-	// Always get supported networks after potentially updating the session with tenant data
-	const supportedNetworks = getSupportedNetworks(authSession.session);
+	// Get supported networks - only public networks if no authentication
+	const supportedNetworks = authSession
+		? getSupportedNetworks(authSession.session)
+		: ['OP_SEPOLIA', 'OP_MAIN'].map((key) => CHAINS_META[key as ChainKey]).filter(Boolean);
+
 	for (const network of supportedNetworks) {
 		try {
 			const rpcUrl = network.rpcEnvVar.startsWith('http')
@@ -141,7 +156,7 @@ export const POST = async (
 			const built: Pair[] = [];
 			for (const k of chains) {
 				try {
-					const url = getRpcUrlForChainSafe(k, authSession.session);
+					const url = getRpcUrlForChainOptimized(k, authSession.session);
 					built.push({ key: k, rpcUrl: url });
 				} catch (error) {
 					console.warn(

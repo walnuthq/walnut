@@ -1,1 +1,0 @@
-ALTER TABLE "tenant" ADD COLUMN "chainIds" integer[] DEFAULT '{}' NOT NULL;

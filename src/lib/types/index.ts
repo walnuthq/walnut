@@ -26,21 +26,21 @@ export enum ChainId {
 	ARBITRUM_ONE = 'ARBITRUM_ONE'
 }
 
+export interface TenantNetwork {
+	tenantId: string;
+	tenantName: string;
+	rpcUrl: string;
+	chainId: number;
+	displayName: string;
+}
+
 export interface CustomSession {
-	tenant?: {
-		name: string;
-		rpcUrls: string[];
-		chainIds: number[];
-	};
+	tenantNetworks?: TenantNetwork[];
 }
 
 declare module 'better-auth' {
 	interface CustomSession {
-		tenant?: {
-			name: string;
-			rpcUrls: string[];
-			chainIds: number[];
-		};
+		tenantNetworks?: TenantNetwork[];
 	}
 }
 
