@@ -22,7 +22,6 @@ async function makeApiRequest(input: string, params?: FetchApiParams) {
 	// Get session token from Better Auth
 	const session = await authClient.getSession();
 	const authToken = session.data?.session?.token;
-	console.log('authToken', authToken);
 	if (authToken)
 		headers = {
 			Authorization: `Bearer ${authToken}`,
@@ -54,7 +53,11 @@ export async function fetchApi<ResponseDataType>(
 			const json = JSON.parse(errorMsg);
 			if (json.error) errorMsg = json.error;
 		} catch {}
-		throw Error(errorMsg);
+
+		// Create error with status code for better error handling
+		const error = new Error(errorMsg);
+		(error as any).status = response.status;
+		throw error;
 	} else {
 		if (params?.renameToCamelCase)
 			return camelcaseKeys(await response.json(), {

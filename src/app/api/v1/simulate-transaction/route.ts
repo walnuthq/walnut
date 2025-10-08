@@ -9,11 +9,7 @@ import {
 } from '@/app/api/v1/utils/transaction-processing';
 import { getServerSession } from '@/lib/auth-server';
 import { AuthType } from '@/lib/types';
-import {
-	checkPublicNetworkRequest,
-	getUnauthorizedErrorMessage,
-	getRpcUrlForChainOptimized
-} from '@/lib/public-network-utils';
+import { checkPublicNetworkRequest, getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
 
 type WithTxHash = {
 	tx_hash: Hash;
@@ -83,7 +79,7 @@ export const POST = async (request: NextRequest) => {
 
 	// Require authentication only for non-public network requests
 	if (!authSession && !isPublicNetworkRequest) {
-		return NextResponse.json({ error: getUnauthorizedErrorMessage() }, { status: 401 });
+		return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 	}
 
 	const session = authSession?.session;

@@ -9,7 +9,7 @@ import {
 	DropdownMenuTrigger
 } from '../ui/dropdown-menu';
 import { ArrowRightEndOnRectangleIcon } from '@heroicons/react/24/solid';
-import { authClient } from '@/lib/auth-client';
+import { performLogout } from '@/lib/utils/auth-utils';
 import {
 	Cog6ToothIcon,
 	PlayIcon,
@@ -65,7 +65,7 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 						<div>System theme</div>
 					</DropdownMenuItem>
 
-					<DropdownMenuItem onClick={() => authClient.signOut()} className="cursor-pointer">
+					<DropdownMenuItem onClick={performLogout} className="cursor-pointer">
 						<ArrowRightEndOnRectangleIcon className="mr-1 h-4 w-4"></ArrowRightEndOnRectangleIcon>
 						<span>Log out</span>
 					</DropdownMenuItem>

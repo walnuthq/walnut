@@ -6,11 +6,7 @@ import { ChainKey, CHAINS_META } from '@/lib/networks';
 import { getSupportedNetworks } from '@/lib/get-supported-networks';
 import { fetchTxFromExplorer } from '@/lib/explorer';
 import { getServerSession } from '@/lib/auth-server';
-import {
-	checkPublicNetworkRequest,
-	getUnauthorizedErrorMessage,
-	getRpcUrlForChainOptimized
-} from '@/lib/public-network-utils';
+import { checkPublicNetworkRequest, getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
 
 export const GET = async (
 	request: NextRequest,
@@ -26,7 +22,7 @@ export const GET = async (
 
 	// Require authentication only for non-public network requests
 	if (!authSession && !isPublicNetworkRequest) {
-		return NextResponse.json({ error: getUnauthorizedErrorMessage() }, { status: 401 });
+		return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 	}
 
 	const { hash } = await params;

@@ -1,6 +1,7 @@
 import { ChainKey, CHAINS_META, getRpcUrlForChain, getRpcUrlForChainSafe } from './networks';
 import { getSupportedNetworks } from './get-supported-networks';
 import { AuthType } from './types';
+import { NextResponse } from 'next/server';
 
 // Define publicly accessible networks that don't require authentication
 export const PUBLIC_NETWORKS = [ChainKey.OP_SEPOLIA, ChainKey.OP_MAIN];
@@ -47,6 +48,19 @@ export async function checkPublicNetworkRequest(
  */
 export function getUnauthorizedErrorMessage(): string {
 	return `Authentication required for this network. Public networks: ${PUBLIC_NETWORKS.join(', ')}`;
+}
+
+/**
+ * Creates a redirect response to login page for unauthorized requests
+ * @param request - The incoming request to get the base URL
+ * @returns NextResponse redirect to login page
+ */
+export function createLoginRedirect(request: Request): NextResponse {
+	const url = new URL(request.url);
+	const baseUrl = url.origin;
+	const loginUrl = `${baseUrl}/login`;
+
+	return NextResponse.redirect(loginUrl, { status: 302 });
 }
 
 /**

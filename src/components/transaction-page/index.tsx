@@ -145,6 +145,12 @@ export function TransactionPage({
 					setL1TransactionData(simulation.l1TransactionData);
 				}
 			} catch (error: any) {
+				// Check if it's a 401 authentication error
+				if (error?.status === 401) {
+					// Redirect to login page
+					window.location.href = '/login';
+					return;
+				}
 				setError(error.toString());
 			}
 		};

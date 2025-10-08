@@ -9,6 +9,7 @@ import {
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { performLogout } from '@/lib/utils/auth-utils';
 
 export function UserAvatar() {
 	const { data: session, isPending } = authClient.useSession();
@@ -30,7 +31,7 @@ export function UserAvatar() {
 						</Avatar>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
-						<DropdownMenuItem onClick={() => authClient.signOut()}>Log out</DropdownMenuItem>
+						<DropdownMenuItem onClick={performLogout}>Log out</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			) : (
