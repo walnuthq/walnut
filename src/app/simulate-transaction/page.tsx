@@ -1,33 +1,21 @@
-'use client';
-
 import { SimulateTransactionPage } from '@/components/simulate-transaction/simulate-transaction-page';
 import { SimulationPayload, parseContractCalls } from '@/lib/utils';
-import { useEffect, useState } from 'react';
 
 export const runtime = 'edge';
 
-export default function Page({
+export default async function Page({
 	searchParams
 }: {
 	searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-	const [simulationPayload, setSimulationPayload] = useState<SimulationPayload | undefined>(
-		undefined
-	);
-	const [isDemo, setIsDemo] = useState<string | undefined>(undefined);
-	const [txHash, setTxHash] = useState<string | undefined>(undefined);
-	const [resolvedSearchParams, setResolvedSearchParams] = useState<
-		{ [key: string]: string | string[] | undefined } | undefined
-	>(undefined);
+	let simulationPayload: SimulationPayload | undefined = undefined;
+	let isDemo: string | undefined = undefined;
+	let txHash: string | undefined = undefined;
 
-	useEffect(() => {
-		if (searchParams) {
-			searchParams.then(setResolvedSearchParams);
-		}
-	}, [searchParams]);
+	if (searchParams) {
+		const resolvedSearchParams = await searchParams;
 
-	useEffect(() => {
-		if (resolvedSearchParams && Object.keys(resolvedSearchParams).length > 0) {
+		if (Object.keys(resolvedSearchParams).length > 0) {
 			const senderAddress = resolvedSearchParams.senderAddress as string;
 			const calldata = resolvedSearchParams.calldata as string;
 			const blockNumber = resolvedSearchParams.blockNumber as string;
@@ -38,11 +26,11 @@ export default function Page({
 			const demoParam = resolvedSearchParams.demo as string;
 
 			if (txHashParams) {
-				setTxHash(txHashParams);
+				txHash = txHashParams;
 			}
 
 			if (demoParam) {
-				setIsDemo(demoParam);
+				isDemo = demoParam;
 			}
 
 			if (senderAddress && calldata && transactionVersion) {
@@ -66,10 +54,10 @@ export default function Page({
 					payload.nonce = parseInt(nonce);
 				}
 
-				setSimulationPayload(payload);
+				simulationPayload = payload;
 			}
 		}
-	}, [resolvedSearchParams]);
+	}
 
 	return (
 		<SimulateTransactionPage
@@ -79,7 +67,7 @@ export default function Page({
 			title={simulationPayload && 'Re-simulate'}
 			description={
 				simulationPayload &&
-				'Edit the transaction details below and click “Run Simulation” to re-simulate.'
+				'Edit the transaction details below and click "Run Simulation" to re-simulate.'
 			}
 		/>
 	);

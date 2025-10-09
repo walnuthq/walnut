@@ -1,7 +1,6 @@
 'use client';
 
 import { TransactionPage } from '@/components/transaction-page';
-// import { extractChainId } from '@/lib/utils';
 import { useSearchParams } from 'next/navigation';
 
 export const runtime = 'edge';

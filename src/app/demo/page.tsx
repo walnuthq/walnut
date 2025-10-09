@@ -1,15 +1,9 @@
-'use client';
-
-// import { extractChainId } from '@/lib/utils';
-import { useSearchParams } from 'next/navigation';
 import { TransactionPage } from './transaction-page';
 import { ChainId } from '@/lib/types';
 
 export const runtime = 'edge';
 
 export default function Page() {
-	const searchParams = useSearchParams();
-
 	const txHash = '0xc1b5345f62e1170c3bc246d931f806db1becfb480a15e4085daf55d61c660ecb';
 	const chainIdStr = 'ARBITRUM_ONE';
 
