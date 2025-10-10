@@ -1,5 +1,5 @@
 import { API_URL } from '@/lib/config';
-import { getSessionToken } from '@/lib/auth';
+import { authClient } from '@/lib/auth-client';
 import camelcaseKeys from 'camelcase-keys';
 
 const CLASS_HASH_REGEX = /^0x[0-9a-fA-F]{64}$/;
@@ -14,12 +14,14 @@ interface FetchApiParams {
 	renameToCamelCase?: boolean;
 }
 
-function makeApiRequest(input: string, params?: FetchApiParams) {
+async function makeApiRequest(input: string, params?: FetchApiParams) {
 	input = API_URL + input;
 	const body = params?.data ? JSON.stringify(params?.data) : params?.init?.body;
 	const method = params?.method ?? params?.init?.method ?? 'GET';
 	let headers: HeadersInit = { 'Content-Type': 'application/json', ...params?.init?.headers };
-	const authToken = getSessionToken();
+	// Get session token from Better Auth
+	const session = await authClient.getSession();
+	const authToken = session.data?.session?.token;
 	if (authToken)
 		headers = {
 			Authorization: `Bearer ${authToken}`,
@@ -51,7 +53,11 @@ export async function fetchApi<ResponseDataType>(
 			const json = JSON.parse(errorMsg);
 			if (json.error) errorMsg = json.error;
 		} catch {}
-		throw Error(errorMsg);
+
+		// Create error with status code for better error handling
+		const error = new Error(errorMsg);
+		(error as any).status = response.status;
+		throw error;
 	} else {
 		if (params?.renameToCamelCase)
 			return camelcaseKeys(await response.json(), {

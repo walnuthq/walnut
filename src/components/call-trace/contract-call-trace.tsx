@@ -101,7 +101,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		: undefined;
 
 	if (!traceLineElementRefs.current[contractCallId]) {
-		traceLineElementRefs.current[contractCallId] = React.createRef<HTMLDivElement>();
+		traceLineElementRefs.current[contractCallId] = React.createRef<HTMLDivElement | null>();
 	}
 
 	function ArgsWithTooltips() {

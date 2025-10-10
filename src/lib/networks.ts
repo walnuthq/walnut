@@ -1,3 +1,6 @@
+import { getRpcUrlForTenantChain, getSupportedNetworks } from './get-supported-networks';
+import { AuthType, ChainMeta } from './types';
+
 export enum ChainKey {
 	OP_MAIN = 'OP_MAIN',
 	OP_SEPOLIA = 'OP_SEPOLIA',
@@ -5,21 +8,6 @@ export enum ChainKey {
 	POWERLOOM_MAINNET = 'POWERLOOM_MAINNET',
 	ARBITRUM_ONE = 'ARBITRUM_ONE'
 }
-
-export type ChainMeta = {
-	key: ChainKey;
-	displayName: string;
-	chainId: number;
-	// Name of the env var that holds the RPC URL (do NOT put the URL here)
-	rpcEnvVar: string;
-	// Optional explorer API base env var name (Blockscout/Etherscan-compatible)
-	explorerApiEnvVar?: string;
-	// 'blockscout_v2' -> /api/v2/transactions/:hash
-	// 'etherscan_proxy' -> /api?module=proxy&action=eth_getTransactionByHash&txhash=:hash
-	explorerType?: 'blockscout_v2' | 'etherscan_proxy';
-	// Preferred verification method for contracts
-	verificationType: 'sourcify' | 'blockscout';
-};
 
 export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 	[ChainKey.OP_MAIN]: {
@@ -48,7 +36,7 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 	[ChainKey.POWERLOOM_MAINNET]: {
 		key: ChainKey.POWERLOOM_MAINNET,
 		displayName: 'PowerLoom Mainnet',
-		chainId: 11155420,
+		chainId: 7865,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_POWERLOOM_MAINNET',
 		explorerApiEnvVar: 'NEXT_PUBLIC_EXPLORER_API_POWERLOOM_MAINNET',
 		explorerType: 'blockscout_v2',
@@ -137,7 +125,18 @@ export function getChainKeyByNumber(chainIdNumber: number): ChainKey | undefined
  * @param chainIdentifier - Can be a chain ID number, string representation, or ChainKey enum value
  * @returns The resolved ChainKey or undefined if not found
  */
-export function resolveChainKey(chainIdentifier: string | number | ChainKey): ChainKey | undefined {
+export function resolveChainKey(
+	chainIdentifier: string | number | ChainKey,
+	session: AuthType['session']
+): ChainKey | undefined {
+	const allSupportedNetworks = getSupportedNetworks(session);
+	const foundBySupported = allSupportedNetworks.find(
+		(n) => n.key === chainIdentifier || n.chainId === Number(chainIdentifier)
+	);
+	if (foundBySupported) {
+		return foundBySupported.key;
+	}
+
 	// If it's already a ChainKey enum value, return it
 	if (Object.values(ChainKey).includes(chainIdentifier as ChainKey)) {
 		return chainIdentifier as ChainKey;
@@ -147,11 +146,12 @@ export function resolveChainKey(chainIdentifier: string | number | ChainKey): Ch
 	if (typeof chainIdentifier === 'number' || !isNaN(Number(chainIdentifier))) {
 		const chainIdNumber =
 			typeof chainIdentifier === 'string' ? parseInt(chainIdentifier, 10) : chainIdentifier;
-		return getChainKeyByNumber(chainIdNumber);
+		const meta = Object.values(CHAINS_META).find((m) => m.chainId === chainIdNumber);
+		return meta?.key;
 	}
 
 	// If it's a string, try to find by key (case-insensitive)
-	const upperKey = chainIdentifier.toUpperCase();
+	const upperKey = String(chainIdentifier).toUpperCase(); // Explicitly cast to string before toUpperCase
 	if (Object.values(ChainKey).includes(upperKey as ChainKey)) {
 		return upperKey as ChainKey;
 	}
@@ -165,10 +165,18 @@ export function resolveChainKey(chainIdentifier: string | number | ChainKey): Ch
  * @returns The RPC URL for the chain
  * @throws Error if no RPC URL is found for the chain
  */
-export function getRpcUrlForChainSafe(chainIdentifier: string | number | ChainKey): string {
-	const chainKey = resolveChainKey(chainIdentifier);
+export function getRpcUrlForChainSafe(
+	chainIdentifier: string | number | ChainKey,
+	session: AuthType['session']
+): string {
+	const chainKey = resolveChainKey(chainIdentifier, session);
 	if (!chainKey) {
 		throw new Error(`Invalid chain identifier: ${chainIdentifier}`);
+	}
+
+	const tenantRpcUrl = getRpcUrlForTenantChain(chainKey, session);
+	if (tenantRpcUrl) {
+		return tenantRpcUrl;
 	}
 
 	const rpcUrl = getRpcUrlForChain(chainKey);

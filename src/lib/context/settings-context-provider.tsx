@@ -3,11 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import { toast } from '@/components/hooks/use-toast';
-import {
-	createNetworkApi,
-	deleteNetworkApi,
-	getNetworksApi
-} from '@/app/api/monitoring-api-service';
+// Monitoring API removed
 import { isTrackingActive } from '@/app/api/tracking-service';
 import { chainMapping, stackMapping, unknownPrefixesAsStarknet } from '../utils';
 
@@ -25,8 +21,6 @@ export interface AddNetwork {
 
 type SettingsContextType = {
 	networks: Network[];
-	addNetwork: (network: AddNetwork) => void;
-	removeNetwork: (network: Network) => void;
 	getNetworkByRpcUrl: (rpcUrl: string) => Network | undefined;
 	trackingActive: boolean;
 	// informs if tracking flag was correctly set
@@ -42,65 +36,33 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 	const [trackingActive, setTrackingActive] = useState<boolean>(true);
 	const [trackingFlagLoaded, setTrackingFlagLoaded] = useState<boolean>(false);
 
+	// Load networks from server (includes tenant networks from session)
+	useEffect(() => {
+		let cancelled = false;
+		const loadNetworks = async () => {
+			try {
+				const res = await fetch('/api/v1/networks', { cache: 'no-store' });
+				if (!res.ok) return;
+				const json = (await res.json()) as { networks: Network[] };
+				if (!cancelled && json?.networks) {
+					setNetworks(json.networks);
+				}
+			} catch (error) {
+				console.error('Failed to load networks:', error);
+			}
+		};
+
+		if (isLogged) {
+			loadNetworks();
+		}
+	}, [isLogged]);
+
 	useEffect(() => {
 		setTrackingActive(isTrackingActive());
 		setTrackingFlagLoaded(true);
 	}, []);
 
-	const getNetworks = useCallback(async () => {
-		const networks = await getNetworksApi(organizationId);
-		if (networks) {
-			setNetworks(networks);
-		}
-	}, [organizationId]);
-
-	useEffect(() => {
-		if (isLogged) {
-			getNetworks();
-		}
-	}, [getNetworks, isLogged, organizationId]);
-
-	const addNetwork = async (network: AddNetwork) => {
-		const created = await createNetworkApi(network.networkName, network.rpcUrl, organizationId);
-		if (created) {
-			toast({
-				title: `Network ${network.networkName} added!`,
-				description: 'Network added successfully.'
-			});
-			await getNetworks();
-		} else {
-			toast({
-				title: 'Add network failed!',
-				description: 'There was an error while adding the network.',
-				className: 'text-red-500'
-			});
-		}
-	};
-
-	const removeNetwork = async (network: Network) => {
-		const deletedRes = await deleteNetworkApi(network.id ?? '', organizationId);
-		if (deletedRes.succeed) {
-			toast({
-				title: `Network ${network.networkName} removed!`,
-				description: 'Network removed successfully.'
-			});
-			await getNetworks();
-		} else {
-			if (deletedRes.responseCode === 400) {
-				toast({
-					title: 'Remove network failed!',
-					description: 'This network is used by monitoring.',
-					className: 'text-red-500'
-				});
-			} else {
-				toast({
-					title: 'Remove network failed!',
-					description: 'There was an error while removing the network.',
-					className: 'text-red-500'
-				});
-			}
-		}
-	};
+	// Network management functions removed - monitoring was removed
 
 	const parseChain = (chainString: string) => {
 		const parts = chainString.toLowerCase().split('_');
@@ -162,8 +124,6 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 		<SettingsContext.Provider
 			value={{
 				networks,
-				addNetwork,
-				removeNetwork,
 				getNetworkByRpcUrl,
 				trackingActive,
 				trackingFlagLoaded,

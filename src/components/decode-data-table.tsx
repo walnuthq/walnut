@@ -37,7 +37,7 @@ export function DecodeDataTable({
 		return value;
 	};
 
-	const renderValue = (value: any): JSX.Element => {
+	const renderValue = (value: any): React.JSX.Element => {
 		if (Array.isArray(value)) {
 			return (
 				<div className="pl-4">

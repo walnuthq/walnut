@@ -40,11 +40,14 @@ export function NetworksSelect({
 				chainId: simulationPayload?.chainId
 			});
 			onChainChangedCallback({ chainId: simulationPayload?.chainId });
-		} else {
-			_setChain({ chainId: 'OP_MAIN' });
-			onChainChangedCallback({ chainId: 'OP_MAIN' });
+		} else if (networks.length > 0) {
+			// Use the first available network as default
+			const defaultNetwork = networks[0];
+			_setChain({ network: defaultNetwork });
+			onChainChangedCallback({ network: defaultNetwork });
 		}
-	}, [simulationPayload]);
+	}, [simulationPayload, networks]);
+
 	if (isDemo)
 		return (
 			<Select value={'Arbitrum One'}>
@@ -73,28 +76,28 @@ export function NetworksSelect({
 					};
 			}
 		}
-		return { chainId: 'OP_MAIN' };
+		// Return first available network or empty chain if no networks available
+		return networks.length > 0 ? { network: networks[0] } : {};
 	}
 
-	const chainOptions = [
-		{ value: 'OP_MAIN', label: 'OP_MAIN' },
-		{ value: 'OP_SEPOLIA', label: 'OP_SEPOLIA' },
-		...networks.map((network) => ({ value: network.networkName, label: network.networkName }))
-	];
+	// Deduplicate networks by networkName to prevent duplicate keys
+	const uniqueNetworks = networks.filter(
+		(network, index, self) => index === self.findIndex((n) => n.networkName === network.networkName)
+	);
+
+	const chainOptions = uniqueNetworks.map((network) => ({
+		value: network.networkName,
+		label: network.networkName
+	}));
 
 	function handleChainChange(value: string) {
-		if (value === 'OP_MAIN' || value === 'OP_SEPOLIA') {
-			_setChain({ chainId: value });
-			onChainChangedCallback({ chainId: value });
-		} else {
-			const network = networks.find((n) => n.networkName === value);
-			if (network) {
-				_setChain({ network });
-				onChainChangedCallback({ network });
-			} else if (value === defaultChain.network?.networkName) {
-				_setChain(defaultChain);
-				onChainChangedCallback(defaultChain);
-			}
+		const network = networks.find((n) => n.networkName === value);
+		if (network) {
+			_setChain({ network });
+			onChainChangedCallback({ network });
+		} else if (value === defaultChain.network?.networkName) {
+			_setChain(defaultChain);
+			onChainChangedCallback(defaultChain);
 		}
 	}
 

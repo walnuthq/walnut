@@ -1,13 +1,13 @@
-'use client';
-
-import { useEffect } from 'react';
+import { redirect } from 'next/navigation';
 
 export const runtime = 'edge';
 
-export default function Page({ params }: { params: { chain_id: string; tx_hash: string } }) {
-	useEffect(() => {
-		window.location.href = `/transactions?chainId=${params.chain_id}&txHash=${params.tx_hash}`;
-	}, [params.chain_id, params.tx_hash]);
+export default async function Page({
+	params
+}: {
+	params: Promise<{ chain_id: string; tx_hash: string }>;
+}) {
+	const { chain_id, tx_hash } = await params;
 
-	return null;
+	redirect(`/transactions?chainId=${chain_id}&txHash=${tx_hash}`);
 }

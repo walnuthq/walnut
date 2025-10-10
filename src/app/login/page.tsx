@@ -5,16 +5,15 @@ import Image from 'next/image';
 import logoWalnutWhite from '@/assets/walnut-white.svg';
 import logoWalnut from '@/assets/walnut.svg';
 import { SignUpWithGithubButton } from '@/components/auth/sign-up-with-github-button';
-import { useUserContext } from '@/lib/context/user-context-provider';
+import { authClient } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Link from 'next/link';
 import { useTheme } from 'next-themes';
 
 export const runtime = 'edge';
 
 export default function Page() {
-	const { isLogged } = useUserContext();
+	const { data: session } = authClient.useSession();
 	const router = useRouter();
 	const { theme, setTheme } = useTheme();
 	const currentTheme = theme;
@@ -23,12 +22,12 @@ export default function Page() {
 		return () => {
 			if (currentTheme) setTheme(currentTheme);
 		};
-	}, []);
+	}, [currentTheme, setTheme]);
 	useEffect(() => {
-		// if (isLogged) {
-		// 	router.push('/');
-		// }
-	}, [isLogged, router]);
+		if (session) {
+			router.push('/');
+		}
+	}, [session, router]);
 	return (
 		<>
 			<div className="container relative h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">

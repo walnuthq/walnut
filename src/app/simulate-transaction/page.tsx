@@ -1,33 +1,36 @@
-'use client';
-
 import { SimulateTransactionPage } from '@/components/simulate-transaction/simulate-transaction-page';
 import { SimulationPayload, parseContractCalls } from '@/lib/utils';
-import { useEffect, useState } from 'react';
 
 export const runtime = 'edge';
 
-export default function Page({
+export default async function Page({
 	searchParams
 }: {
-	searchParams?: { [key: string]: string | string[] | undefined };
+	searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-	const [simulationPayload, setSimulationPayload] = useState<SimulationPayload | undefined>(
-		undefined
-	);
-	const isDemo = searchParams?.demo as string;
-	const [txHash, setTxHash] = useState<string | undefined>(undefined);
-	useEffect(() => {
-		if (searchParams && Object.keys(searchParams).length > 0) {
-			const senderAddress = searchParams.senderAddress as string;
-			const calldata = searchParams.calldata as string;
-			const blockNumber = searchParams.blockNumber as string;
-			const transactionVersion = searchParams.transactionVersion as string;
-			const chainId = searchParams.chainId as string;
-			const nonce = searchParams.nonce as string;
-			const txHashParams = searchParams.txHash as string;
+	let simulationPayload: SimulationPayload | undefined = undefined;
+	let isDemo: string | undefined = undefined;
+	let txHash: string | undefined = undefined;
+
+	if (searchParams) {
+		const resolvedSearchParams = await searchParams;
+
+		if (Object.keys(resolvedSearchParams).length > 0) {
+			const senderAddress = resolvedSearchParams.senderAddress as string;
+			const calldata = resolvedSearchParams.calldata as string;
+			const blockNumber = resolvedSearchParams.blockNumber as string;
+			const transactionVersion = resolvedSearchParams.transactionVersion as string;
+			const chainId = resolvedSearchParams.chainId as string;
+			const nonce = resolvedSearchParams.nonce as string;
+			const txHashParams = resolvedSearchParams.txHash as string;
+			const demoParam = resolvedSearchParams.demo as string;
 
 			if (txHashParams) {
-				setTxHash(txHashParams);
+				txHash = txHashParams;
+			}
+
+			if (demoParam) {
+				isDemo = demoParam;
 			}
 
 			if (senderAddress && calldata && transactionVersion) {
@@ -51,10 +54,10 @@ export default function Page({
 					payload.nonce = parseInt(nonce);
 				}
 
-				setSimulationPayload(payload);
+				simulationPayload = payload;
 			}
 		}
-	}, [searchParams]);
+	}
 
 	return (
 		<SimulateTransactionPage
@@ -64,7 +67,7 @@ export default function Page({
 			title={simulationPayload && 'Re-simulate'}
 			description={
 				simulationPayload &&
-				'Edit the transaction details below and click “Run Simulation” to re-simulate.'
+				'Edit the transaction details below and click "Run Simulation" to re-simulate.'
 			}
 		/>
 	);

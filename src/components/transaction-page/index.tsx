@@ -145,6 +145,12 @@ export function TransactionPage({
 					setL1TransactionData(simulation.l1TransactionData);
 				}
 			} catch (error: any) {
+				// Check if it's a 401 authentication error
+				if (error?.status === 401) {
+					// Redirect to login page
+					window.location.href = '/login';
+					return;
+				}
 				setError(error.toString());
 			}
 		};
@@ -244,21 +250,13 @@ export function TransactionPage({
 										</h2>
 									)}
 								</div>
-								{isLogged ? (
-									<Button
-										onClick={handleReSimulateClick}
-										variant="outline"
-										disabled={l2TransactionData.transactionType !== 'INVOKE'}
-									>
-										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-									</Button>
-								) : (
-									<Link href="/login">
-										<Button variant="outline">
-											<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
-										</Button>
-									</Link>
-								)}
+								<Button
+									onClick={handleReSimulateClick}
+									variant="outline"
+									disabled={l2TransactionData.transactionType !== 'INVOKE'}
+								>
+									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								</Button>
 							</div>
 							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} />
 							<CallTraceRoot
@@ -294,17 +292,9 @@ export function TransactionPage({
 										</h1>
 									)}
 								</div>
-								{isLogged ? (
-									<Button onClick={handleReSimulateClick} variant="outline" disabled>
-										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-									</Button>
-								) : (
-									<Link href="/login">
-										<Button variant="outline">
-											<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
-										</Button>
-									</Link>
-								)}
+								<Button onClick={handleReSimulateClick} variant="outline" disabled>
+									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								</Button>
 							</div>
 							<L1TransactionDetails transactionData={l1TransactionData} rpcUrl={rpcUrl} />
 							{l1TransactionData.messageHashes && l1TransactionData.messageHashes.length > 0 && (

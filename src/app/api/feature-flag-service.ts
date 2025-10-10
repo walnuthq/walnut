@@ -3,5 +3,5 @@ export const isMonitoringFeatureActive = () => {
 };
 
 export const isAuthorizationRequiredFeatureActive = () => {
-	return false;
+	return true;
 };

@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { ChainId } from '../types';
+// Export fetch functions for client components
 export * from './fetch';
 
 import { ContractCall, SimulationPayloadWithCalldata } from '../simulation';

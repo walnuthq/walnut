@@ -16,7 +16,7 @@ const Quotes = [
 const Loader = forwardRef<
 	HTMLDivElement,
 	HTMLAttributes<HTMLDivElement> & { randomQuote?: boolean; text?: string }
->(({ randomQuote = true, text }) => {
+>(({ randomQuote = true, text }, ref) => {
 	const [quote, setQuote] = useState('');
 
 	useEffect(() => {
@@ -24,7 +24,7 @@ const Loader = forwardRef<
 	}, []);
 
 	return (
-		<div className="text-center my-16">
+		<div ref={ref} className="text-center my-16">
 			{randomQuote && (
 				<h3 className="text-md font-medium max-w-sm mx-auto whitespace-pre-line">{quote}</h3>
 			)}
