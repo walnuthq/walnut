@@ -52,7 +52,10 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 						<span className="text-highlight_yellow">{'('}</span>
 						{(event.datas ?? []).map((param: DecodedItem, index: number) => (
 							<span key={index}>
-								<span className="">{param.name}</span>:&nbsp;
+								<span className="">
+									{param.name || <span className="text-gray-500">unnamed</span>}
+								</span>
+								:&nbsp;
 								<span className="text-typeColor">{param.typeName}</span>
 								{index < (event.datas?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 							</span>

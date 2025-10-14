@@ -6,6 +6,8 @@ import {
 	useCallTrace
 } from '@/lib/context/call-trace-context-provider';
 import { EventsList } from './event-entries';
+import { EventsTab } from '@/components/events-tab';
+import { EventsContextProvider } from '@/lib/context/events-context-provider';
 import { Debugger } from '@/components/debugger';
 import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -24,12 +26,18 @@ export function CallTraceRoot({
 	simulationResult,
 	l2Flamegraph,
 	l1DataFlamegraph,
-	debuggerPayload
+	debuggerPayload,
+	txHash,
+	chainId,
+	rpcUrl
 }: {
 	simulationResult: SimulationResult;
 	l2Flamegraph: FlameNode | undefined;
 	l1DataFlamegraph: FlameNode | undefined;
 	debuggerPayload: DebuggerPayload | null;
+	txHash?: string;
+	chainId?: string;
+	rpcUrl?: string;
 }) {
 	return (
 		<CallTraceContextProvider
@@ -38,17 +46,31 @@ export function CallTraceRoot({
 			l1DataFlamegraph={l1DataFlamegraph}
 			debuggerPayload={debuggerPayload}
 		>
-			{debuggerPayload && (
-				<DebuggerContextProvider debuggerPayload={debuggerPayload}>
-					<CallTraceRootContent />
-				</DebuggerContextProvider>
+			{txHash && (
+				<EventsContextProvider txHash={txHash} chainId={chainId} rpcUrl={rpcUrl} shouldLoad={true}>
+					{debuggerPayload && (
+						<DebuggerContextProvider debuggerPayload={debuggerPayload}>
+							<CallTraceRootContent txHash={txHash} />
+						</DebuggerContextProvider>
+					)}
+					{!debuggerPayload && <CallTraceRootContent txHash={txHash} />}
+				</EventsContextProvider>
 			)}
-			{!debuggerPayload && <CallTraceRootContent />}
+			{!txHash && (
+				<>
+					{debuggerPayload && (
+						<DebuggerContextProvider debuggerPayload={debuggerPayload}>
+							<CallTraceRootContent txHash={txHash} />
+						</DebuggerContextProvider>
+					)}
+					{!debuggerPayload && <CallTraceRootContent txHash={txHash} />}
+				</>
+			)}
 		</CallTraceContextProvider>
 	);
 }
 
-function CallTraceRootContent() {
+function CallTraceRootContent({ txHash }: { txHash?: string }) {
 	const {
 		collapseAll,
 		expandAll,
@@ -68,7 +90,7 @@ function CallTraceRootContent() {
 				setChosenCallName(null);
 			}
 		},
-		[setActiveTab]
+		[setActiveTab, activeTab, setChosenCallName]
 	);
 	return (
 		<>
@@ -90,7 +112,7 @@ function CallTraceRootContent() {
 				>
 					<TabsList className="flex md:inline-flex md:w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
 						<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
-						{/*<TabsTrigger value="events-list">Events</TabsTrigger>*/}
+						<TabsTrigger value="events-list">Events</TabsTrigger>
 						<TabsTrigger value="debugger">Debugger</TabsTrigger>
 						{/*<TabsTrigger value="storage-changes">Storage</TabsTrigger>
 					<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>*/}
@@ -156,7 +178,11 @@ function CallTraceRootContent() {
 						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
 							<ScrollArea className="flex-1 overflow-auto">
 								<div className="p-0 py-2">
-									<EventsList events={simulationResult.events} />
+									{txHash ? (
+										<EventsTab txHash={txHash} shouldLoad={activeTab === 'events-list'} />
+									) : (
+										<div className="px-4 py-2 text-sm">Transaction hash not available</div>
+									)}
 								</div>
 								<ScrollBar orientation="horizontal" />
 							</ScrollArea>
