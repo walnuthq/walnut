@@ -2,18 +2,16 @@
 
 import React from 'react';
 import { EventsList } from '@/components/call-trace/event-entries';
-import { Loader } from '@/components/ui/loader';
-import { Error } from '@/components/ui/error';
-import { useEvents } from '@/lib/context/events-context-provider';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { ContractCallEvent } from '@/lib/simulation';
 
 interface EventsTabProps {
-	txHash: string;
 	shouldLoad?: boolean;
+	events: ContractCallEvent[];
+	loading: boolean;
 }
 
-export function EventsTab({ txHash, shouldLoad = true }: EventsTabProps) {
-	const { events, loading, error } = useEvents();
-
+export function EventsTab({ shouldLoad = true, events, loading }: EventsTabProps) {
 	// Don't render anything if we shouldn't load yet
 	if (!shouldLoad) {
 		return null;
@@ -21,17 +19,13 @@ export function EventsTab({ txHash, shouldLoad = true }: EventsTabProps) {
 
 	if (loading) {
 		return (
-			<div className="flex items-center justify-center h-64">
-				<Loader />
-			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<div className="p-4">
-				<Error message={error} />
-			</div>
+			<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
+				<span className="h-6 w-6 block rounded-full border-4 dark:border-t-accent_2 border-t-gray-800 animate-spin" />
+				<div className="flex flex-col">
+					<AlertTitle>Loading</AlertTitle>
+					<AlertDescription>Please wait, events are loading</AlertDescription>
+				</div>
+			</Alert>
 		);
 	}
 

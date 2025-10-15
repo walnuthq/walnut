@@ -7,20 +7,27 @@ import {
 } from '@/lib/context/call-trace-context-provider';
 import { EventsList } from './event-entries';
 import { EventsTab } from '@/components/events-tab';
-import { EventsContextProvider } from '@/lib/context/events-context-provider';
+import { EventsContextProvider, useEvents } from '@/lib/context/events-context-provider';
 import { Debugger } from '@/components/debugger';
 import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import CalldataSearch from '../ui/calldata-search';
-import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
+import {
+	PlusCircleIcon,
+	MinusCircleIcon,
+	ClipboardDocumentIcon
+} from '@heroicons/react/24/outline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { CommonCallTrace } from './common-call-trace';
 import { useCallback, useEffect } from 'react';
 import StorageChanges from '../storage-changes';
 import { GasProfiler } from '../gas-profiler';
+import { Error } from '@/components/ui/error';
 import ErrorAlert from '../ui/error-alert';
+import { Button } from '../ui/button';
+import { copyToClipboard } from '@/lib/utils';
 
 export function CallTraceRoot({
 	simulationResult,
@@ -83,6 +90,10 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 		debuggerPayload,
 		callWithError
 	} = useCallTrace();
+	const { events, loading, error } = useEvents();
+	const onCopyToClipboardClick = (message: string) => {
+		copyToClipboard(message);
+	};
 	const onValueChange = useCallback(
 		(value: string) => {
 			setActiveTab(value as TabId);
@@ -176,16 +187,42 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 						}`}
 					>
 						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
-							<ScrollArea className="flex-1 overflow-auto">
-								<div className="p-0 py-2">
-									{txHash ? (
-										<EventsTab txHash={txHash} shouldLoad={activeTab === 'events-list'} />
-									) : (
-										<div className="px-4 py-2 text-sm">Transaction hash not available</div>
-									)}
+							{error ? (
+								<div className="rounded-md ">
+									<div className="flex items-center justify-between border-b p-2 pl-4 rounded-t-md bg-card">
+										<p className="text-sm">{'Walnut server error'}</p>
+
+										<div className="flex items-center h-8">
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={() => onCopyToClipboardClick(error)}
+											>
+												<ClipboardDocumentIcon className="mr-2 h-4 w-4" /> Copy
+											</Button>
+										</div>
+									</div>
+
+									<ScrollArea className="h-fit rounded-b-md">
+										<div className="flex w-full space-x-4 p-4">
+											<pre className="text-red-700 text-xs whitespace-pre-wrap">{error}</pre>
+										</div>
+										<ScrollBar orientation="horizontal" />
+									</ScrollArea>
 								</div>
-								<ScrollBar orientation="horizontal" />
-							</ScrollArea>
+							) : txHash ? (
+								<ScrollArea className="flex-1 overflow-auto">
+									<EventsTab
+										shouldLoad={activeTab === 'events-list'}
+										events={events}
+										loading={loading}
+									/>
+									<ScrollBar orientation="horizontal" />
+								</ScrollArea>
+							) : (
+								<div className="px-4 py-2 text-sm">Transaction hash not available</div>
+							)}
+							<div className="p-0 py-2">{}</div>
 						</div>
 					</TabsContent>
 					<TabsContent
