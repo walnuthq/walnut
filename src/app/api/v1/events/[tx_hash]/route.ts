@@ -189,17 +189,17 @@ export const GET = async (
 
 			// Try to parse error message from stderr
 			let errorMessage = 'Failed to fetch events';
-			try {
-				const errorData = JSON.parse(execError.stderr || '{}');
-				errorMessage = errorData.error || errorMessage;
-			} catch {
-				errorMessage = execError.message || errorMessage;
+			if (execError.stderr) {
+				// Look for the "soldb: error:" part and everything after it
+				const errorMatch = execError.stderr.match(/(soldb: error: .+)/);
+				if (errorMatch) {
+					errorMessage = errorMatch[1];
+				}
 			}
 
 			return NextResponse.json(
 				{
-					error: errorMessage,
-					details: execError.stderr
+					error: errorMessage
 				},
 				{ status: 500 }
 			);
