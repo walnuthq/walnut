@@ -1,5 +1,5 @@
 import { getRpcUrlForTenantChain, getSupportedNetworks } from './get-supported-networks';
-import { AuthType, ChainMeta } from './types';
+import { AuthType } from './types';
 
 export enum ChainKey {
 	OP_MAIN = 'OP_MAIN',
@@ -70,7 +70,8 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		rpcEnvVar: '',
 		explorerApiEnvVar: '',
 		explorerType: 'blockscout_v2',
-		verificationType: 'blockscout'
+		verificationType: 'blockscout',
+		label: 'Arbitrum One RPC'
 	}
 };
 

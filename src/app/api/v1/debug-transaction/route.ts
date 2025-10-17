@@ -9,7 +9,7 @@ import {
 } from '@/app/api/v1/utils/transaction-processing';
 import { getServerSession } from '@/lib/auth-server';
 import { AuthType } from '@/lib/types';
-import { checkPublicNetworkRequest, getRpcUrlForChainOptimized, getDisplayNameForChainIdNumber } from '@/lib/public-network-utils';
+import { checkPublicNetworkRequest, getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
 import {
 	sanitizeError,
 	isSourcifyABILoaderError,
