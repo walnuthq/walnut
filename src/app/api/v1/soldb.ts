@@ -7,35 +7,19 @@ import {
 	type DebugCallResponse
 } from '@/app/api/v1/types';
 import { type Hash, type Hex, type Address } from 'viem';
-import { sanitizeError } from '@/lib/utils/error-sanitization';
-import { getLabelForChainIdNumber } from '@/lib/networks';
+import {
+	wrapError,
+	isSoldbNotInstalledError,
+	isTimeoutError,
+	isConnectionError,
+	SoldbTimeoutError,
+	RpcConnectionError,
+	SoldbExecutionError,
+	sanitizeErrorMessage
+} from '@/lib/errors';
+import type { AuthType } from '@/lib/types';
 
 const execFile = promisify(execFileCb);
-
-/**
- * Checks if an error is a timeout error from soldb
- * @param error - The error to check
- * @returns True if the error is a timeout error
- */
-const isTimeoutError = (error: any): boolean => {
-	if (!error) return false;
-
-	const message = error.message || String(error);
-	const stdout = error.stdout || '';
-
-	// Check for timeout indicators in the error message or stdout
-	return message.includes('timeout') || stdout.includes('timeout');
-};
-
-const isConnectionError = (error: any): boolean => {
-	if (!error) return false;
-
-	const message = error.message || String(error);
-	const stdout = error.stdout || '';
-
-	// Check for connection error indicators
-	return message.includes('connect') || stdout.includes('connect');
-};
 
 const flattenTraceCalls = (traceCalls: WalnutTraceCall[], parent: WalnutTraceCall) =>
 	traceCalls.reduce<WalnutTraceCall[]>((accumulator, currentValue) => {
@@ -118,7 +102,8 @@ const soldb = async ({
 	rpcUrl,
 	ethdebugDirs,
 	cwd,
-	chainId
+	chainId,
+	session
 }: {
 	command: 'trace' | 'simulate';
 	txHash?: Hash;
@@ -130,6 +115,7 @@ const soldb = async ({
 	ethdebugDirs?: string[];
 	cwd?: string;
 	chainId?: number;
+	session?: AuthType['session'] | null;
 }): Promise<DebugCallResponse> => {
 	const args =
 		command === 'trace'
@@ -171,18 +157,23 @@ const soldb = async ({
 		const rawDebugCallResponse = JSON.parse(stdout) as RawDebugCallResponse;
 		return rawDebugCallResponseToDebugCallResponse(rawDebugCallResponse);
 	} catch (err: any) {
-		console.error('soldb error:', err);
+		// Sanitize error message for logging
+		const sanitizedMessage = sanitizeErrorMessage(err.message || String(err));
+		console.error('soldb error:', sanitizedMessage);
+
+		// Check if soldb is not installed
+		if (isSoldbNotInstalledError(err)) {
+			throw wrapError(err, chainId, session);
+		}
 
 		// Check if this is a timeout error
 		if (isTimeoutError(err)) {
-			const chainLabel = chainId ? ` on ${getLabelForChainIdNumber(chainId)}` : '';
-			throw new Error(`Failed with execution timeout${chainLabel}.`);
+			throw new SoldbTimeoutError(chainId, session);
 		}
 
 		// Check if this is a connection error
 		if (isConnectionError(err)) {
-			const chainLabel = chainId ? getLabelForChainIdNumber(chainId) : 'network';
-			throw new Error(`Failed to connect to${chainLabel}`);
+			throw new RpcConnectionError(chainId, err, session);
 		}
 
 		// Extract the actual error message from soldb
@@ -212,8 +203,8 @@ const soldb = async ({
 			// If not JSON, use the original message
 		}
 
-		const chainLabel = chainId ? ` on ${getLabelForChainIdNumber(chainId)}` : '';
-		throw new Error(`${errorMessage}${chainLabel}`);
+		// Throw a structured SoldbExecutionError
+		throw new SoldbExecutionError(errorMessage, chainId, undefined, session);
 	}
 };
 

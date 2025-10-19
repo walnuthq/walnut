@@ -6,8 +6,7 @@ import createTracingClient, { flattenTraceCall } from '@/app/api/v1/tracing-clie
 import fetchContract from '@/app/api/v1/fetch-contract';
 import { compileContracts } from '@/app/api/v1/utils/contract-compiler';
 import { rm } from 'node:fs/promises';
-import { sanitizeError, isDebugTraceCallError } from '@/lib/utils/error-sanitization';
-import { getLabelForChainIdNumber } from '@/lib/networks';
+import { wrapError } from '@/lib/errors';
 
 export interface TransactionProcessingResult {
 	chainId: number;
@@ -32,29 +31,24 @@ export interface TransactionParameters {
 	blockNumber?: bigint;
 	nonce?: number;
 	chainId?: string;
+	session?: any;
 }
 
 /**
- * Wraps viem client calls with error sanitization
+ * Wraps viem client calls with error handling and sanitization
  */
 const safeViemCall = async <T>(
 	callFn: () => Promise<T>,
 	operation: string,
-	chainId?: number
+	chainId?: number,
+	session?: any
 ): Promise<T> => {
 	try {
 		return await callFn();
 	} catch (error: any) {
-		// Check for debug_traceCall errors
-		if (isDebugTraceCallError(error)) {
-			const networkName = chainId ? getLabelForChainIdNumber(chainId) : 'this network';
-			throw new Error(
-				`Debug tracing not supported on ${networkName}. The RPC endpoint does not support the debug_traceCall method.`
-			);
-		}
-
-		// For other errors, sanitize and re-throw
-		throw sanitizeError(error);
+		// Wrap the error into a structured error with session
+		const wrappedError = wrapError(error, chainId, session);
+		throw wrappedError;
 	}
 };
 
@@ -69,15 +63,26 @@ export const fetchTransactionAndTrace = async (
 	// Get chainId first to use in error messages
 	const chainId = parameters.chainId
 		? mapChainIdStringToNumber(parameters.chainId) ||
-		  (await safeViemCall(() => publicClient.getChainId(), 'getChainId'))
-		: await safeViemCall(() => publicClient.getChainId(), 'getChainId');
+		  (await safeViemCall(
+				() => publicClient.getChainId(),
+				'getChainId',
+				undefined,
+				parameters.session
+		  ))
+		: await safeViemCall(
+				() => publicClient.getChainId(),
+				'getChainId',
+				undefined,
+				parameters.session
+		  );
 
 	const [transaction, traceResult] = await Promise.all([
 		parameters.txHash
 			? safeViemCall(
 					() => publicClient.getTransaction({ hash: parameters.txHash }),
 					'getTransaction',
-					chainId as number
+					chainId as number,
+					parameters.session
 			  )
 			: {
 					to: parameters.to,
@@ -94,7 +99,8 @@ export const fetchTransactionAndTrace = async (
 							tracer: 'callTracer'
 						}),
 					'traceTransaction',
-					chainId as number
+					chainId as number,
+					parameters.session
 			  )
 			: safeViemCall(
 					() =>
@@ -108,7 +114,8 @@ export const fetchTransactionAndTrace = async (
 							tracer: 'callTracer'
 						}),
 					'traceCall',
-					chainId as number
+					chainId as number,
+					parameters.session
 			  )
 	]);
 
@@ -279,21 +286,16 @@ if (process.env.DISABLE_CLEANUP !== 'true') {
 export const processTransactionRequest = async (
 	parameters: TransactionParameters
 ): Promise<TransactionProcessingResult> => {
-	// Validate that chain_id is provided
+	const { ChainIdRequiredError, RpcUrlNotFoundError } = await import('@/lib/errors');
+
 	if (!parameters.chainId) {
-		throw new Error(
-			'chain_id is required. Every chain must have a valid RPC URL with debug options.'
-		);
+		throw new ChainIdRequiredError();
 	}
 
-	// Validate that RPC URL is provided and valid
 	if (!parameters.rpcUrl) {
-		throw new Error(
-			`RPC URL is required for chain ${parameters.chainId}. Every chain must have a valid RPC URL with debug options.`
-		);
+		throw new RpcUrlNotFoundError(parameters.chainId, parameters.session);
 	}
 
-	// Create clients
 	const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
 	const tracingClient = createTracingClient(parameters.rpcUrl);
 

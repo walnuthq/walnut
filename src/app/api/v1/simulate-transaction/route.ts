@@ -9,10 +9,12 @@ import {
 	cleanupOldTempDirs
 } from '@/app/api/v1/utils/transaction-processing';
 import {
-	sanitizeError,
-	isDebugTraceCallError,
-	isSourcifyABILoaderError
-} from '@/lib/utils/error-sanitization';
+	wrapError,
+	WalnutError,
+	ChainIdRequiredError,
+	AuthenticationRequiredError,
+	sanitizeErrorMessage
+} from '@/lib/errors';
 import { getServerSession } from '@/lib/auth-server';
 import { AuthType } from '@/lib/types';
 import { checkPublicNetworkRequest, getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
@@ -43,9 +45,7 @@ const getParameters = ({
 	if (withTxHash) {
 		// Validate chain_id is not undefined
 		if (!withTxHash.chain_id) {
-			throw new Error(
-				'chain_id is required for transaction simulation. Every chain must have a valid RPC URL with debug options.'
-			);
+			throw new ChainIdRequiredError('transaction simulation');
 		}
 
 		// Use optimized RPC URL resolution
@@ -54,11 +54,8 @@ const getParameters = ({
 		return { rpcUrl, txHash: withTxHash.tx_hash, chainId: withTxHash.chain_id };
 	}
 	if (withCalldata) {
-		// Validate chain_id is not undefined
 		if (!withCalldata.chain_id) {
-			throw new Error(
-				'chain_id is required for calldata simulation. Every chain must have a valid RPC URL with debug options.'
-			);
+			throw new ChainIdRequiredError('simulation');
 		}
 
 		// Use optimized RPC URL resolution
@@ -74,18 +71,30 @@ const getParameters = ({
 			chainId: withCalldata.chain_id
 		};
 	}
-	throw new Error('Invalid body');
+	throw new WalnutError(
+		'Invalid body',
+		'INVALID_REQUEST_BODY',
+		400,
+		'Invalid request body',
+		'Request must contain either transaction hash or calldata.'
+	);
 };
 
 export const POST = async (request: NextRequest) => {
-	const authSession = await getServerSession();
-
-	// Check if request is for a public network
 	const { isPublicNetworkRequest, body } = await checkPublicNetworkRequest(request);
+
+	const chainId = body?.WithCalldata?.chain_id || body?.WithTxHash?.chain_id;
+	if (!chainId) {
+		const chainIdError = new ChainIdRequiredError('transaction simulation');
+		return NextResponse.json(chainIdError.toJSON(), { status: chainIdError.statusCode });
+	}
+
+	const authSession = await getServerSession();
 
 	// Require authentication only for non-public network requests
 	if (!authSession && !isPublicNetworkRequest) {
-		return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+		const authError = new AuthenticationRequiredError(chainId, null);
+		return NextResponse.json(authError.toJSON(), { status: authError.statusCode });
 	}
 
 	const session = authSession?.session;
@@ -125,7 +134,8 @@ export const POST = async (request: NextRequest) => {
 			from: parameters.senderAddress,
 			blockNumber: parameters.blockNumber,
 			nonce: parameters.nonce,
-			chainId: parameters.chainId
+			chainId: parameters.chainId,
+			session
 		});
 
 		let walnutCliResult;
@@ -140,25 +150,28 @@ export const POST = async (request: NextRequest) => {
 				rpcUrl: parameters.rpcUrl,
 				ethdebugDirs,
 				cwd,
-				chainId
+				chainId,
+				session
 			};
 
 			walnutCliResult = await soldb(walnutParams);
 		} catch (walnutError: any) {
-			// Sanitize the error message to remove sensitive data like RPC URLs
-			const sanitizedError = sanitizeError(walnutError);
+			const wrappedError = wrapError(walnutError, chainId, session);
+
+			// Sanitize the error message for logging
+			const sanitizedMessage = sanitizeErrorMessage(wrappedError.message);
 			console.error(
-				`SOLDB failed. Compilation errors prevented debug data: ${compilationErrors.join(
+				`SOLDB failed. Compilation errors: ${compilationErrors.join(
 					'; '
-				)}. Execution error: ${sanitizedError.message}`
+				)}. Error: ${sanitizedMessage}`
 			);
+
 			// If we have compilation errors, include them in the error message
 			if (compilationErrors.length > 0) {
-				const errorMsg = `${sanitizedError.message}`;
-				return NextResponse.json({ error: errorMsg }, { status: 400 });
+				return NextResponse.json(wrappedError.toJSON(), { status: wrappedError.statusCode });
 			}
 
-			throw walnutError; // Re-throw if it's not related to compilation
+			throw wrappedError; // Re-throw if it's not related to compilation
 		}
 
 		const { traceCall, steps, contracts, status, error } = walnutCliResult;
@@ -191,46 +204,13 @@ export const POST = async (request: NextRequest) => {
 		// anvil.kill();
 		return NextResponse.json(response);
 	} catch (err: any) {
-		// Handle SourcifyABILoader errors specifically to avoid logging full call traces
-		if (isSourcifyABILoaderError(err)) {
-			console.error('SOURCIFY ABI LOADER ERROR:', err.message);
-			return NextResponse.json(
-				{
-					error: 'Failed to load contract ABI from Sourcify',
-					details: 'Contract verification or ABI loading failed'
-				},
-				{ status: 400 }
-			);
-		}
+		const wrappedError = wrapError(err, undefined, session);
 
-		// Handle debug_traceCall method not supported errors
-		if (isDebugTraceCallError(err)) {
-			// Sanitize the error message to remove API keys and sensitive data
-			const sanitizedError = sanitizeError(err);
-			console.error('SIMULATE TRANSACTION ERROR:', sanitizedError.message);
-			return NextResponse.json(
-				{
-					error: sanitizedError.message,
-					details: 'The RPC endpoint does not support debug_traceCall method'
-				},
-				{ status: 400 }
-			);
-		}
+		// Sanitize error message for logging
+		const sanitizedMessage = sanitizeErrorMessage(wrappedError.message);
+		console.error('SIMULATE TRANSACTION ERROR:', sanitizedMessage);
 
-		// Handle other errors with limited logging - sanitize error message
-		const sanitizedError = sanitizeError(err);
-		console.error('SIMULATE TRANSACTION ERROR:', sanitizedError.message);
-
-		// Don't log the full error object to avoid call traces
-		if (err?.stack) {
-			console.error('Error stack trace available (not logged for brevity)');
-		}
-
-		return NextResponse.json(
-			{
-				error: sanitizedError.message || 'Unknown error occurred during transaction simulation'
-			},
-			{ status: 400 }
-		);
+		// Return structured error response
+		return NextResponse.json(wrappedError.toJSON(), { status: wrappedError.statusCode });
 	}
 };

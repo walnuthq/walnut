@@ -14,6 +14,8 @@ export type ChainMeta = {
 	explorerType?: 'blockscout_v2' | 'etherscan_proxy';
 	// Preferred verification method for contracts
 	verificationType: 'sourcify' | 'blockscout';
+	// Provider label for better RPC identification (e.g., "Optimism Mainnet Alchemy RPC")
+	label?: string;
 };
 
 export enum ChainId {

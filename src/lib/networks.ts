@@ -1,5 +1,6 @@
 import { getRpcUrlForTenantChain, getSupportedNetworks } from './get-supported-networks';
 import { AuthType } from './types';
+import { NetworkNotSupportedError, RpcUrlNotFoundError } from './errors';
 
 export enum ChainKey {
 	OP_MAIN = 'OP_MAIN',
@@ -220,7 +221,7 @@ export function getRpcUrlForChainSafe(
 ): string {
 	const chainKey = resolveChainKey(chainIdentifier, session);
 	if (!chainKey) {
-		throw new Error(`Invalid chain identifier: ${chainIdentifier}`);
+		throw new NetworkNotSupportedError(chainIdentifier);
 	}
 
 	const tenantRpcUrl = getRpcUrlForTenantChain(chainKey, session);
@@ -230,9 +231,7 @@ export function getRpcUrlForChainSafe(
 
 	const rpcUrl = getRpcUrlForChain(chainKey);
 	if (!rpcUrl) {
-		throw new Error(
-			`No RPC URL found for chain ${chainKey}. Every chain must have a valid RPC URL with debug options.`
-		);
+		throw new RpcUrlNotFoundError(chainKey, session);
 	}
 
 	return rpcUrl;

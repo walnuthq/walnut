@@ -16,7 +16,8 @@ export function getSupportedNetworks(session: AuthType['session']): ChainMeta[] 
 				displayName: network.displayName,
 				chainId: network.chainId,
 				rpcEnvVar: network.rpcUrl, // Direktno koristimo RPC URL iz baze
-				verificationType: 'blockscout' as const
+				verificationType: 'blockscout' as const,
+				label: network.displayName // For tenant networks, label is same as displayName
 			};
 		}) || [];
 
