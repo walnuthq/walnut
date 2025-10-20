@@ -164,6 +164,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 			(tc: any) =>
 				tc.type === 'CALL' ||
 				tc.type === 'DELEGATECALL' ||
+				tc.type === 'STATICCALL' ||
 				tc.type === 'ENTRY' ||
 				tc.type === 'CREATE'
 		)
@@ -190,6 +191,14 @@ const traceCallResponseToTransactionSimulationResult = ({
 				argumentsName: processArrayReplaceNulls(outputs.argumentsName || [])
 			};
 
+			// Map trace call type to CallType enum
+			let callType = CallType.CALL;
+			if (tc.type === 'DELEGATECALL') {
+				callType = CallType.DELEGATECALL;
+			} else if (tc.type === 'STATICCALL') {
+				callType = CallType.STATICCALL;
+			}
+
 			const contractCall: ContractCall = {
 				callId: tc.callId,
 				parentCallId: tc.parentCallId,
@@ -205,7 +214,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 					calldata: [tc.input || 'unknown'],
 					storageAddress: contractAddress,
 					callerAddress: tc.from,
-					callType: CallType.CALL,
+					callType: callType,
 					initialGas: Number(tc.gas) || 0
 				},
 				result: {
@@ -258,6 +267,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 				parent &&
 				parent.type !== 'CALL' &&
 				parent.type !== 'DELEGATECALL' &&
+				parent.type !== 'STATICCALL' &&
 				parent.type !== 'ENTRY' &&
 				parent.type !== 'CREATE'
 			) {
@@ -297,7 +307,10 @@ const traceCallResponseToTransactionSimulationResult = ({
 				const child = traceMap[id];
 				return (
 					child &&
-					(child.type === 'INTERNALCALL' || child.type === 'CALL' || child.type === 'DELEGATECALL')
+					(child.type === 'INTERNALCALL' ||
+						child.type === 'CALL' ||
+						child.type === 'DELEGATECALL' ||
+						child.type === 'STATICCALL')
 				);
 			});
 			const functionCall: FunctionCall = {
