@@ -135,7 +135,7 @@ export const GET = async (
 		}
 
 		// Build soldb list-events command with ethdebug-dir parameters
-		let command = `soldb list-events ${tx_hash} --json`;
+		let command = `soldb list-events ${tx_hash} --json-events`;
 
 		// Add ethdebug-dir parameters if available
 		if (ethdebugDirs && ethdebugDirs.length > 0) {
@@ -147,6 +147,12 @@ export const GET = async (
 		// Add RPC URL if available
 		if (rpcUrl) {
 			command += ` --rpc ${rpcUrl}`;
+		}
+
+		// Log the command being executed (similar to simulate and trace)
+		console.log('Executing soldb command:', command);
+		if (cwd) {
+			console.log('Working directory:', cwd);
 		}
 
 		try {
