@@ -6,6 +6,7 @@ import createTracingClient, { flattenTraceCall } from '@/app/api/v1/tracing-clie
 import fetchContract from '@/app/api/v1/fetch-contract';
 import { compileContracts } from '@/app/api/v1/utils/contract-compiler';
 import { rm } from 'node:fs/promises';
+import { wrapError } from '@/lib/errors';
 
 export interface TransactionProcessingResult {
 	chainId: number;
@@ -30,7 +31,26 @@ export interface TransactionParameters {
 	blockNumber?: bigint;
 	nonce?: number;
 	chainId?: string;
+	session?: any;
 }
+
+/**
+ * Wraps viem client calls with error handling and sanitization
+ */
+const safeViemCall = async <T>(
+	callFn: () => Promise<T>,
+	operation: string,
+	chainId?: number,
+	session?: any
+): Promise<T> => {
+	try {
+		return await callFn();
+	} catch (error: any) {
+		// Wrap the error into a structured error with session
+		const wrappedError = wrapError(error, chainId, session);
+		throw wrappedError;
+	}
+};
 
 /**
  * Fetches transaction and trace data from the blockchain
@@ -40,12 +60,30 @@ export const fetchTransactionAndTrace = async (
 	publicClient: any,
 	tracingClient: any
 ) => {
-	const [chainId, transaction, traceResult] = await Promise.all([
-		parameters.chainId
-			? mapChainIdStringToNumber(parameters.chainId) || publicClient.getChainId()
-			: publicClient.getChainId(),
+	// Get chainId first to use in error messages
+	const chainId = parameters.chainId
+		? mapChainIdStringToNumber(parameters.chainId) ||
+		  (await safeViemCall(
+				() => publicClient.getChainId(),
+				'getChainId',
+				undefined,
+				parameters.session
+		  ))
+		: await safeViemCall(
+				() => publicClient.getChainId(),
+				'getChainId',
+				undefined,
+				parameters.session
+		  );
+
+	const [transaction, traceResult] = await Promise.all([
 		parameters.txHash
-			? publicClient.getTransaction({ hash: parameters.txHash })
+			? safeViemCall(
+					() => publicClient.getTransaction({ hash: parameters.txHash }),
+					'getTransaction',
+					chainId as number,
+					parameters.session
+			  )
 			: {
 					to: parameters.to,
 					blockNumber: parameters.blockNumber,
@@ -54,23 +92,36 @@ export const fetchTransactionAndTrace = async (
 					transactionIndex: 0
 			  },
 		parameters.txHash
-			? tracingClient.traceTransaction({
-					transactionHash: parameters.txHash,
-					tracer: 'callTracer'
-			  })
-			: tracingClient.traceCall({
-					from: parameters.from,
-					to: parameters.to,
-					data: parameters.calldata,
-					blockNrOrHash: parameters.blockNumber
-						? `0x${parameters.blockNumber.toString(16)}`
-						: 'latest',
-					tracer: 'callTracer'
-			  })
+			? safeViemCall(
+					() =>
+						tracingClient.traceTransaction({
+							transactionHash: parameters.txHash,
+							tracer: 'callTracer'
+						}),
+					'traceTransaction',
+					chainId as number,
+					parameters.session
+			  )
+			: safeViemCall(
+					() =>
+						tracingClient.traceCall({
+							from: parameters.from,
+							to: parameters.to,
+							data: parameters.calldata,
+							blockNrOrHash: parameters.blockNumber
+								? `0x${parameters.blockNumber.toString(16)}`
+								: 'latest',
+							tracer: 'callTracer'
+						}),
+					'traceCall',
+					chainId as number,
+					parameters.session
+			  )
 	]);
 
 	// Validate transaction and trace result
-	if (!transaction.to && traceResult && traceResult.type !== 'CREATE') {
+	const tx = transaction as any; // Type assertion for transaction object
+	if (!tx.to && traceResult && (traceResult as any).type !== 'CREATE') {
 		throw new Error(
 			'ERROR: eth_getTransactionByHash failed - missing to address and not a CREATE transaction'
 		);
@@ -79,7 +130,7 @@ export const fetchTransactionAndTrace = async (
 		throw new Error('ERROR: debug_traceTransaction/debug_traceCall failed');
 	}
 
-	return { chainId, transaction, traceResult };
+	return { chainId: chainId as number, transaction: tx, traceResult };
 };
 
 /**
@@ -235,21 +286,16 @@ if (process.env.DISABLE_CLEANUP !== 'true') {
 export const processTransactionRequest = async (
 	parameters: TransactionParameters
 ): Promise<TransactionProcessingResult> => {
-	// Validate that chain_id is provided
+	const { ChainIdRequiredError, RpcUrlNotFoundError } = await import('@/lib/errors');
+
 	if (!parameters.chainId) {
-		throw new Error(
-			'chain_id is required. Every chain must have a valid RPC URL with debug options.'
-		);
+		throw new ChainIdRequiredError();
 	}
 
-	// Validate that RPC URL is provided and valid
 	if (!parameters.rpcUrl) {
-		throw new Error(
-			`RPC URL is required for chain ${parameters.chainId}. Every chain must have a valid RPC URL with debug options.`
-		);
+		throw new RpcUrlNotFoundError(parameters.chainId, parameters.session);
 	}
 
-	// Create clients
 	const publicClient = createPublicClient({ transport: http(parameters.rpcUrl) });
 	const tracingClient = createTracingClient(parameters.rpcUrl);
 

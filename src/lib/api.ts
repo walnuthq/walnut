@@ -47,13 +47,24 @@ export function fetchSimulations({
 }
 
 export async function fetchSimulation(simulationId: string) {
-	const res = await fetch(`${API_URL}/simulation/${simulationId}`);
-	if (!res.ok) throw new Error('Failed to fetch data');
-	return (await res.json()) as SimulationResponse;
+	try {
+		const res = await fetch(`${API_URL}/simulation/${simulationId}`);
+		if (!res.ok) throw new Error('Failed to fetch simulation data');
+		return (await res.json()) as SimulationResponse;
+	} catch (error: any) {
+		console.error('Error fetching simulation:', error);
+
+		throw error;
+	}
 }
 
 export async function fetchTransaction(chainId: string, txHash: string) {
-	const res = await fetch(`${API_URL}/${chainId}/tx/${txHash}`);
-	if (!res.ok) throw new Error('Failed to fetch data');
-	return (await res.json()) as Transaction;
+	try {
+		const res = await fetch(`${API_URL}/${chainId}/tx/${txHash}`);
+		if (!res.ok) throw new Error('Failed to fetch transaction data');
+		return (await res.json()) as Transaction;
+	} catch (error: any) {
+		console.log('error:', error);
+		throw error;
+	}
 }

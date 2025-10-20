@@ -10,6 +10,13 @@ import {
 import { getServerSession } from '@/lib/auth-server';
 import { AuthType } from '@/lib/types';
 import { checkPublicNetworkRequest, getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
+import {
+	wrapError,
+	WalnutError,
+	ChainIdRequiredError,
+	AuthenticationRequiredError,
+	sanitizeErrorMessage
+} from '@/lib/errors';
 
 type WithTxHash = {
 	tx_hash: Hash;
@@ -42,9 +49,7 @@ const getParameters = ({
 	if (withTxHash) {
 		// Validate chain_id is not undefined
 		if (!withTxHash.chain_id) {
-			throw new Error(
-				'chain_id is required for debug transaction. Every chain must have a valid RPC URL with debug options.'
-			);
+			throw new ChainIdRequiredError('debug transaction');
 		}
 
 		// Use optimized RPC URL resolution
@@ -55,9 +60,7 @@ const getParameters = ({
 	if (withCalldata) {
 		// Validate chain_id is not undefined
 		if (!withCalldata.chain_id) {
-			throw new Error(
-				'chain_id is required for debug calldata. Every chain must have a valid RPC URL with debug options.'
-			);
+			throw new ChainIdRequiredError('debug calldata');
 		}
 
 		// Use optimized RPC URL resolution
@@ -79,18 +82,33 @@ const getParameters = ({
 			transactionHash: withCalldata.transaction_hash
 		};
 	}
-	throw new Error('Invalid body');
+	throw new WalnutError(
+		'Invalid body',
+		'INVALID_REQUEST_BODY',
+		400,
+		'Invalid request body',
+		'Request must contain either transaction hash or calldata.'
+	);
 };
 
 export const POST = async (request: NextRequest) => {
-	const authSession = await getServerSession();
-
-	// Check if request is for a public network
+	// Check if request is for a public network (this also parses the body)
 	const { isPublicNetworkRequest, body } = await checkPublicNetworkRequest(request);
+
+	// Get chainId from the nested structure
+	const chainId = body?.WithCalldata?.chain_id || body?.WithTxHash?.chain_id;
+
+	if (!chainId) {
+		const chainIdError = new ChainIdRequiredError('transaction debugging');
+		return NextResponse.json(chainIdError.toJSON(), { status: chainIdError.statusCode });
+	}
+
+	const authSession = await getServerSession();
 
 	// Require authentication only for non-public network requests
 	if (!authSession && !isPublicNetworkRequest) {
-		return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+		const authError = new AuthenticationRequiredError(chainId, null);
+		return NextResponse.json(authError.toJSON(), { status: authError.statusCode });
 	}
 
 	const session = authSession?.session;
@@ -130,7 +148,8 @@ export const POST = async (request: NextRequest) => {
 			from: parameters.senderAddress,
 			blockNumber: parameters.blockNumber,
 			nonce: parameters.nonce,
-			chainId: parameters.chainId
+			chainId: parameters.chainId,
+			session
 		});
 
 		try {
@@ -143,7 +162,9 @@ export const POST = async (request: NextRequest) => {
 				blockNumber: parameters.blockNumber,
 				rpcUrl: parameters.rpcUrl,
 				ethdebugDirs,
-				cwd
+				cwd,
+				chainId,
+				session
 			});
 
 			const { traceCall, steps, contracts, status, error } = soldbResult;
@@ -178,45 +199,20 @@ export const POST = async (request: NextRequest) => {
 			});
 			return NextResponse.json(response);
 		} catch (e: any) {
-			// Handle soldb errors with limited logging to avoid call traces
-			console.error('Error running soldb:', e?.message || String(e));
-			return NextResponse.json(
-				{
-					error: 'Failed to run soldb',
-					details: e?.message || 'Unknown soldb error'
-				},
-				{ status: 500 }
-			);
+			const wrappedError = wrapError(e, chainId, session);
+
+			// Sanitize error message for logging
+			const sanitizedMessage = sanitizeErrorMessage(wrappedError.message);
+			console.error('Error running soldb:', sanitizedMessage);
+
+			return NextResponse.json(wrappedError.toJSON(), { status: wrappedError.statusCode });
 		}
 	} catch (err: any) {
-		// Handle SourcifyABILoader errors specifically to avoid logging full call traces
-		if (
-			err?.message?.includes('SourcifyABILoaderError') ||
-			err?.message?.includes('SourcifyABILoader')
-		) {
-			console.error('SOURCIFY ABI LOADER ERROR:', err.message);
-			return NextResponse.json(
-				{
-					error: 'Failed to load contract ABI from Sourcify',
-					details: 'Contract verification or ABI loading failed'
-				},
-				{ status: 400 }
-			);
-		}
+		const wrappedError = wrapError(err, undefined, session);
 
-		// Handle other errors with limited logging
-		console.error('DEBUG TRANSACTION ERROR:', err?.message || String(err));
-
-		// Don't log the full error object to avoid call traces
-		if (err?.stack) {
-			console.error('Error stack trace available (not logged for brevity)');
-		}
-
-		return NextResponse.json(
-			{
-				error: err?.message || 'Unknown error occurred during debug transaction processing'
-			},
-			{ status: 400 }
-		);
+		// Sanitize error message for logging
+		const sanitizedMessage = sanitizeErrorMessage(wrappedError.message);
+		// Return structured error response
+		return NextResponse.json(wrappedError.toJSON(), { status: wrappedError.statusCode });
 	}
 };

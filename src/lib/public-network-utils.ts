@@ -2,6 +2,11 @@ import { ChainKey, CHAINS_META, getRpcUrlForChain, getRpcUrlForChainSafe } from 
 import { getSupportedNetworks } from './get-supported-networks';
 import { AuthType } from './types';
 import { NextResponse } from 'next/server';
+import {
+	NetworkNotSupportedError,
+	RpcUrlNotFoundError,
+	AuthenticationRequiredError
+} from './errors';
 
 // Define publicly accessible networks that don't require authentication
 export const PUBLIC_NETWORKS = [ChainKey.OP_SEPOLIA, ChainKey.OP_MAIN];
@@ -108,7 +113,7 @@ export function getRpcUrlForChainOptimized(
 	const chainKey = resolveChainKeyFromIdentifier(chainIdentifier, session);
 
 	if (!chainKey) {
-		throw new Error(`Invalid chain identifier: ${chainIdentifier}`);
+		throw new NetworkNotSupportedError(chainIdentifier);
 	}
 
 	// Check if it's a public network
@@ -116,13 +121,13 @@ export function getRpcUrlForChainOptimized(
 		// Public network - use direct RPC URL
 		const directRpcUrl = getRpcUrlForChain(chainKey);
 		if (!directRpcUrl) {
-			throw new Error(`No RPC URL configured for public network ${chainKey}`);
+			throw new RpcUrlNotFoundError(chainKey, session);
 		}
 		return directRpcUrl;
 	} else if (session) {
 		// Non-public network - require session
 		return getRpcUrlForChainSafe(chainIdentifier, session);
 	} else {
-		throw new Error(`Authentication required for network ${chainIdentifier}`);
+		throw new AuthenticationRequiredError(chainIdentifier, session);
 	}
 }
