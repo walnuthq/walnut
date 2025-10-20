@@ -68,7 +68,9 @@ export function SimulateTransactionPage({
 		simulationPayload?.calls?.length || 1
 	);
 
-	const [_contractCalls, _setContractCalls] = useState<SimpleContractCall[]>([]);
+	const [_contractCalls, _setContractCalls] = useState<SimpleContractCall[]>(
+		simulationPayload?.calls || []
+	);
 
 	const [_contractCallsFunctions, _setContractCallsFunctions] = useState<{ [key: string]: any }>(
 		{}

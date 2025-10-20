@@ -36,13 +36,16 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 	const [trackingActive, setTrackingActive] = useState<boolean>(true);
 	const [trackingFlagLoaded, setTrackingFlagLoaded] = useState<boolean>(false);
 
-	// Load networks from server (includes tenant networks from session)
+	// Load networks from server (static networks always, + tenant networks if logged in)
 	useEffect(() => {
 		let cancelled = false;
 		const loadNetworks = async () => {
 			try {
 				const res = await fetch('/api/v1/networks', { cache: 'no-store' });
-				if (!res.ok) return;
+				if (!res.ok) {
+					console.error('Failed to fetch networks, status:', res.status);
+					return;
+				}
 				const json = (await res.json()) as { networks: Network[] };
 				if (!cancelled && json?.networks) {
 					setNetworks(json.networks);
@@ -52,9 +55,12 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 			}
 		};
 
-		if (isLogged) {
-			loadNetworks();
-		}
+		// Always load networks (static if not logged in, static + tenant if logged in)
+		loadNetworks();
+
+		return () => {
+			cancelled = true;
+		};
 	}, [isLogged]);
 
 	useEffect(() => {
