@@ -222,7 +222,6 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 							) : (
 								<div className="px-4 py-2 text-sm">Transaction hash not available</div>
 							)}
-							<div className="p-0 py-2">{}</div>
 						</div>
 					</TabsContent>
 					<TabsContent
