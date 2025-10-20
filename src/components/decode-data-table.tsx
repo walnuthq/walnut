@@ -91,7 +91,7 @@ export function DecodeDataTable({
 			}
 		} else {
 			const formattedValue = formatValue(value);
-			return value.startsWith('0x') ? (
+			return typeof value === 'string' && value.startsWith('0x') ? (
 				<CopyToClipboardElement
 					value={formattedValue}
 					className="py-1 px-0"
