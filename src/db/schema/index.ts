@@ -16,6 +16,8 @@ export const tenantRpcConfig = schema.table('tenantrpcconfig', {
 	rpcUrl: text('rpcUrl').notNull(),
 	chainId: integer('chainId').notNull(),
 	displayName: text('displayName'),
+	nativeToken: text('nativeToken'),
+	nativeTokenSymbol: text('nativeTokenSymbol'),
 	createdAt: timestamp('createdAt').defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt').defaultNow().notNull()
 });

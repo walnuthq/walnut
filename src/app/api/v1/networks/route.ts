@@ -4,11 +4,9 @@ import { getSupportedNetworks } from '@/lib/get-supported-networks';
 
 export const GET = async (_request: NextRequest) => {
 	const authSession = await getServerSession();
-	if (!authSession) {
-		return NextResponse.json({ networks: [] });
-	}
 
-	const supported = getSupportedNetworks(authSession.session);
+	// Get supported networks (static + tenant if logged in)
+	const supported = getSupportedNetworks(authSession?.session || null);
 	const networks = supported
 		.map((n) => {
 			const rpcUrl = n.rpcEnvVar.startsWith('http')
@@ -30,8 +28,8 @@ export const GET = async (_request: NextRequest) => {
 	}[];
 
 	// Deduplicate networks by networkName to prevent duplicates
-	const uniqueNetworks = networks.filter((network, index, self) => 
-		index === self.findIndex(n => n.networkName === network.networkName)
+	const uniqueNetworks = networks.filter(
+		(network, index, self) => index === self.findIndex((n) => n.networkName === network.networkName)
 	);
 
 	return NextResponse.json({ networks: uniqueNetworks });

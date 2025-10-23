@@ -242,17 +242,14 @@ export const compileContracts = async (
 							);
 						}
 					} catch (debugError) {
-						console.error(
-							`❌ Debug directory creation failed for ${contract.address}:`,
-							debugError
-						);
+						console.error(`Debug directory creation failed for ${contract.address}:`, debugError);
 						compilationErrors.push(`Contract ${contract.address}: Debug directory creation failed`);
 					}
 				} catch (solcError: any) {
 					const errorMsg = `Contract ${contract.address}: Compilation failed - ${
 						solcError?.message || String(solcError)
 					}`;
-					console.error(`❌ ${errorMsg}`);
+					console.error(`${errorMsg}`);
 					// Update contract compilation status
 					contract.compilationStatus = 'failed';
 					contract.compilationError = errorMsg;

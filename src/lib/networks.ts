@@ -1,5 +1,6 @@
 import { getRpcUrlForTenantChain, getSupportedNetworks } from './get-supported-networks';
-import { AuthType, ChainMeta } from './types';
+import { AuthType } from './types';
+import { NetworkNotSupportedError, RpcUrlNotFoundError } from './errors';
 
 export enum ChainKey {
 	OP_MAIN = 'OP_MAIN',
@@ -10,20 +11,39 @@ export enum ChainKey {
 	ARBITRUM_SEPOLIA = 'ARBITRUM_SEPOLIA'
 }
 
+export type ChainMeta = {
+	key: ChainKey;
+	displayName: string;
+	chainId: number;
+	// Name of the env var that holds the RPC URL (do NOT put the URL here)
+	rpcEnvVar: string;
+	// Optional explorer API base env var name (Blockscout/Etherscan-compatible)
+	explorerApiEnvVar?: string;
+	// 'blockscout_v2' -> /api/v2/transactions/:hash
+	// 'etherscan_proxy' -> /api?module=proxy&action=eth_getTransactionByHash&txhash=:hash
+	explorerType?: 'blockscout_v2' | 'etherscan_proxy';
+	// Preferred verification method for contracts
+	verificationType: 'sourcify' | 'blockscout';
+	// Provider label for better rpc identification
+	label: string;
+};
+
 export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 	[ChainKey.OP_MAIN]: {
 		key: ChainKey.OP_MAIN,
 		displayName: 'OP Mainnet',
 		chainId: 10,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_MAIN',
-		verificationType: 'sourcify'
+		verificationType: 'sourcify',
+		label: 'Optimism Mainnet Alchemy RPC'
 	},
 	[ChainKey.OP_SEPOLIA]: {
 		key: ChainKey.OP_SEPOLIA,
 		displayName: 'OP Sepolia',
 		chainId: 11155420,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_SEPOLIA',
-		verificationType: 'sourcify'
+		verificationType: 'sourcify',
+		label: 'Optimism Sepolia Alchemy RPC'
 	},
 	[ChainKey.POWERLOOM_DEVNET]: {
 		key: ChainKey.POWERLOOM_DEVNET,
@@ -32,7 +52,8 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_POWERLOOM_DEVNET',
 		explorerApiEnvVar: 'NEXT_PUBLIC_EXPLORER_API_POWERLOOM_DEVNET',
 		explorerType: 'blockscout_v2',
-		verificationType: 'blockscout'
+		verificationType: 'blockscout',
+		label: 'PowerLoom Devnet RPC'
 	},
 	[ChainKey.POWERLOOM_MAINNET]: {
 		key: ChainKey.POWERLOOM_MAINNET,
@@ -41,21 +62,24 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_POWERLOOM_MAINNET',
 		explorerApiEnvVar: 'NEXT_PUBLIC_EXPLORER_API_POWERLOOM_MAINNET',
 		explorerType: 'blockscout_v2',
-		verificationType: 'blockscout'
+		verificationType: 'blockscout',
+		label: 'PowerLoom Mainnet RPC'
 	},
 	[ChainKey.ARBITRUM_ONE]: {
 		key: ChainKey.ARBITRUM_ONE,
 		displayName: 'Arbitrum One',
 		chainId: 42161,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_ARBITRUM_ONE',
-		verificationType: 'sourcify'
+		verificationType: 'sourcify',
+		label: 'Arbitrum One RPC'
 	},
 	[ChainKey.ARBITRUM_SEPOLIA]: {
 		key: ChainKey.ARBITRUM_SEPOLIA,
 		displayName: 'Arbitrum Sepolia',
 		chainId: 421614,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_ARBITRUM_SEPOLIA',
-		verificationType: 'sourcify'
+		verificationType: 'sourcify',
+		label: 'Arbitrum Sepolia RPC'
 	}
 };
 
@@ -84,6 +108,19 @@ export function getDisplayNameForChain(key: ChainKey): string {
 	return CHAINS_META[key]?.displayName ?? key;
 }
 
+export function getLabelForChain(key: ChainKey): string {
+	return CHAINS_META[key]?.label ?? key;
+}
+
+export function getLabelForChainIdNumber(chainIdNumber: number): string {
+	const chainKey = getChainKeyByNumber(chainIdNumber);
+	if (chainKey) {
+		return getLabelForChain(chainKey);
+	}
+	// Fallback for unmapped chain IDs
+	return `Chain ${chainIdNumber}`;
+}
+
 export function mapChainIdToChainKey(chainId: string): ChainKey | undefined {
 	const mapping: Record<string, ChainKey> = {
 		OP_MAIN: ChainKey.OP_MAIN,
@@ -103,6 +140,20 @@ export function getDisplayNameForChainId(chainId: string): string {
 	}
 	// Fallback for unmapped chain IDs (like Starknet chains)
 	return chainId;
+}
+
+/**
+ * Gets the display name for a chain ID number
+ * @param chainIdNumber - The numeric chain ID
+ * @returns The display name for the chain or the chain ID as string if not found
+ */
+export function getDisplayNameForChainIdNumber(chainIdNumber: number): string {
+	const chainKey = getChainKeyByNumber(chainIdNumber);
+	if (chainKey) {
+		return getDisplayNameForChain(chainKey);
+	}
+	// Fallback for unmapped chain IDs
+	return chainIdNumber.toString();
 }
 
 export function getExplorerApiForChain(
@@ -179,7 +230,7 @@ export function getRpcUrlForChainSafe(
 ): string {
 	const chainKey = resolveChainKey(chainIdentifier, session);
 	if (!chainKey) {
-		throw new Error(`Invalid chain identifier: ${chainIdentifier}`);
+		throw new NetworkNotSupportedError(chainIdentifier);
 	}
 
 	const tenantRpcUrl = getRpcUrlForTenantChain(chainKey, session);
@@ -189,9 +240,7 @@ export function getRpcUrlForChainSafe(
 
 	const rpcUrl = getRpcUrlForChain(chainKey);
 	if (!rpcUrl) {
-		throw new Error(
-			`No RPC URL found for chain ${chainKey}. Every chain must have a valid RPC URL with debug options.`
-		);
+		throw new RpcUrlNotFoundError(chainKey, session);
 	}
 
 	return rpcUrl;

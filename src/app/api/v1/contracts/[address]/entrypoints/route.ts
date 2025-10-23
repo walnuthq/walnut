@@ -5,24 +5,33 @@ import fetchContract from '@/app/api/v1/fetch-contract';
 import { type Contract } from '@/app/api/v1/types';
 import { mapChainIdStringToNumber } from '@/lib/utils';
 import { getServerSession } from '@/lib/auth-server';
+import {
+	wrapError,
+	ChainIdRequiredError,
+	AuthenticationRequiredError,
+	NetworkNotSupportedError
+} from '@/lib/errors';
 
 export const GET = async (
 	request: NextRequest,
 	{ params }: { params: Promise<{ address: string }> }
 ) => {
+	// Get chainId early for better error messages
+	const chainId = request.nextUrl.searchParams.get('chain_id');
+
 	const authSession = await getServerSession();
 	if (!authSession) {
-		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		const authError = new AuthenticationRequiredError(chainId || undefined, null);
+		return NextResponse.json(authError.toJSON(), { status: authError.statusCode });
 	}
 
 	const session = authSession.session; // Extract the session object
 
 	const { address } = await params;
 	try {
-		const chainId = request.nextUrl.searchParams.get('chain_id');
-
 		if (!chainId) {
-			return NextResponse.json({ error: 'chain_id is required' }, { status: 400 });
+			const chainIdError = new ChainIdRequiredError('entrypoint retrieval');
+			return NextResponse.json(chainIdError.toJSON(), { status: chainIdError.statusCode });
 		}
 
 		// Get RPC URL for the chain
@@ -41,7 +50,8 @@ export const GET = async (
 		const chainIdNumber = mapChainIdStringToNumber(chainId);
 		console.log('Mapped chainIdNumber:', chainIdNumber);
 		if (!chainIdNumber) {
-			return NextResponse.json({ error: `Unsupported chain ID: ${chainId}` }, { status: 400 });
+			const networkError = new NetworkNotSupportedError(chainId);
+			return NextResponse.json(networkError.toJSON(), { status: networkError.statusCode });
 		}
 
 		// Fetch contract data directly
@@ -85,10 +95,9 @@ export const GET = async (
 			verificationSource: contract.verificationSource
 		});
 	} catch (error: any) {
-		console.error('Error fetching contract entrypoints:', error);
-		return NextResponse.json(
-			{ error: 'Failed to fetch contract entrypoints', details: error.message },
-			{ status: 500 }
-		);
+		// Wrap error into structured error
+		const wrappedError = wrapError(error);
+		console.error('Error fetching contract entrypoints:', wrappedError.message);
+		return NextResponse.json(wrappedError.toJSON(), { status: wrappedError.statusCode });
 	}
 };
