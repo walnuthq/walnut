@@ -6,7 +6,8 @@ export enum ChainKey {
 	OP_SEPOLIA = 'OP_SEPOLIA',
 	POWERLOOM_DEVNET = 'POWERLOOM_DEVNET',
 	POWERLOOM_MAINNET = 'POWERLOOM_MAINNET',
-	ARBITRUM_ONE = 'ARBITRUM_ONE'
+	ARBITRUM_ONE = 'ARBITRUM_ONE',
+	ARBITRUM_SEPOLIA = 'ARBITRUM_SEPOLIA'
 }
 
 export const CHAINS_META: Record<ChainKey, ChainMeta> = {
@@ -46,10 +47,15 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		key: ChainKey.ARBITRUM_ONE,
 		displayName: 'Arbitrum One',
 		chainId: 42161,
-		rpcEnvVar: '',
-		explorerApiEnvVar: '',
-		explorerType: 'blockscout_v2',
-		verificationType: 'blockscout'
+		rpcEnvVar: 'NEXT_PUBLIC_RPC_ARBITRUM_ONE',
+		verificationType: 'sourcify'
+	},
+	[ChainKey.ARBITRUM_SEPOLIA]: {
+		key: ChainKey.ARBITRUM_SEPOLIA,
+		displayName: 'Arbitrum Sepolia',
+		chainId: 421614,
+		rpcEnvVar: 'NEXT_PUBLIC_RPC_ARBITRUM_SEPOLIA',
+		verificationType: 'sourcify'
 	}
 };
 
@@ -83,7 +89,9 @@ export function mapChainIdToChainKey(chainId: string): ChainKey | undefined {
 		OP_MAIN: ChainKey.OP_MAIN,
 		OP_SEPOLIA: ChainKey.OP_SEPOLIA,
 		POWERLOOM_DEVNET: ChainKey.POWERLOOM_DEVNET,
-		POWERLOOM_MAINNET: ChainKey.POWERLOOM_MAINNET
+		POWERLOOM_MAINNET: ChainKey.POWERLOOM_MAINNET,
+		ARBITRUM_ONE: ChainKey.ARBITRUM_ONE,
+		ARBITRUM_SEPOLIA: ChainKey.ARBITRUM_SEPOLIA
 	};
 	return mapping[chainId];
 }

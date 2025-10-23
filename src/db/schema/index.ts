@@ -1,20 +1,18 @@
-import { pgTable, text, timestamp, boolean, varchar, integer } from 'drizzle-orm/pg-core';
+import { pgSchema, text, timestamp, boolean, integer, uuid } from 'drizzle-orm/pg-core';
 
-export const tenant = pgTable('tenant', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
+const schema = pgSchema('walnut');
+
+export const tenant = schema.table('tenant', {
+	id: uuid().primaryKey().defaultRandom(),
 	name: text('name').unique().notNull(),
 	githubEmails: text('githubEmails').array(),
 	createdAt: timestamp('createdAt').defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt').defaultNow().notNull()
 });
 
-export const tenantRpcConfig = pgTable('tenantrpcconfig', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	tenantId: text('tenantId').references(() => tenant.id),
+export const tenantRpcConfig = schema.table('tenantrpcconfig', {
+	id: uuid().primaryKey().defaultRandom(),
+	tenantId: uuid('tenantId').references(() => tenant.id),
 	rpcUrl: text('rpcUrl').notNull(),
 	chainId: integer('chainId').notNull(),
 	displayName: text('displayName'),
@@ -22,23 +20,19 @@ export const tenantRpcConfig = pgTable('tenantrpcconfig', {
 	updatedAt: timestamp('updatedAt').defaultNow().notNull()
 });
 
-export const user = pgTable('user', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
+export const user = schema.table('user', {
+	id: text('id').primaryKey(),
 	createdAt: timestamp('createdAt').defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 	email: text('email').unique().notNull(),
 	emailVerified: boolean('emailVerified').default(false).notNull(),
 	name: text('name'),
 	image: text('image'),
-	tenantId: text('tenantId').references(() => tenant.id, { onDelete: 'set null' })
+	tenantId: uuid('tenantId').references(() => tenant.id, { onDelete: 'set null' })
 });
 
-export const session = pgTable('session', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
+export const session = schema.table('session', {
+	id: text('id').primaryKey(),
 	createdAt: timestamp('createdAt').defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 	expiresAt: timestamp('expiresAt').notNull(),
@@ -50,10 +44,8 @@ export const session = pgTable('session', {
 	userAgent: text('userAgent')
 });
 
-export const account = pgTable('account', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
+export const account = schema.table('account', {
+	id: text('id').primaryKey(),
 	createdAt: timestamp('createdAt').defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 	userId: text('userId')
@@ -70,10 +62,8 @@ export const account = pgTable('account', {
 	password: text('password')
 });
 
-export const verification = pgTable('verification', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
+export const verification = schema.table('verification', {
+	id: text('id').primaryKey(),
 	createdAt: timestamp('createdAt').defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 	identifier: text('identifier').notNull(),

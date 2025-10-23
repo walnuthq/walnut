@@ -10,29 +10,6 @@ import { type Hash, type Hex, type Address } from 'viem';
 
 const execFile = promisify(execFileCb);
 
-const flattenTraceCalls = (traceCalls: WalnutTraceCall[], parent: WalnutTraceCall) =>
-	traceCalls.reduce<WalnutTraceCall[]>((accumulator, currentValue) => {
-		const traceCall = {
-			...currentValue,
-			from: currentValue.type === 'INTERNALCALL' ? parent.from : currentValue.from,
-			to: currentValue.type === 'INTERNALCALL' ? parent.to : currentValue.to
-		};
-		accumulator.push(traceCall);
-		if (currentValue.calls) {
-			accumulator.push(...flattenTraceCalls(currentValue.calls, traceCall));
-		}
-		return accumulator;
-	}, []);
-
-const flattenTraceCall = (traceCall: WalnutTraceCall) => {
-	const result = [];
-	result.push(traceCall);
-	if (traceCall.calls) {
-		result.push(...flattenTraceCalls(traceCall.calls, traceCall));
-	}
-	return result;
-};
-
 const rawWalnutTraceCallToWalnutTraceCall = (
 	rawWalnutTraceCall: RawWalnutTraceCall
 ): WalnutTraceCall => ({
@@ -54,32 +31,6 @@ const rawDebugCallResponseToDebugCallResponse = (
 	...rawDebugCallResponse,
 	traceCall: rawWalnutTraceCallToWalnutTraceCall(rawDebugCallResponse.traceCall)
 });
-
-type TraceCallWithIndex = Omit<WalnutTraceCall, 'calls'> & {
-	index: number;
-	calls: TraceCallWithIndex[];
-};
-
-const innerTraceCallWithIndexes = (
-	traceCall: WalnutTraceCall,
-	index: number
-): TraceCallWithIndex => ({
-	...traceCall,
-	index,
-	calls: traceCall.calls?.map((traceCall) => innerTraceCallWithIndexes(traceCall, index + 1)) ?? []
-});
-
-export const traceCallWithIndexes = (traceCall: WalnutTraceCall): TraceCallWithIndex => ({
-	...traceCall,
-	index: 0,
-	calls: traceCall.calls?.map((traceCall) => innerTraceCallWithIndexes(traceCall, 1)) ?? []
-});
-
-type TraceCallWithIds = TraceCallWithIndex & {
-	id: number;
-	parentId: number;
-	parentContractCallId: number;
-};
 
 const soldb = async ({
 	command,

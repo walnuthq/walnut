@@ -8,6 +8,13 @@
       "when": 1759860094219,
       "tag": "0000_rainy_shatterstar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760955688024,
+      "tag": "0001_moaning_mauler",
+      "breakpoints": true
     }
   ]
 }
