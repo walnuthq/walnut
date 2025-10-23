@@ -1,13 +1,12 @@
 {
 	"extends": [
 		"next/core-web-vitals",
-		"plugin:eslint-plugin-next-on-pages/recommended",
 		"plugin:react/recommended",
 		"plugin:jsx-a11y/recommended",
 		"plugin:import/errors",
 		"plugin:import/warnings"
 	],
-	"plugins": ["eslint-plugin-next-on-pages", "react", "jsx-a11y", "import"],
+	"plugins": ["react", "jsx-a11y", "import"],
 	"rules": {
 		"jsx-a11y/heading-has-content": "off",
 		"jsx-a11y/no-static-element-interactions": "off",

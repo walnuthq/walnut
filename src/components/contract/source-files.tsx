@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import { CodeLocation } from '@/lib/simulation';
 import { CodeViewer } from '@/components/code-viewer/code-viewer';
 import { Loader } from '@/components/ui/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { FilesExplorer } from '@/components/code-viewer/file-explorer';
-import { SOURCIFY_VERIFY_DOCS_URL } from '@/lib/config';
 
 export function SourceFiles({
 	isClassVerified,
@@ -56,14 +56,12 @@ export function SourceFiles({
 					<AlertDescription>
 						<p>
 							<span>Follow </span>
-							<a
-								href={SOURCIFY_VERIFY_DOCS_URL}
-								className="text-blue-500 cursor-pointer"
-								target="_blank"
-								rel="noopener noreferrer"
+							<Link
+								href="/how-to-verify"
+								className="underline-offset-4 hover:underline text-blue-500"
 							>
 								this guide
-							</a>
+							</Link>
 							<span> to verify the source code.</span>
 						</p>
 					</AlertDescription>

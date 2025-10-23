@@ -6,6 +6,8 @@ import {
 	getExplorerApiForChain,
 	getVerificationTypeForChain
 } from '@/lib/networks';
+import { CustomSourcifyABILoader } from './custom-sourcify-abi-loader';
+import { SOURCIFY_URL } from '@/lib/config';
 
 const fetchContract = async (
 	address: Address,
@@ -314,7 +316,13 @@ const fetchContract = async (
 
 			const result = await whatsabi.autoload(address, {
 				provider,
-				abiLoader: new whatsabi.loaders.SourcifyABILoader({ chainId }),
+				abiLoader: new whatsabi.loaders.MultiABILoader([
+					new whatsabi.loaders.SourcifyABILoader({ chainId }),
+					new CustomSourcifyABILoader({
+						chainId,
+						baseURL: SOURCIFY_URL
+					})
+				]),
 				loadContractResult: true
 			});
 
