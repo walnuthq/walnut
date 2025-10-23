@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { whatsabi } from '@shazow/whatsabi';
+import { type Metadata } from '@ethereum-sourcify/compilers-types';
 
 class FetchError extends Error {
 	status: number;
@@ -107,7 +108,8 @@ export class CustomSourcifyABILoader extends whatsabi.loaders.SourcifyABILoader 
 		try {
 			const r = await fetchJSON(url);
 			const { metadata: m, sources } = r as {
-				metadata: whatsabi.loaders.SourcifyContractMetadata;
+				// metadata: whatsabi.loaders.SourcifyContractMetadata;
+				metadata: Metadata;
 				sources: Record<string, { content: string }>;
 			};
 
@@ -126,7 +128,7 @@ export class CustomSourcifyABILoader extends whatsabi.loaders.SourcifyABILoader 
 				name: name ?? null,
 				evmVersion: m.settings.evmVersion,
 				compilerVersion: m.compiler.version,
-				runs: m.settings.optimizer.runs,
+				runs: m.settings.optimizer?.runs,
 
 				// TODO: Paths will have a sourcify prefix, do we want to strip it to help normalize? It doesn't break anything keeping the prefix, so not sure.
 				// E.g. /contracts/full_match/1/0x1F98431c8aD98523631AE4a59f267346ea31F984/sources/contracts/interfaces/IERC20Minimal.sol

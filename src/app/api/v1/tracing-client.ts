@@ -1,5 +1,5 @@
 import { createTestClient, http, formatTransactionRequest, type Hash, type BlockTag } from 'viem';
-import { type DebugTraceTransactionParams, type DebugTraceCallParams } from 'tevm/actions';
+import { type DebugTraceTransactionParams, type DebugTraceCallParams } from '@tevm/actions';
 import { type RawTraceCall, type TraceCall, rawTraceCallToTraceCall } from '@/app/api/v1/types';
 
 const flattenTraceCalls = (traceCalls: TraceCall[]) =>
