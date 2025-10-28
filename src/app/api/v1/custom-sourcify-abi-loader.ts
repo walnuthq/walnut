@@ -133,8 +133,10 @@ export class CustomSourcifyABILoader extends whatsabi.loaders.SourcifyABILoader 
 				// TODO: Paths will have a sourcify prefix, do we want to strip it to help normalize? It doesn't break anything keeping the prefix, so not sure.
 				// E.g. /contracts/full_match/1/0x1F98431c8aD98523631AE4a59f267346ea31F984/sources/contracts/interfaces/IERC20Minimal.sol
 				// Can use stripPathPrefix helper to do this, but maybe we want something like getSources({ normalize: true })?
-				getSources: async () =>
-					Object.keys(sources).map((path) => ({ path, content: sources[path].content })),
+				getSources: async () => [
+					...Object.keys(sources).map((path) => ({ path, content: sources[path].content })),
+					{ path: 'metadata.json', content: JSON.stringify(m) }
+				],
 
 				ok: true,
 				loader: this,

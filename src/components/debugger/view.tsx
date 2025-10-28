@@ -11,9 +11,9 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { ContractCallSignature } from '../ui/signature';
 import { ContractCall } from '@/lib/simulation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import Link from 'next/link';
 import Sidebar from '../code-viewer/sidebar';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
+import { VERIFY_DOCS_URL } from '@/lib/config';
 
 export function DebuggerView() {
 	const debuggerContext = useDebugger();
@@ -79,12 +79,14 @@ export function DebuggerView() {
 								<p>
 									The source code for this contract is missing. To enable the step-by-step debugger,
 									verify the contract on Sourcify by following{' '}
-									<Link
-										href="/how-to-verify"
+									<a
+										href={VERIFY_DOCS_URL}
 										className="underline-offset-4 hover:underline text-blue-500"
+										target="_blank"
+										rel="noreferrer noopener"
 									>
 										this guide
-									</Link>
+									</a>
 									.
 								</p>
 							</AlertDescription>

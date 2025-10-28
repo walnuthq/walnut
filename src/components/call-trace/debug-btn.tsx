@@ -1,7 +1,7 @@
 import React, { memo, useState, useCallback } from 'react';
-import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { BugAntIcon } from '@heroicons/react/24/outline';
+import { VERIFY_DOCS_URL } from '@/lib/config';
 
 export const DebugButton = memo(function DebugButton({
 	onDebugClick,
@@ -39,9 +39,14 @@ export const DebugButton = memo(function DebugButton({
 		<>
 			This contract source code is not verified. To run the debugger, first verify the source code
 			by following{' '}
-			<Link href="/how-to-verify" className="underline-offset-4 hover:underline text-blue-500">
+			<a
+				href={VERIFY_DOCS_URL}
+				className="underline-offset-4 hover:underline text-blue-500"
+				target="_blank"
+				rel="noreferrer noopener"
+			>
 				this guide
-			</Link>
+			</a>
 			.
 		</>
 	);
