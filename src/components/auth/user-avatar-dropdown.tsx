@@ -15,11 +15,13 @@ import {
 	PlayIcon,
 	MoonIcon,
 	SunIcon,
-	DevicePhoneMobileIcon
+	DevicePhoneMobileIcon,
+	CheckBadgeIcon,
+	DocumentMagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Laptop } from 'lucide-react';
+import { VERIFY_URL, REPO_URL } from '@/lib/config';
 
 const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userName: string }) => {
 	const { theme, setTheme } = useTheme();
@@ -40,6 +42,18 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 							<span>Simulate transaction</span>
 						</DropdownMenuItem>
 					</Link>
+					<a href={VERIFY_URL} target="_blank" rel="noreferrer noopener">
+						<DropdownMenuItem className="cursor-pointer">
+							<CheckBadgeIcon className="mr-1 h-4 w-4" />
+							<span>Verify contracts</span>
+						</DropdownMenuItem>
+					</a>
+					<a href={REPO_URL} target="_blank" rel="noreferrer noopener">
+						<DropdownMenuItem className="cursor-pointer">
+							<DocumentMagnifyingGlassIcon className="mr-1 h-4 w-4" />
+							<span>Contract Viewer</span>
+						</DropdownMenuItem>
+					</a>
 					<Link href="/settings">
 						<DropdownMenuItem className="cursor-pointer">
 							<Cog6ToothIcon className="mr-1 h-4 w-4" />

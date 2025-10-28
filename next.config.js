@@ -1,9 +1,36 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+	headers: async () => {
+		return [
+			{
+				source: '/api/auth/session',
+				headers: [
+					{ key: 'Access-Control-Allow-Credentials', value: 'true' },
+					{
+						key: 'Access-Control-Allow-Origin',
+						value:
+							process.env.NODE_ENV === 'production'
+								? 'https://verify.walnut.dev'
+								: 'http://verify.walnut.local'
+					},
+					{
+						key: 'Access-Control-Allow-Methods',
+						value: 'GET,DELETE,PATCH,POST,PUT'
+					},
+					{
+						key: 'Access-Control-Allow-Headers',
+						value:
+							'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+					}
+				]
+			}
+		];
+	}
+};
 
 module.exports = nextConfig;
 
-// Injected content via Sentry wizard below
+/* // Injected content via Sentry wizard below
 
 const { withSentryConfig } = require('@sentry/nextjs');
 
@@ -45,4 +72,4 @@ module.exports = withSentryConfig(module.exports, {
 	// https://docs.sentry.io/product/crons/
 	// https://vercel.com/docs/cron-jobs
 	automaticVercelMonitors: true
-});
+}); */

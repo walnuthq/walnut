@@ -27,6 +27,8 @@ export async function getServerSession(): Promise<AuthType | null> {
 			console.debug('[auth] user email:', betterAuthResponse.user.email);
 			console.debug('[auth] tenants found:', tenantsData.length);
 
+			let tenantNetworks: TenantNetwork[] = [];
+
 			if (tenantsData.length > 0) {
 				const tenantIds = tenantsData.map((t) => t.id);
 
@@ -35,7 +37,7 @@ export async function getServerSession(): Promise<AuthType | null> {
 					.from(tenantRpcConfig)
 					.where(inArray(tenantRpcConfig.tenantId, tenantIds));
 				// Create tenant networks array
-				const tenantNetworks: TenantNetwork[] = rpcConfigs.map((rpcConfig) => {
+				tenantNetworks = rpcConfigs.map((rpcConfig) => {
 					const tenantInfo = tenantsData.find((t) => t.id === rpcConfig.tenantId);
 					return {
 						tenantId: rpcConfig.tenantId!,
@@ -46,15 +48,14 @@ export async function getServerSession(): Promise<AuthType | null> {
 					};
 				});
 
-				// Add tenant networks to session object
-				(betterAuthResponse.session as AuthType['session'])!.tenantNetworks = tenantNetworks;
-
 				// Update tenantId in user table (use first tenant if there are multiple)
 				await db
 					.update(user)
 					.set({ tenantId: tenantsData[0].id })
 					.where(eq(user.id, betterAuthResponse.user.id));
 			}
+			// Add tenant networks to session object
+			(betterAuthResponse.session as AuthType['session'])!.tenantNetworks = tenantNetworks;
 		} catch (error) {
 			console.error('Error fetching tenant data:', error);
 		}

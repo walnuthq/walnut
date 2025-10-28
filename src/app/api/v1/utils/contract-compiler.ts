@@ -1,7 +1,7 @@
 import { rm, mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { type Address, type Hex } from 'viem';
-import { type Metadata } from '@ethereum-sourcify/lib-sourcify';
+import { type Metadata } from '@ethereum-sourcify/compilers-types';
 import solc from '@/app/api/v1/solc';
 import { type Contract } from '@/app/api/v1/types';
 
