@@ -129,7 +129,7 @@ export interface CodeLocation {
 
 export interface InternalFnCallIO {
 	typeName: string | null;
-	value: string[];
+	value: string | string[];
 	internalIODecoded: DataDecoded | null;
 }
 
