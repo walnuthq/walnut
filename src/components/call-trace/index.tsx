@@ -1,6 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import 'monaco-editor/esm/vs/basic-languages/rust/rust.contribution.js';
+// import 'monaco-editor/esm/vs/basic-languages/rust/rust.contribution.js';
 import { CallType } from '@/lib/simulation';
 export * from './root';
 

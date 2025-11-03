@@ -1,6 +1,5 @@
 import { type Abi, type Address, type Hex, getAddress } from 'viem';
-import { type TraceType } from 'tevm/actions';
-import { whatsabi } from '@shazow/whatsabi';
+import { type TraceType } from '@tevm/actions';
 
 export type Contract = {
 	address: Address;

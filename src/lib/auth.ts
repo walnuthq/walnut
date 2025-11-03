@@ -6,10 +6,12 @@ import { db } from '../db';
 export const auth = betterAuth({
 	secret: process.env.BETTER_AUTH_SECRET || 'fallback-secret-key-change-in-production',
 	baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-	trustedOrigins: ['http://localhost:3000'],
-	cookie: {
-		secure: false,
-		sameSite: 'lax'
+	trustedOrigins: [process.env.NODE_ENV === 'production' ? '*.walnut.dev' : '*.walnut.local'],
+	advanced: {
+		crossSubDomainCookies: {
+			enabled: true,
+			domain: process.env.NODE_ENV === 'production' ? 'walnut.dev' : 'walnut.local'
+		}
 	},
 	database: drizzleAdapter(db, {
 		provider: 'pg'

@@ -2,7 +2,7 @@ import { SourceFiles } from './source-files';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { SOURCIFY_VERIFY_DOCS_URL } from '@/lib/config';
+import { VERIFY_DOCS_URL } from '@/lib/config';
 
 export function ClassSourceCode({
 	isClassVerified,
@@ -28,10 +28,10 @@ export function ClassSourceCode({
 						<p>
 							<span>Follow </span>
 							<a
-								href={SOURCIFY_VERIFY_DOCS_URL}
-								className="text-blue-500 cursor-pointer"
+								href={VERIFY_DOCS_URL}
+								className="underline-offset-4 hover:underline text-blue-500"
 								target="_blank"
-								rel="noopener noreferrer"
+								rel="noreferrer noopener"
 							>
 								this guide
 							</a>

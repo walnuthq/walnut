@@ -1,4 +1,5 @@
-CREATE TABLE "account" (
+CREATE SCHEMA IF NOT EXISTS "walnut";
+CREATE TABLE "walnut"."account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
@@ -14,7 +15,7 @@ CREATE TABLE "account" (
 	"password" text
 );
 --> statement-breakpoint
-CREATE TABLE "session" (
+CREATE TABLE "walnut"."session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
@@ -26,7 +27,7 @@ CREATE TABLE "session" (
 	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
-CREATE TABLE "tenant" (
+CREATE TABLE "walnut"."tenant" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"githubEmails" text[],
@@ -35,7 +36,7 @@ CREATE TABLE "tenant" (
 	CONSTRAINT "tenant_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
-CREATE TABLE "tenantrpcconfig" (
+CREATE TABLE "walnut"."tenantrpcconfig" (
 	"id" text PRIMARY KEY NOT NULL,
 	"tenantId" text,
 	"rpcUrl" text NOT NULL,
@@ -45,7 +46,7 @@ CREATE TABLE "tenantrpcconfig" (
 	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "user" (
+CREATE TABLE "walnut"."user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
@@ -57,7 +58,7 @@ CREATE TABLE "user" (
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "verification" (
+CREATE TABLE "walnut"."verification" (
 	"id" text PRIMARY KEY NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
@@ -66,7 +67,7 @@ CREATE TABLE "verification" (
 	"expiresAt" timestamp NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "account" ADD CONSTRAINT "account_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "session" ADD CONSTRAINT "session_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "tenantrpcconfig" ADD CONSTRAINT "tenantrpcconfig_tenantId_tenant_id_fk" FOREIGN KEY ("tenantId") REFERENCES "public"."tenant"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user" ADD CONSTRAINT "user_tenantId_tenant_id_fk" FOREIGN KEY ("tenantId") REFERENCES "public"."tenant"("id") ON DELETE set null ON UPDATE no action;
+ALTER TABLE "walnut"."account" ADD CONSTRAINT "account_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "walnut"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "walnut"."session" ADD CONSTRAINT "session_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "walnut"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "walnut"."tenantrpcconfig" ADD CONSTRAINT "tenantrpcconfig_tenantId_tenant_id_fk" FOREIGN KEY ("tenantId") REFERENCES "walnut"."tenant"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "walnut"."user" ADD CONSTRAINT "user_tenantId_tenant_id_fk" FOREIGN KEY ("tenantId") REFERENCES "walnut"."tenant"("id") ON DELETE set null ON UPDATE no action;

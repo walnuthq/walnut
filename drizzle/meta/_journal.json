@@ -15,6 +15,13 @@
       "when": 1760517994776,
       "tag": "0001_calm_ego",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761251233368,
+      "tag": "0002_exotic_maestro",
+      "breakpoints": true
     }
   ]
 }
