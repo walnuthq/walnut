@@ -1,0 +1,53 @@
+name: Feature Request
+description: Suggest an idea for this project
+title: '[FEATURE] '
+labels: ['feature']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature!
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: Short summary of the feature
+      placeholder: Add “Flamegraph” tab for gas cost visualization
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Explain what should be added or improved
+      placeholder: Describe what this feature should do and why it's useful
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other relevant information (links, screenshots, etc.)
+
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use Case
+      description: Describe how this feature would be used in practice
+      placeholder: |
+        Provide a concrete example of how this feature would be used:
+        - Who would use it?
+        - What problem would it solve?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would be helpful
+        - High - Important for my workflow
+        - Critical - Blocking my work
+    validations:
+      required: true
