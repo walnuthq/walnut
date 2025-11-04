@@ -1,0 +1,16 @@
+name: Feature Request
+description: Suggest an idea for this project
+title: '[FEATURE] '
+labels: ['feature']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature!
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Explain what should be added or improved
+      placeholder: Describe what this feature should do and why it's useful
