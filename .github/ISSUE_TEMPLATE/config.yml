@@ -1,5 +1,1 @@
-blank_issues_enabled: false
-contact_links:
-  - name: 💬 Discussions
-    url: https://github.com/walnuthq/walnut/discussions
-    about: Please use GitHub Discussions for general questions.
+blank_issues_enabled: true
