@@ -36,6 +36,8 @@ export function CallTypeChip(kind: CallTypeChipKind) {
 			'bg-green-100 border-green-400 text-green-900 dark:bg-opacity-40 dark:bg-green-500 dark:text-white',
 		['Delegate']:
 			'bg-orange-100 border-orange-400 text-orange-900 dark:bg-opacity-40 dark:bg-orange-500 dark:text-white',
+		['Static']:
+			'bg-blue-100 border-blue-400 text-blue-900 dark:bg-opacity-40 dark:bg-blue-500 dark:text-white',
 		['Event']:
 			'bg-yellow-100 border-yellow-400 text-yellow-900 dark:bg-opacity-40 dark:bg-yellow-500 dark:text-white',
 		['Error']:
