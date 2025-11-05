@@ -86,7 +86,7 @@ export function HeaderNav({
 													/>
 												</div>
 												<span className="text-[10px] font-semibold bg-gradient-to-r from-purple-800 to-purple-600 dark:from-purple-400 dark:to-purple-300 bg-clip-text text-transparent">
-													EVM
+													Ethereum (EVM)
 												</span>
 												<svg
 													className="w-2.5 h-2.5 text-purple-700 dark:text-purple-400 "
@@ -105,7 +105,7 @@ export function HeaderNav({
 										</DropdownMenuTrigger>
 										<DropdownMenuContent
 											align="start"
-											className="min-w-[160px] p-2 bg-background/95 backdrop-blur-sm border border-purple-500/20 shadow-lg"
+											className="min-w-[10px] p-1 bg-background/95 backdrop-blur-sm border border-purple-500/20 shadow-lg"
 										>
 											<Link href="https://app.walnut.dev/" target="_blank">
 												<DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2.5 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-pink-500/10 transition-all duration-200">
@@ -118,7 +118,7 @@ export function HeaderNav({
 																unoptimized
 															/>
 														</div>
-														<span className="font-medium text-sm">Starknet</span>
+														<span className="font-medium text-xs">Starknet (CairoVM)</span>
 													</div>
 												</DropdownMenuItem>
 											</Link>
