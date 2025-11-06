@@ -159,4 +159,81 @@ const soldb = async ({
 	}
 };
 
+export const soldbListEvents = async ({
+	txHash,
+	rpcUrl,
+	ethdebugDirs,
+	cwd
+}: {
+	txHash: string;
+	rpcUrl: string;
+	ethdebugDirs?: string[];
+	cwd?: string;
+}): Promise<any> => {
+	const args = ['list-events', txHash, '--json-events'];
+
+	if (rpcUrl) {
+		args.push('--rpc', rpcUrl);
+	}
+
+	if (ethdebugDirs && ethdebugDirs.length > 0) {
+		ethdebugDirs.forEach((dir) => {
+			args.push('--ethdebug-dir', dir);
+		});
+	}
+
+	console.log('Executing soldb command:', ['soldb', ...args].join(' '));
+	if (cwd) {
+		console.log('Working directory:', cwd);
+	}
+
+	try {
+		const { stdout } = await execFile('soldb', args, {
+			cwd: cwd || process.cwd(),
+			maxBuffer: 50 * 1024 * 1024 // 50MB buffer
+		});
+		return JSON.parse(stdout);
+	} catch (err: any) {
+		const sanitizedMessage = sanitizeErrorMessage(err.message || String(err));
+		console.error('soldb list-events error:', sanitizedMessage);
+
+		if (isSoldbNotInstalledError(err)) {
+			throw wrapError(err, undefined, null);
+		}
+
+		if (isTimeoutError(err)) {
+			throw new SoldbTimeoutError(undefined, null);
+		}
+
+		if (isConnectionError(err)) {
+			throw new RpcConnectionError(undefined, err, null);
+		}
+
+		let errorMessage = 'Failed to fetch events';
+		if (err.stdout) {
+			errorMessage = err.stdout.trim();
+		} else if (err.message) {
+			errorMessage = err.message;
+		}
+
+		try {
+			const jsonResponse = JSON.parse(errorMessage);
+			if (jsonResponse.soldbFailed || jsonResponse.error?.message) {
+				const parts = [];
+				if (jsonResponse.soldbFailed) {
+					parts.push(jsonResponse.soldbFailed);
+				}
+				if (jsonResponse.error?.message) {
+					parts.push(jsonResponse.error.message);
+				}
+				errorMessage = parts.join(' - ');
+			}
+		} catch {
+			// If not JSON, use the original message
+		}
+
+		throw new SoldbExecutionError(errorMessage, undefined, undefined, null);
+	}
+};
+
 export default soldb;
