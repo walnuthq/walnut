@@ -6,13 +6,21 @@ import { NextResponse } from 'next/server';
  */
 export async function middleware(request: NextRequest) {
 	// Check for auth session cookie
-	const sessionCookie = request.cookies.get('better-auth.session_token');
+	const sessionCookie = request.cookies.get(
+		`${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}better-auth.session_token`
+	);
 	const isLogged = !!sessionCookie;
 
 	const openPageOrGoToLoginIfNotLogged = async (url: URL) => {
 		return isLogged
 			? NextResponse.next()
-			: NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_BASE_URL ?? ''}/login`);
+			: NextResponse.redirect(
+					`${
+						process.env.NODE_ENV === 'production'
+							? 'https://evm.walnut.dev'
+							: 'http://evm.walnut.local'
+					}/login`
+			  );
 	};
 
 	const url = new URL(request.url);
