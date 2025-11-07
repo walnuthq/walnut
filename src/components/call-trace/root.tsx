@@ -53,26 +53,14 @@ export function CallTraceRoot({
 			l1DataFlamegraph={l1DataFlamegraph}
 			debuggerPayload={debuggerPayload}
 		>
-			{txHash && (
-				<EventsContextProvider txHash={txHash} chainId={chainId} rpcUrl={rpcUrl} shouldLoad={true}>
-					{debuggerPayload && (
-						<DebuggerContextProvider debuggerPayload={debuggerPayload}>
-							<CallTraceRootContent txHash={txHash} />
-						</DebuggerContextProvider>
-					)}
-					{!debuggerPayload && <CallTraceRootContent txHash={txHash} />}
-				</EventsContextProvider>
-			)}
-			{!txHash && (
-				<>
-					{debuggerPayload && (
-						<DebuggerContextProvider debuggerPayload={debuggerPayload}>
-							<CallTraceRootContent txHash={txHash} />
-						</DebuggerContextProvider>
-					)}
-					{!debuggerPayload && <CallTraceRootContent txHash={txHash} />}
-				</>
-			)}
+			<EventsContextProvider txHash={txHash} chainId={chainId} rpcUrl={rpcUrl} shouldLoad={true}>
+				{debuggerPayload && (
+					<DebuggerContextProvider debuggerPayload={debuggerPayload}>
+						<CallTraceRootContent txHash={txHash} />
+					</DebuggerContextProvider>
+				)}
+				{!debuggerPayload && <CallTraceRootContent txHash={txHash} />}
+			</EventsContextProvider>
 		</CallTraceContextProvider>
 	);
 }
@@ -220,7 +208,7 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 									<ScrollBar orientation="horizontal" />
 								</ScrollArea>
 							) : (
-								<div className="px-4 py-2 text-sm">Transaction hash not available</div>
+								<div className="px-4 py-2 text-sm">Data unavailable</div>
 							)}
 						</div>
 					</TabsContent>

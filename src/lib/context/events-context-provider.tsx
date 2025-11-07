@@ -28,7 +28,7 @@ export const useEvents = () => {
 
 interface EventsContextProviderProps {
 	children: React.ReactNode;
-	txHash: string;
+	txHash?: string;
 	chainId?: string;
 	rpcUrl?: string;
 	shouldLoad?: boolean;
