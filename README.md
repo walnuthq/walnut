@@ -18,12 +18,27 @@
 - Can be self-hosted and connected to any RPC—ideal for rollups and Rollup-as-a-Service platforms
 - Enterprise-grade privacy: zero telemetry, full data control, and on-premises hosting
 
+## Live Demo
+
+### Try Walnut on the Web
+
+Debug and simulate any transaction or click *Try an example transaction* to get started.
+
+[![Launch Demo](https://img.shields.io/badge/Launch%20Demo-3C3FE7?style=for-the-badge&logo=rocket&logoColor=white&labelColor=3C3FE7)](https://evm.walnut.dev)
+
+Currently live networks: OP Mainnet, OP Sepolia, and Powerloom Devnet.
+
+[See below](#custom-deployments) if you want to try Walnut on other EVM chains.
+
+https://github.com/user-attachments/assets/c58884e5-a6b8-49fe-8f3f-08246d3139fd
+
 ## Table of Contents
 
 - [Who is Walnut for?](#who-is-walnut-for)
-- [Live Demo](#live-demo)
 - [Features and Roadmap](#features-and-roadmap)
-- [Enterprise \& Privacy](#enterprise--privacy)
+- [Custom Deployments](#custom-deployments)
+  - [Hosting](#hosting)  
+  - [Enterprise \& Privacy](#enterprise--privacy)
 - [Deployment and Self-Hosting](#deployment-and-self-hosting)
 - [Local Setup \& Usage](#local-setup--usage)
   - [1. Install Prerequisites](#1-install-prerequisites)
@@ -43,12 +58,6 @@
 - **Smart contract developers** who want to trace, simulate, and understand on-chain code execution.
 - **Enterprises** that require privacy, data protection, and self-hosting—[get in touch](https://walnut.dev/contact) for custom support or deployment help.
 
-## Live Demo
-
-https://github.com/user-attachments/assets/c58884e5-a6b8-49fe-8f3f-08246d3139fd
-
-Try Walnut live at [evm.walnut.dev](https://evm.walnut.dev)
-
 ## Features and Roadmap
 
 - [x] Full transaction call trace with internal function calls and decoded values
@@ -60,9 +69,20 @@ Try Walnut live at [evm.walnut.dev](https://evm.walnut.dev)
 - [ ] Cross-chain message tracing
 - [ ] Realtime monitoring
 
-## Enterprise & Privacy
+## Custom Deployments
 
-Walnut is designed for organizations that require strict data privacy and control. All data is processed locally with zero telemetry, ensuring sensitive information never leaves your infrastructure. For privacy-sensitive or enterprise deployments, [contact us](mailto:support@walnut.dev).
+### Hosting
+
+If you need support for any EVM-compatible chain or custom work, we can help. Our team has built and hosted debuggers, explorers, and other utilities for years. We're happy to set up a custom stack to fit your needs.
+
+Click below or reach out on support@walnut.dev to get in touch.
+
+[![Telegram](https://img.shields.io/badge/Telegram-3C3FE7?style=for-the-badge&logo=telegram&logoColor=white&labelColor=3C3FE7)](https://t.me/walnuthq)
+[![Email](https://img.shields.io/badge/Email-3C3FE7?style=for-the-badge&logo=gmail&logoColor=white&labelColor=3C3FE7)](mailto:support@walnut.dev)
+
+###  Enterprise & Privacy
+
+Walnut is designed for organizations that require strict data privacy and control. All data is processed locally with zero telemetry, ensuring sensitive information never leaves your infrastructure. Contact us for privacy-sensitive or enterprise deployments.
 
 ## Deployment and Self-Hosting
 
