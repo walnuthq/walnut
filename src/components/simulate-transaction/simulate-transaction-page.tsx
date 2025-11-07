@@ -16,6 +16,7 @@ import {
 	SimulationPayload
 } from '@/lib/utils';
 import { Chain, NetworksSelect } from '@/components/networks-select';
+import type { ChainMeta } from '@/lib/networks';
 import { Textarea } from '../ui/textarea';
 import { fetchContractFunctions } from '@/lib/contracts';
 import { EntryPointSelect } from '../entry-point-select';
@@ -94,8 +95,25 @@ export function SimulateTransactionPage({
 	const [_isEditingCalldata, _setIsEditingCalldata] = useState<boolean>(false);
 	const calldataDecoder = createCalldataDecoder();
 
-	const onChainChangedCallback = async (chain: Chain) => {
-		_setChain(chain);
+	const onChainChangedCallback = async (chain: Chain | ChainMeta) => {
+		// Normalize ChainMeta to Chain format - always set chainId as string
+		let normalizedChain: Chain;
+		if (
+			'key' in chain &&
+			'chainId' in chain &&
+			typeof (chain as unknown as ChainMeta).chainId === 'number'
+		) {
+			// It's ChainMeta - convert to Chain format
+			const chainMeta = chain as unknown as ChainMeta;
+			normalizedChain = {
+				chainId: chainMeta.key
+			};
+		} else {
+			// It's already Chain format
+			normalizedChain = chain as Chain;
+		}
+
+		_setChain(normalizedChain);
 		_setContractCalls((prev) => {
 			const newCalls = prev.map((item) => ({
 				...item
@@ -445,7 +463,9 @@ export function SimulateTransactionPage({
 				if (_chain.chainId) {
 					simulationPayload.chainId = _chain.chainId;
 				} else if (_chain.network) {
-					simulationPayload.rpcUrl = _chain.network.rpcUrl;
+					if (_chain.network.networkName) {
+						simulationPayload.chainId = _chain.network.networkName;
+					}
 				}
 			} else {
 				throw new Error('Chain is not defined');
