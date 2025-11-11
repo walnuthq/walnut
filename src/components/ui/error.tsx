@@ -9,7 +9,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from './button';
 import { copyToClipboard } from '@/lib/utils';
-import Link from 'next/link';
 
 export function Error({
 	message,
@@ -30,15 +29,16 @@ export function Error({
 
 	return (
 		<div className="relative w-full mx-auto mt-6">
-			<div className="absolute top-12 right-12 opacity-80 z-10"></div>
+			<div className="absolute -top-2 -right-2 w-32 h-32 bg-accent-2/10 rounded-full blur-3xl" />
+			<div className="absolute -bottom-2 -left-2 w-32 h-32 bg-accent/10 rounded-full blur-3xl" />
 
-			<div className="relative overflow-hidden rounded-lg border border-destructive/20 bg-card shadow-lg">
+			<div className="relative overflow-hidden rounded-xl border border-accent-2/40 bg-card shadow-xl">
 				{title !== false && (
-					<div className="px-6 pt-6 pb-4 border-b border-border/5 flex justify-between items-center">
+					<div className="px-6 pt-6 pb-4 border-b border-accent-2/20 bg-accent-2/5">
 						<div className="flex items-center gap-4">
 							<div className="flex-shrink-0 ">
-								<div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
-									<ExclamationTriangleIcon className="w-6 h-6 text-destructive" />
+								<div className="relative w-12 h-12 rounded-xl bg-accent-2/20 flex items-center justify-center border-2 border-accent-2/40 shadow-lg">
+									<ExclamationTriangleIcon className="w-7 h-7 text-accent-2" />
 								</div>
 							</div>
 							<div className="flex-1 min-w-0">
@@ -78,7 +78,7 @@ export function Error({
 								)}
 							</Button>
 							<div className="p-4">
-								<pre className="text-sm font-mono text-red-500">
+								<pre className="text-sm font-mono ">
 									<code>{message}</code>
 								</pre>
 							</div>
@@ -87,18 +87,6 @@ export function Error({
 						</ScrollArea>
 
 						<div className="absolute inset-0 rounded-md ring-1 ring-inset ring-border/0 group-hover:ring-border/20 transition-all pointer-events-none" />
-					</div>
-					<div className="flex items-start gap-2 p-3 rounded-md bg-accent/30 border border-accent/20">
-						<div className="flex-shrink-0 mt-0.5">
-							<InformationCircleIcon className="w-4 h-4 text-accent-foreground/70" />
-						</div>
-						<p className="text-xs text-accent-foreground/80 leading-relaxed">
-							If this error persists, please copy the error details and report it in the{' '}
-							<Link href={'https://t.me/walnuthq'} target="_blank" className="text-variable">
-								Telegram group
-							</Link>
-							.
-						</p>
 					</div>
 				</div>
 			</div>
