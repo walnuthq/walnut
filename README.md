@@ -22,11 +22,13 @@
 
 ### Try Walnut on the Web
 
+> Walnut EVM is available on [evm.walnut.dev](https://evm.walnut.dev/)
+
 Debug and simulate any transaction or click *Try an example transaction* to get started.
 
 [![Launch Demo](https://img.shields.io/badge/Launch%20Demo-3C3FE7?style=for-the-badge&logo=rocket&logoColor=white&labelColor=3C3FE7)](https://evm.walnut.dev)
 
-Currently live networks: OP Mainnet, OP Sepolia, and Powerloom Devnet.
+Currently live networks: *OP Mainnet, OP Sepolia, and Powerloom Devnet.*
 
 [See below](#custom-deployments) if you want to try Walnut on other EVM chains.
 
