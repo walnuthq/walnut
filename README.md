@@ -30,7 +30,7 @@ Debug and simulate any transaction or click *Try an example transaction* to get 
 
 Currently live networks: *OP Mainnet, OP Sepolia, and Powerloom Devnet.*
 
-[See below](#custom-deployments) if you want to try Walnut on other EVM chains.
+See [Custom Deployments](#custom-deployments) if you'd like to try Walnut on other EVM chains.
 
 https://github.com/user-attachments/assets/c58884e5-a6b8-49fe-8f3f-08246d3139fd
 
