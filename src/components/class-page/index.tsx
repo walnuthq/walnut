@@ -13,11 +13,12 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import { shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
+import { ServerError } from '../ui/server-error';
 
 export function ClassPage({ classHash }: { classHash: string }) {
 	const { networks } = useSettings();
 	const [classData, setClassData] = useState<GetClassResponse>();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<any>();
 
 	useEffect(() => {
 		if (!networks) return;
@@ -31,7 +32,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 					})
 				);
 			} catch (error: any) {
-				setError(error.toString());
+				setError(error);
 			}
 		};
 
@@ -70,7 +71,11 @@ export function ClassPage({ classHash }: { classHash: string }) {
 							isContract={false}
 						/>
 					) : error ? (
-						<Error message={error} />
+						error.status === 500 ? (
+							<ServerError message={error.toString()} />
+						) : (
+							<Error message={error.toString()} />
+						)
 					) : (
 						<Loader randomQuote={false} />
 					)}

@@ -30,6 +30,7 @@ import { getCacheWithTTL, setCacheWithTTL } from '@/lib/utils/cache-utils';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
 import { getDisplayNameForChainId } from '@/lib/networks';
+import { ServerError } from '../ui/server-error';
 
 export function TransactionPage({
 	txHash,
@@ -45,7 +46,7 @@ export function TransactionPage({
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const { isLogged } = useUserContext();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<any>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();
 	const [l2TxHash, setL2TxHash] = useState<string>();
 	const [l1TxHash, setL1TxHash] = useState<string | undefined>();
@@ -151,7 +152,8 @@ export function TransactionPage({
 					window.location.href = '/login';
 					return;
 				}
-				setError(error.toString());
+				console.log(error.status);
+				setError(error);
 			}
 		};
 
@@ -360,7 +362,11 @@ export function TransactionPage({
 							)}
 						</>
 					) : error ? (
-						<Error message={error} />
+						error.status === 500 ? (
+							<ServerError message={error.toString()} />
+						) : (
+							<Error message={error.toString()} />
+						)
 					) : (
 						<>
 							<div className="lg:flex flex-row items-baseline justify-between">

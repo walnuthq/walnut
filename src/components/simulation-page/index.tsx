@@ -21,6 +21,7 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import { useRouter } from 'next/navigation';
 import { getCacheWithTTL, safeStringify, setCacheWithTTL } from '@/lib/utils/cache-utils';
 import { NetworkBadge } from '../ui/network-badge';
+import { ServerError } from '../ui/server-error';
 export function SimulationPage({
 	simulationPayload
 }: {
@@ -28,7 +29,7 @@ export function SimulationPage({
 }) {
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<any>();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { trackingActive, trackingFlagLoaded } = useSettings();
 	const router = useRouter();
@@ -113,7 +114,12 @@ export function SimulationPage({
 	if (isLoading) {
 		content = <Loader />;
 	} else if (error) {
-		content = <Error message={error} />;
+		content =
+			error.status === 500 ? (
+				<ServerError message={error.toString()} />
+			) : (
+				<Error message={error.toString()} />
+			);
 	} else if (l2TransactionData) {
 		content = (
 			<>
