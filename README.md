@@ -22,26 +22,24 @@
 
 ### Try Walnut on the Web
 
-> Walnut EVM is available on [evm.walnut.dev](https://evm.walnut.dev/)
+> Walnut EVM is available on [evm.walnut.dev](https://evm.walnut.dev)
 
-Debug and simulate any transaction or click *Try an example transaction* to get started.
+Enter a transaction hash, or click *Try an example transaction*, to begin debugging or simulating.
 
-[![Launch Demo](https://img.shields.io/badge/Launch%20Demo-3C3FE7?style=for-the-badge&logo=rocket&logoColor=white&labelColor=3C3FE7)](https://evm.walnut.dev)
+Currently supported networks: *OP Mainnet, OP Sepolia.*
 
-Currently live networks: *OP Mainnet, OP Sepolia, and Powerloom Devnet.*
-
-See [Custom Deployments](#custom-deployments) if you'd like to try Walnut on other EVM chains.
+See [Custom Deployments](#custom-deployments) for integrations with other networks.
 
 https://github.com/user-attachments/assets/c58884e5-a6b8-49fe-8f3f-08246d3139fd
 
 ## Table of Contents
 
 - [Who is Walnut for?](#who-is-walnut-for)
-- [Features and Roadmap](#features-and-roadmap)
+- [Features \& Roadmap](#features--roadmap)
 - [Custom Deployments](#custom-deployments)
-  - [Hosting](#hosting)  
+  - [Hosting \& Custom Work](#hosting--custom-work)  
   - [Enterprise \& Privacy](#enterprise--privacy)
-- [Deployment and Self-Hosting](#deployment-and-self-hosting)
+- [Deployment \& Self-Hosting](#deployment--self-hosting)
 - [Local Setup \& Usage](#local-setup--usage)
   - [1. Install Prerequisites](#1-install-prerequisites)
   - [2. Set Up Environment Variables](#2-set-up-environment-variables)
@@ -60,7 +58,7 @@ https://github.com/user-attachments/assets/c58884e5-a6b8-49fe-8f3f-08246d3139fd
 - **Smart contract developers** who want to trace, simulate, and understand on-chain code execution.
 - **Enterprises** that require privacy, data protection, and self-hosting—[get in touch](https://walnut.dev/contact) for custom support or deployment help.
 
-## Features and Roadmap
+## Features & Roadmap
 
 - [x] Full transaction call trace with internal function calls and decoded values
 - [x] Step-by-step transaction debugger
@@ -73,9 +71,9 @@ https://github.com/user-attachments/assets/c58884e5-a6b8-49fe-8f3f-08246d3139fd
 
 ## Custom Deployments
 
-### Hosting
+### Hosting & Custom Work
 
-If you need support for any EVM-compatible chain or custom work, we can help. Our team has built and hosted debuggers, explorers, and other utilities for years. We're happy to set up a custom stack to fit your needs.
+If you need integration for EVM or other chains, hosting, or any customizations, we can help. Our team has built and hosted debuggers, explorers, and other utilities for years. We're happy to set up a custom stack to fit your needs.
 
 Click below or reach out on support@walnut.dev to get in touch.
 
@@ -86,7 +84,7 @@ Click below or reach out on support@walnut.dev to get in touch.
 
 Walnut is designed for organizations that require strict data privacy and control. All data is processed locally with zero telemetry, ensuring sensitive information never leaves your infrastructure. Contact us for privacy-sensitive or enterprise deployments.
 
-## Deployment and Self-Hosting
+## Deployment & Self-Hosting
 
 Walnut is built for self-hosting and is designed to run within your own infrastructure, with support for advanced deployment scenarios using Docker and Kubernetes.
 
