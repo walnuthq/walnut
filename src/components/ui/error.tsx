@@ -43,7 +43,7 @@ export function Error({
 							</div>
 							<div className="flex-1 min-w-0">
 								<h2 className="text-lg font-semibold text-foreground leading-tight">
-									{title ?? 'Unexpected Error'}
+									{title ?? 'Error'}
 								</h2>
 							</div>
 						</div>
