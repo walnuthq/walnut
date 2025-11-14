@@ -10,14 +10,15 @@ import { Error } from '../ui/error';
 import { ClassSourceCode } from '@/components/class-source-code';
 import { fetchClassDataByHash, GetClassResponse } from '@/lib/classes';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { shortenHash } from '@/lib/utils';
+import { FetchError, shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
+import { ServerError } from '../ui/server-error';
 
 export function ClassPage({ classHash }: { classHash: string }) {
 	const { networks } = useSettings();
 	const [classData, setClassData] = useState<GetClassResponse>();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<FetchError | undefined>();
 
 	useEffect(() => {
 		if (!networks) return;
@@ -30,8 +31,8 @@ export function ClassPage({ classHash }: { classHash: string }) {
 						rpcUrls: networks.map((n) => n.rpcUrl)
 					})
 				);
-			} catch (error: any) {
-				setError(error.toString());
+			} catch (error) {
+				setError(error as FetchError);
 			}
 		};
 
@@ -69,8 +70,12 @@ export function ClassPage({ classHash }: { classHash: string }) {
 							sourceCode={classData.sourceCode ?? {}}
 							isContract={false}
 						/>
-					) : error ? (
-						<Error message={error} />
+					) : error && error.status ? (
+						error.status >= 500 && error.status < 600 ? (
+							<ServerError message={error.toString()} />
+						) : (
+							<Error message={error.toString()} />
+						)
 					) : (
 						<Loader randomQuote={false} />
 					)}

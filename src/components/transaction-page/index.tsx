@@ -12,7 +12,7 @@ import {
 	L1TransactionData,
 	L2TransactionData
 } from '@/lib/simulation';
-import { shortenHash } from '@/lib/utils';
+import { FetchError, shortenHash } from '@/lib/utils';
 import { DebuggerPayload } from '@/lib/debugger';
 import { TransactionDetails } from './l2-transaction-details';
 import { L1TransactionDetails } from './l1-transaction-details';
@@ -30,6 +30,7 @@ import { getCacheWithTTL, setCacheWithTTL } from '@/lib/utils/cache-utils';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
 import { getDisplayNameForChainId } from '@/lib/networks';
+import { ServerError } from '../ui/server-error';
 
 export function TransactionPage({
 	txHash,
@@ -45,7 +46,7 @@ export function TransactionPage({
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const { isLogged } = useUserContext();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<FetchError | undefined>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();
 	const [l2TxHash, setL2TxHash] = useState<string>();
 	const [l1TxHash, setL1TxHash] = useState<string | undefined>();
@@ -97,7 +98,7 @@ export function TransactionPage({
 				}
 
 				if (!chainId) {
-					setError('ChainId must be provided to simulate transaction');
+					setError({ message: 'ChainId must be provided to simulate transaction' });
 					return;
 				}
 
@@ -144,14 +145,14 @@ export function TransactionPage({
 				} else if (simulation.l1TransactionData) {
 					setL1TransactionData(simulation.l1TransactionData);
 				}
-			} catch (error: any) {
+			} catch (error) {
 				// Check if it's a 401 authentication error
-				if (error?.status === 401) {
+				if ((error as { message: string; status: number })?.status === 401) {
 					// Redirect to login page
 					window.location.href = '/login';
 					return;
 				}
-				setError(error.toString());
+				setError(error as { message: string; status: number });
 			}
 		};
 
@@ -359,8 +360,12 @@ export function TransactionPage({
 								</div>
 							)}
 						</>
-					) : error ? (
-						<Error message={error} />
+					) : error && error.status ? (
+						error.status >= 500 && error.status < 600 ? (
+							<ServerError message={error.toString()} />
+						) : (
+							<Error message={error.toString()} />
+						)
 					) : (
 						<>
 							<div className="lg:flex flex-row items-baseline justify-between">

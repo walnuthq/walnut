@@ -19,23 +19,10 @@ import { Chain, NetworksSelect } from '@/components/networks-select';
 import type { ChainMeta } from '@/lib/networks';
 import { Textarea } from '../ui/textarea';
 import { fetchContractFunctions } from '@/lib/contracts';
-import { EntryPointSelect } from '../entry-point-select';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue
-} from '@/components/ui/select';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useRouter } from 'next/navigation';
-import {
-	createCalldataDecoder,
-	DecodedCalldata,
-	fetchABIFromInternalAPI,
-	fetchABIFromSourcify
-} from '@/lib/calldata-utils';
+import { createCalldataDecoder, DecodedCalldata } from '@/lib/calldata-utils';
 import responseEntrypoints from '@/lib/utils/demo_data/entrypoints.json';
 
 export function SimulateTransactionPage({

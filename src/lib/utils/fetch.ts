@@ -6,6 +6,11 @@ const CLASS_HASH_REGEX = /^0x[0-9a-fA-F]{64}$/;
 const DOTS_SLASH_REGEX = /[./]/;
 const CAMELCASE_EXCLUDE = [CLASS_HASH_REGEX, DOTS_SLASH_REGEX];
 
+export interface FetchError {
+	status?: number;
+	message: string;
+}
+
 interface FetchApiParams {
 	init?: RequestInit | undefined;
 	data?: unknown;
