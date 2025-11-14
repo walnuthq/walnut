@@ -70,33 +70,29 @@ export function ServerError({
 
 					<div className="relative group">
 						<div className="absolute -inset-0.5 bg-accent-2/20 rounded-lg blur group-hover:bg-accent-2/30 transition-all" />
-						<ScrollArea className="relative w-full h-40 rounded-lg border border-destructive/20 bg-muted/30 backdrop-blur-sm">
+						<div className="w-full max-h-[300px] overflow-auto rounded-md border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-border/80 [&::-webkit-scrollbar-corner]:bg-transparent">
 							<Button
 								size="sm"
 								variant="outline"
 								onClick={onCopyToClipboardClick}
-								className="flex-shrink-0 h-8 px-3 absolute right-2 top-2 text-xs gap-2 bg-card/90 backdrop-blur-sm border-accent-2/40 hover:bg-accent-2/10 hover:border-accent-2/60 transition-all z-10"
+								className="flex-shrink-0 h-6 px-3 absolute right-2 top-2 float-right text-xs gap-2 hover:bg-accent hover:border-accent-foreground/20 transition-all z-10 bg-background ml-2 mb-2"
 							>
 								{copyToastVisible ? (
 									<>
 										<CheckCircleIcon className="w-4 h-4 text-primary" />
-										<span className="text-primary font-medium">Copied!</span>
 									</>
 								) : (
 									<>
-										<ClipboardDocumentIcon className="w-4 h-4 text-accent-2" />
-										<span className="text-accent-2">Copy</span>
+										<ClipboardDocumentIcon className="w-4 h-4" />
 									</>
 								)}
 							</Button>
 							<div className="p-4">
-								<pre className="text-sm font-mono text-red-500">
+								<pre className="text-sm font-mono whitespace-pre-wrap break-words">
 									<code>{message}</code>
 								</pre>
 							</div>
-							<ScrollBar orientation="horizontal" />
-							<ScrollBar orientation="vertical" />
-						</ScrollArea>
+						</div>
 					</div>
 
 					<div className="flex items-start gap-3 p-4 rounded-lg bg-accent/20 border-2 border-accent/30">

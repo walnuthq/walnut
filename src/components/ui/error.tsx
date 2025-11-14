@@ -58,33 +58,29 @@ export function Error({
 						</div>
 					)}
 					<div className="relative group">
-						<ScrollArea className="w-full h-40 rounded-md border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors">
+						<div className="w-full max-h-[300px] overflow-y-auto overflow-x-hidden rounded-md border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-border/80 [&::-webkit-scrollbar-corner]:bg-transparent">
 							<Button
 								size="sm"
 								variant="outline"
 								onClick={onCopyToClipboardClick}
-								className="flex-shrink-0 h-8 px-3 absolute right-2 top-2 text-xs gap-2 hover:bg-accent hover:border-accent-foreground/20 transition-all"
+								className="flex-shrink-0 h-6 px-3 absolute right-2 top-2 float-right text-xs gap-2 hover:bg-accent hover:border-accent-foreground/20 transition-all z-10 bg-background ml-2 mb-2"
 							>
 								{copyToastVisible ? (
 									<>
 										<CheckCircleIcon className="w-4 h-4 text-primary" />
-										<span className="text-primary font-medium">Copied!</span>
 									</>
 								) : (
 									<>
 										<ClipboardDocumentIcon className="w-4 h-4" />
-										<span>Copy</span>
 									</>
 								)}
 							</Button>
 							<div className="p-4">
-								<pre className="text-sm font-mono ">
+								<pre className="text-sm font-mono whitespace-pre-wrap break-words">
 									<code>{message}</code>
 								</pre>
 							</div>
-							<ScrollBar orientation="horizontal" />
-							<ScrollBar orientation="vertical" />
-						</ScrollArea>
+						</div>
 
 						<div className="absolute inset-0 rounded-md ring-1 ring-inset ring-border/0 group-hover:ring-border/20 transition-all pointer-events-none" />
 					</div>

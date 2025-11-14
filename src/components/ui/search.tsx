@@ -49,9 +49,9 @@ export function Search({
 				setDataResponseResults(
 					searchData.transactions.length + searchData.classes.length + searchData.contracts.length
 				);
-			} catch (error: any) {
+			} catch (error) {
 				setDataResponseResults(0);
-				setError(error.toString());
+				setError(error instanceof Error ? error.message : String(error));
 			}
 		},
 		[networks]

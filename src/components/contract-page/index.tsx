@@ -10,7 +10,7 @@ import { Error } from '../ui/error';
 import { fetchContractDataByAddress, GetContractResponse } from '@/lib/contracts';
 import { ClassSourceCode } from '@/components/class-source-code';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { shortenHash } from '@/lib/utils';
+import { FetchError, shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { ServerError } from '../ui/server-error';
@@ -18,7 +18,7 @@ import { ServerError } from '../ui/server-error';
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	const { networks } = useSettings();
 	const [contractData, setContractData] = useState<GetContractResponse>();
-	const [error, setError] = useState<any>();
+	const [error, setError] = useState<FetchError | undefined>();
 
 	useEffect(() => {
 		if (!networks) return;
@@ -31,8 +31,8 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 						rpcUrls: networks.map((n) => n.rpcUrl)
 					})
 				);
-			} catch (error: any) {
-				setError(error);
+			} catch (error) {
+				setError(error as FetchError);
 			}
 		};
 
@@ -70,8 +70,8 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 							sourceCode={contractData.sourceCode ?? {}}
 							isContract={true}
 						/>
-					) : error ? (
-						error.status === 500 ? (
+					) : error && error.status ? (
+						error.status >= 500 && error.status < 600 ? (
 							<ServerError message={error.toString()} />
 						) : (
 							<Error message={error.toString()} />
