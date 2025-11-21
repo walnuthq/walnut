@@ -278,6 +278,7 @@ export interface L2TransactionData {
 		l1DataGas: number;
 		l2Gas: number;
 	};
+	value?: string;
 }
 
 export interface TransactionSimulationResult {
@@ -294,4 +295,5 @@ export interface SimulationPayloadWithCalldata {
 	// Either chainId or rpcUrl should be provided
 	chainId?: string;
 	rpcUrl?: string;
+	value?: string;
 }

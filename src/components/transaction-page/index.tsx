@@ -176,6 +176,7 @@ export function TransactionPage({
 			if (l2TransactionData.blockNumber)
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (chainId) params.set('chainId', chainId);
+			if (l2TransactionData.value) params.set('value', l2TransactionData.value);
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};

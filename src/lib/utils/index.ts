@@ -20,6 +20,7 @@ export interface SimulationPayload {
 	nonce?: number;
 	rpcUrl?: string;
 	chainId?: string;
+	value?: string;
 }
 
 export function cn(...inputs: ClassValue[]) {
@@ -163,6 +164,7 @@ export function extractSimulationPayloadWithCalldata(
 	const transactionVersion = searchParams.get('transactionVersion');
 	const nonce = searchParams.get('nonce');
 	const chainId = searchParams.get('chainId');
+	const value = searchParams.get('value');
 
 	if (senderAddress && calldata && transactionVersion) {
 		const parsedCalldata = parseCalldata(calldata);
@@ -172,7 +174,8 @@ export function extractSimulationPayloadWithCalldata(
 			calldata: parsedCalldata,
 			transactionVersion: parseInt(transactionVersion),
 			nonce: nonce ? parseInt(nonce) : undefined,
-			chainId: chainId ?? undefined
+			chainId: chainId ?? undefined,
+			value: value ?? undefined
 		};
 
 		if (blockNumber) {
@@ -256,6 +259,7 @@ export function openSimulationPage(simulationPayload: SimulationPayload): void {
 	if (simulationPayload.nonce !== undefined)
 		params.set('nonce', simulationPayload.nonce.toString());
 	if (simulationPayload.chainId) params.set('chainId', simulationPayload.chainId);
+	if (simulationPayload.value) params.set('value', simulationPayload.value);
 
 	window.location.href = `/simulations?${params.toString()}`;
 }

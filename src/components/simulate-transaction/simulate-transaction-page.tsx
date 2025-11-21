@@ -68,6 +68,8 @@ export function SimulateTransactionPage({
 		simulationPayload?.blockNumber ?? ''
 	);
 
+	const [_value, _setValue] = useState<string>(simulationPayload?.value ?? '');
+
 	const [_transactionVersion, _setTransactionVersion] = useState<number>(
 		simulationPayload?.transactionVersion || defaultTransactionVersion
 	);
@@ -284,11 +286,33 @@ export function SimulateTransactionPage({
 		}
 	};
 
+	const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const inputValue = e.target.value;
+
+		if (inputValue === '') {
+			_setValue('');
+			return;
+		}
+
+		// Allow numbers, decimal numbers, and ether format (e.g., 0.05ether, 1ether)
+		if (
+			/^[0-9]+$/.test(inputValue) ||
+			/^[0-9]+\.?[0-9]*ether$/i.test(inputValue) ||
+			/^[0-9]*\.[0-9]+ether$/i.test(inputValue) ||
+			/^[0-9]+\.?[0-9]*$/.test(inputValue)
+		) {
+			_setValue(inputValue);
+		} else {
+			e.target.value = _value;
+		}
+	};
+
 	useEffect(() => {
 		if (!simulationPayload) return;
 
 		_setSenderAddress(simulationPayload.senderAddress ?? '');
 		_setBlockNumber(simulationPayload.blockNumber ?? '');
+		_setValue(simulationPayload.value ?? '');
 
 		if (simulationPayload.chainId) {
 			_setChain({ chainId: simulationPayload.chainId });
@@ -443,7 +467,8 @@ export function SimulateTransactionPage({
 				senderAddress: _senderAddress,
 				calls: processedCalls,
 				blockNumber: _blockNumber === '' ? undefined : _blockNumber,
-				transactionVersion: _transactionVersion
+				transactionVersion: _transactionVersion,
+				value: _value.trim() !== '' ? _value.trim() : undefined
 			};
 
 			if (_chain) {
@@ -901,6 +926,25 @@ export function SimulateTransactionPage({
 									/>
 									<p className="text-xs text-muted-foreground col-span-3 col-start-2">
 										If you leave the field empty, the latest block will be used.
+									</p>
+								</div>
+
+								<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
+									<Label htmlFor="value" className="text-right">
+										Value
+									</Label>
+									<Input
+										type="text"
+										inputMode="decimal"
+										id="value"
+										value={_value}
+										onChange={handleValueChange}
+										className="col-span-3 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+										placeholder="0 or 0.05ether"
+									/>
+									<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+										Optional: ETH value to send with transaction. Formats: wei (e.g.,
+										1000000000000000000) or ether (e.g., 0.05ether, 1ether). Leave empty to send 0.
 									</p>
 								</div>
 

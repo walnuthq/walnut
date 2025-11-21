@@ -32,6 +32,7 @@ export interface TransactionParameters {
 	nonce?: number;
 	chainId?: string;
 	session?: any;
+	value?: string;
 }
 
 /**

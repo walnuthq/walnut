@@ -31,6 +31,7 @@ type WithCalldata = {
 	transaction_version: number;
 	nonce: number | undefined;
 	chain_id: string;
+	value?: string;
 };
 
 const getParameters = ({
@@ -68,7 +69,8 @@ const getParameters = ({
 			calldata: withCalldata.calldata[4] as Hex,
 			blockNumber: withCalldata.block_number ? BigInt(withCalldata.block_number) : undefined,
 			nonce: withCalldata.nonce,
-			chainId: withCalldata.chain_id
+			chainId: withCalldata.chain_id,
+			value: withCalldata.value
 		};
 	}
 	throw new WalnutError(
@@ -151,7 +153,8 @@ export const POST = async (request: NextRequest) => {
 				ethdebugDirs,
 				cwd,
 				chainId,
-				session
+				session,
+				value: parameters.value
 			};
 
 			walnutCliResult = await soldb(walnutParams);

@@ -94,8 +94,14 @@ export function SimulationPage({
 					};
 					setDebuggerPayload(debuggerPayload);
 				}
-			} catch (err) {
-				setError({ message: (err as FetchError).message.toString() });
+			} catch (err: any) {
+				// Extract error message and status from error
+				const errorMessage = err?.message || err?.toString() || 'An error occurred';
+				const errorStatus = err?.status || err?.response?.status || undefined;
+				setError({
+					message: errorMessage,
+					status: errorStatus
+				});
 			} finally {
 				setIsLoading(false);
 			}
@@ -114,12 +120,14 @@ export function SimulationPage({
 	let content = null;
 	if (isLoading) {
 		content = <Loader />;
-	} else if (error && error.status) {
+	} else if (error) {
+		// Show error if it exists (with or without status)
+		const errorMessage = error.message || error.toString();
 		content =
-			error.status >= 500 && error.status < 600 ? (
-				<ServerError message={error.toString()} />
+			error.status && error.status >= 500 && error.status < 600 ? (
+				<ServerError message={errorMessage} />
 			) : (
-				<Error message={error.toString()} />
+				<Error message={errorMessage} />
 			);
 	} else if (l2TransactionData) {
 		content = (
@@ -149,6 +157,9 @@ export function SimulationPage({
 			if (l2TransactionData.blockNumber)
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (simulationPayload?.chainId) params.set('chainId', simulationPayload.chainId);
+			// Use value from transactionData if available, otherwise from simulationPayload
+			const valueToUse = l2TransactionData.value || simulationPayload?.value;
+			if (valueToUse) params.set('value', valueToUse);
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};

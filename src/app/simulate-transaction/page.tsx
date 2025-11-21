@@ -22,6 +22,7 @@ export default async function Page({
 			const transactionVersion = resolvedSearchParams.transactionVersion as string;
 			const chainId = resolvedSearchParams.chainId as string;
 			const nonce = resolvedSearchParams.nonce as string;
+			const value = resolvedSearchParams.value as string;
 			const txHashParams = resolvedSearchParams.txHash as string;
 			const demoParam = resolvedSearchParams.demo as string;
 
@@ -52,6 +53,10 @@ export default async function Page({
 
 				if (nonce) {
 					payload.nonce = parseInt(nonce);
+				}
+
+				if (value) {
+					payload.value = value;
 				}
 
 				simulationPayload = payload;

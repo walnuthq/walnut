@@ -288,7 +288,9 @@ export class SoldbExecutionError extends WalnutError {
 		message: string,
 		chainId?: string | number,
 		details?: string,
-		session?: AuthType['session'] | null
+		session?: AuthType['session'] | null,
+		errorType?: string,
+		errorContext?: Record<string, any>
 	) {
 		const chainLabel = chainId ? getChainLabel(chainId, session) : null;
 		const chainInfo = chainLabel ? ` on ${chainLabel}` : '';
@@ -299,7 +301,13 @@ export class SoldbExecutionError extends WalnutError {
 			500,
 			`Debug execution failed${chainInfo}.`,
 			details || message,
-			{ chainId, chainLabel, originalMessage: message }
+			{
+				chainId,
+				chainLabel,
+				originalMessage: message,
+				...(errorType && { errorType }),
+				...(errorContext && Object.keys(errorContext).length > 0 && { errorContext })
+			}
 		);
 	}
 }
@@ -308,15 +316,12 @@ export class SoldbTimeoutError extends WalnutError {
 	constructor(chainId?: string | number, session?: AuthType['session'] | null) {
 		const chainLabel = chainId ? getChainLabel(chainId, session) : null;
 		const chainInfo = chainLabel ? ` on ${chainLabel}` : '';
+		const userMessage = `Transaction execution timed out${chainInfo}.`;
 
-		super(
-			`Execution timeout${chainInfo}`,
-			'SOLDB_TIMEOUT',
-			504,
-			`Transaction execution timed out${chainInfo}.`,
-			'The transaction took too long to process.',
-			{ chainId, chainLabel }
-		);
+		super(`Execution timeout${chainInfo}`, 'SOLDB_TIMEOUT', 504, userMessage, userMessage, {
+			chainId,
+			chainLabel
+		});
 	}
 }
 
