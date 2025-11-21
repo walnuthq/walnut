@@ -2,7 +2,7 @@
 
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Input } from './input';
-import { useEffect, useState, useCallback, useLayoutEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -11,7 +11,6 @@ import {
 	CommandItem,
 	CommandList
 } from './command';
-import { DialogTitle } from './dialog';
 import { cn } from '@/lib/utils';
 import { fetchSearchData } from '@/lib/api';
 import { SearchDataResponse, SearchData } from '@/lib/types';
@@ -19,7 +18,10 @@ import { Badge } from './badge';
 import { Network, useSettings } from '@/lib/context/settings-context-provider';
 import Link from 'next/link';
 import debounce from 'lodash/debounce';
+import { useUserContext } from '@/lib/context/user-context-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { NetworkBadge } from './network-badge';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 export function Search({
 	className,
@@ -33,17 +35,45 @@ export function Search({
 	const [dataResponseResults, setDataResponseResults] = useState<number>(0);
 	const [error, setError] = useState<string | undefined>();
 	const [open, setOpen] = useState(false);
-	const [isMac, setIsMac] = useState(false);
+	const [isMac, setIsMac] = useState(true);
 	const { networks } = useSettings();
-	const coreNetworks = '';
-	const [allAvailableNetworksString, setAllAvailableNetworksString] =
-		useState<string>(coreNetworks);
+	const { isLogged } = useUserContext();
+	const [tooltipOpen, setTooltipOpen] = useState(false);
+
+	const { parseChain } = useSettings();
+	const coreNetworks = ['sn_mainnet', 'sn_sepolia']
+		.map((item) => {
+			const chainData = parseChain(item);
+			if (chainData) {
+				return (
+					<NetworkBadge
+						key={`${chainData.chain}-${chainData.stack}`}
+						network={chainData}
+						withoutStack
+					/>
+				);
+			} else {
+				return <NetworkBadge key={item} network={{ chain: item }} withoutStack />;
+			}
+		})
+		.filter(Boolean);
+	const [allAvailableNetworksString, setAllAvailableNetworksString] = useState(coreNetworks);
 
 	const fetchSearchDataResponse = useCallback(
 		async (value: string) => {
 			try {
+				// Trim whitespace from the beginning and end of the hash
+				const trimmedHash = value.trim();
+
+				// Don't make API call if hash is empty after trimming
+				if (!trimmedHash) {
+					setDataResponseResults(0);
+					setSearchDataResponse(undefined);
+					return;
+				}
+
 				const searchData: SearchDataResponse = await fetchSearchData({
-					hash: value
+					hash: trimmedHash
 				});
 				setSearchDataResponse(searchData);
 				setDataResponseResults(
@@ -58,18 +88,35 @@ export function Search({
 	);
 
 	useEffect(() => {
-		if (networks.length > 0) {
-			const networkNames = networks.map((network) => network.networkName);
-			setAllAvailableNetworksString(`${networkNames.join(', ')}`);
+		if (!networks || networks.length === 0) {
+			return;
 		}
+
+		const dynamicBadges = networks
+			.map(({ networkName }) => {
+				const chainData = parseChain(networkName);
+				return chainData ? (
+					<NetworkBadge
+						key={`${chainData.chain}-${chainData.stack}`}
+						network={chainData}
+						withoutStack
+					/>
+				) : (
+					<NetworkBadge key={networkName} network={{ chain: networkName }} withoutStack />
+				);
+			})
+			.filter(Boolean);
+
+		setAllAvailableNetworksString([...coreNetworks, ...dynamicBadges]);
 	}, [networks]);
 
 	useEffect(() => {
 		setSearchDataResponse(undefined);
 		setError(undefined);
 
-		if (open && searchValue.trim().length > 3) {
-			fetchSearchDataResponse(searchValue);
+		const trimmedSearchValue = searchValue.trim();
+		if (open && trimmedSearchValue.length > 3) {
+			fetchSearchDataResponse(trimmedSearchValue);
 		} else {
 			setSearchValue('');
 		}
@@ -87,7 +134,9 @@ export function Search({
 	}, [debounceSearch]);
 
 	const onSearchValueChanged = (val: string) => {
-		debounceSearch(val);
+		// Trim the input value immediately to provide better UX
+		const trimmedVal = val.trim();
+		debounceSearch(trimmedVal);
 	};
 
 	useEffect(() => {
@@ -101,12 +150,69 @@ export function Search({
 		return () => document.removeEventListener('keydown', down);
 	}, []);
 
-	useLayoutEffect(() => {
+	useEffect(() => {
 		// Set isMac state on client side
 		setIsMac(
 			typeof window !== 'undefined' && window.navigator.userAgent.toUpperCase().indexOf('MAC') >= 0
 		);
 	}, []); // Run only once after the component mounts
+
+	const getFoundNetworks = useCallback(() => {
+		if (!searchDataResponse) return [];
+
+		const foundNetworkIds = new Set<string>();
+
+		[
+			...searchDataResponse.transactions,
+			...searchDataResponse.classes,
+			...searchDataResponse.contracts
+		].forEach((item) => {
+			if (item.source.chainId) {
+				foundNetworkIds.add(item.source.chainId);
+			} else if (item.source.rpcUrl) {
+				foundNetworkIds.add(item.source.rpcUrl);
+			}
+		});
+		return Array.from(foundNetworkIds)
+			.map((networkId) => {
+				let chainData = parseChain(networkId);
+				if (chainData) {
+					return (
+						<NetworkBadge
+							key={`found-${chainData.chain}-${chainData.stack}`}
+							network={chainData}
+							withoutStack
+						/>
+					);
+				}
+				const network = networks.find((n) => n.rpcUrl === networkId);
+				if (network) {
+					chainData = parseChain(network.networkName);
+					if (chainData) {
+						return (
+							<NetworkBadge
+								key={`found-${chainData.chain}-${chainData.stack}`}
+								network={chainData}
+								withoutStack
+							/>
+						);
+					} else {
+						return (
+							<NetworkBadge
+								key={`found-${network.networkName}`}
+								network={{ chain: network.networkName }}
+								withoutStack
+							/>
+						);
+					}
+				}
+
+				return (
+					<NetworkBadge key={`found-${networkId}`} network={{ chain: networkId }} withoutStack />
+				);
+			})
+			.filter(Boolean);
+	}, [searchDataResponse, networks, parseChain]);
 
 	return (
 		<div className={cn('flex flex-row', className)} {...props}>
@@ -127,10 +233,7 @@ export function Search({
 							name="search"
 							onFocus={() => setOpen(true)}
 						/>
-						<div
-							className="pointer-events-none border border-border text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center"
-							suppressHydrationWarning
-						>
+						<div className="pointer-events-none border border-border text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
 							{isMac ? '⌘K' : 'Ctrl+K'}
 						</div>
 					</TooltipTrigger>
@@ -139,10 +242,10 @@ export function Search({
 			</TooltipProvider>
 
 			<CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
-				<DialogTitle className="sr-only">Search</DialogTitle>
 				<CommandInput
 					placeholder="Search for transaction or contract"
 					onValueChange={(value) => onSearchValueChanged(value)}
+					className="pr-6"
 					displayBorder={!!searchDataResponse || !!error || searchValue.length > 3}
 				/>
 				<CommandList>
@@ -156,6 +259,8 @@ export function Search({
 											data={tx}
 											type="transactions"
 											networks={networks}
+											chainData={tx.source.chainId ? parseChain(tx.source.chainId) : {}}
+											parseChain={parseChain}
 										/>
 									))}
 								</CommandGroup>
@@ -168,6 +273,8 @@ export function Search({
 											data={cls}
 											type="classes"
 											networks={networks}
+											chainData={cls.source.chainId ? parseChain(cls.source.chainId) : {}}
+											parseChain={parseChain}
 										/>
 									))}
 								</CommandGroup>
@@ -180,6 +287,8 @@ export function Search({
 											data={contract}
 											type="contracts"
 											networks={networks}
+											chainData={contract.source.chainId ? parseChain(contract.source.chainId) : {}}
+											parseChain={parseChain}
 										/>
 									))}
 								</CommandGroup>
@@ -198,12 +307,35 @@ export function Search({
 							>
 								<p className="text-muted-foreground">
 									<span className="font-semibold">{dataResponseResults}</span>
-									&nbsp;{dataResponseResults === 1 ? 'result' : 'results'} found on&nbsp;
-									<span className="font-semibold">{allAvailableNetworksString}</span>
-									&nbsp;networks.&nbsp;
-									<Link href="/settings" className="underline">
-										Add custom networks to search.
-									</Link>
+									&nbsp;found {dataResponseResults === 1 ? 'result' : 'results'} across{' '}
+									<Popover open={tooltipOpen} onOpenChange={setTooltipOpen}>
+										<PopoverTrigger
+											className="underline"
+											onMouseEnter={() => setTooltipOpen(true)}
+											onMouseLeave={() => setTooltipOpen(false)}
+										>
+											{allAvailableNetworksString.length}{' '}
+											{allAvailableNetworksString.length > 1 ? 'networks' : 'network'}
+										</PopoverTrigger>
+										<PopoverContent className="w-80 p-4" side="top">
+											<div className="space-y-2">
+												<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 border-b pb-1">
+													All Available Networks
+												</h4>
+												<div className="space-y-1">
+													{allAvailableNetworksString.map((network, index) => (
+														<div
+															key={index}
+															className="flex items-center space-x-2 text-xs text-gray-700 dark:text-gray-300"
+														>
+															<span className="break-words">{network}</span>
+														</div>
+													))}
+												</div>
+											</div>
+										</PopoverContent>
+									</Popover>
+									.{' '}
 								</p>
 							</CommandItem>
 						</div>
@@ -217,20 +349,32 @@ export function Search({
 const SearchItem = ({
 	data,
 	type,
-	networks
+	networks,
+	chainData,
+	parseChain
 }: {
 	data: SearchData;
 	type: 'transactions' | 'contracts' | 'classes';
 	networks: Network[];
+	chainData?: {
+		stack?: string | undefined;
+		chain?: string | undefined;
+	} | null;
+	parseChain?: (chainString: string) => {
+		stack?: string | undefined;
+		chain?: string | undefined;
+	} | null;
 }) => {
 	const handleSearchItem = useCallback(() => {
 		if (type === 'transactions') {
-			if (data.source.chainId) {
+			if (data.source.rpcUrl) {
+				window.location.href = `/transactions?rpcUrl=${encodeURIComponent(
+					data.source.rpcUrl
+				)}&txHash=${data.hash}`;
+			} else if (data.source.chainId) {
 				window.location.href = `/transactions?chainId=${data.source.chainId.toUpperCase()}&txHash=${
 					data.hash
 				}`;
-			} else {
-				console.log('The chainId is not defined');
 			}
 		} else if (type === 'contracts') {
 			window.location.href = `/contracts/${data.hash}`;
@@ -239,16 +383,46 @@ const SearchItem = ({
 		}
 	}, [data, type]);
 
-	const network = undefined; // chain-based routing now; we display chain key/enum
-
+	const network = data.source.rpcUrl
+		? networks.find((n) => n.rpcUrl === data.source.rpcUrl)
+		: undefined;
+	const networkChainData =
+		parseChain && network?.networkName ? parseChain(network?.networkName) : '';
 	return (
 		<CommandItem
 			onSelect={handleSearchItem}
-			className="truncate cursor-pointer !bg-transparent hover:!bg-accent"
+			className={`truncate cursor-pointer !bg-transparent hover:!bg-accent flex gap-2 ${
+				network || (data.source.chainId && chainData) ? 'flex justify-between' : ''
+			}`}
 			style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
 		>
-			{data.source.chainId ? (
-				<Badge className="hover:bg-primary">{data.source.chainId}</Badge>
+			{network ? (
+				networkChainData ? (
+					<div className="flex-shrink-0">
+						<NetworkBadge
+							network={networkChainData}
+							withoutStack
+							className="min-w-[6rem] text-center justify-center"
+						/>
+					</div>
+				) : (
+					<div className="flex-shrink-0">
+						<NetworkBadge
+							key={network?.networkName}
+							network={{ chain: network?.networkName }}
+							withoutStack
+							className="min-w-[6rem] text-center justify-center"
+						/>
+					</div>
+				)
+			) : data.source.chainId && chainData ? (
+				<div className="flex-shrink-0">
+					<NetworkBadge
+						network={chainData}
+						withoutStack
+						className="min-w-[6rem] text-center justify-center"
+					/>
+				</div>
 			) : null}
 			<p className="ml-2 text-sm truncate">{data.hash}</p>
 		</CommandItem>
