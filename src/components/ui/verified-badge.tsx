@@ -8,7 +8,7 @@ export function VerifiedBadge() {
 			<div className="h-4"></div>
 			<div className="flex gap-1 items-center">
 				<ShieldCheckIcon className="h-4 w-4" />
-				Verified on Walnut
+				Verified on Sourcify
 			</div>
 		</Badge>
 	);

@@ -12,6 +12,16 @@ type RpcContext = {
 	key?: string;
 };
 
+interface SourcifyResult {
+	match: string;
+	chainId: string;
+	address: string;
+}
+
+interface SourcifyResponse {
+	results: SourcifyResult[];
+}
+
 type NetworkMatch = RpcContext & { hasCode: boolean };
 
 type VerificationResult = {
@@ -33,8 +43,7 @@ export const GET = async (
 		}
 
 		const checksumAddress = getAddress(address as `0x${string}`);
-		const includeSourceCode =
-			request.nextUrl.searchParams.get('include_source_code') === 'true';
+		const includeSourceCode = request.nextUrl.searchParams.get('include_source_code') === 'true';
 		const rpcUrlsParam = request.nextUrl.searchParams.get('rpc_urls');
 
 		const authSession = await getServerSession();
@@ -42,7 +51,7 @@ export const GET = async (
 
 		const rpcContexts = buildRpcContexts(rpcUrlsParam, supportedNetworks);
 		const matchedNetworks = await detectNetworks(checksumAddress, rpcContexts);
-		const verification = await checkSourcifyVerification(checksumAddress, matchedNetworks);
+		const verification = await checkSourcifyVerification(checksumAddress);
 
 		return NextResponse.json({
 			verified: verification.verified,
@@ -129,40 +138,35 @@ async function detectNetworks(address: Address, networks: RpcContext[]): Promise
 	return results.filter((result) => result.hasCode);
 }
 
-async function checkSourcifyVerification(
-	address: Address,
-	networks: NetworkMatch[]
-): Promise<VerificationResult> {
-	const networksWithChainId = networks.filter((network) => typeof network.chainId === 'number');
-	if (!networksWithChainId.length) {
+async function checkSourcifyVerification(address: Address): Promise<VerificationResult> {
+	const url = `https://sourcify.dev/server/v2/contract/all-chains/${address}`;
+
+	try {
+		const response = await fetch(url, {
+			headers: { Accept: 'application/json' },
+			cache: 'no-store'
+		});
+
+		if (!response.ok) {
+			return { verified: false };
+		}
+
+		const data = (await response.json()) as SourcifyResponse;
+
+		if (!data.results || data.results.length === 0) {
+			return { verified: false };
+		}
+
+		const hasMatch = data.results.some(
+			(result) =>
+				result.match === 'match' ||
+				result.match === 'exact_match' ||
+				result.match === 'partial_match'
+		);
+
+		return { verified: hasMatch };
+	} catch (error) {
+		console.warn(`[contracts] Sourcify check failed for ${address}:`, error);
 		return { verified: false };
 	}
-
-	for (const network of networksWithChainId) {
-		const url = `${SOURCIFY_URL}/v2/contract/${network.chainId}/${address}?fields=metadata`;
-		try {
-			const response = await fetch(url, {
-				headers: { Accept: 'application/json' },
-				cache: 'no-store'
-			});
-			if (!response.ok) continue;
-
-			let solidityVersion: string | undefined;
-			try {
-				const json = (await response.json()) as {
-					metadata?: { compiler?: { version?: string } };
-				};
-				solidityVersion = json.metadata?.compiler?.version;
-			} catch {}
-
-			return { verified: true, solidityVersion };
-		} catch (error) {
-			console.warn(
-				`[contracts] Sourcify check failed for ${address} on ${network.chainId}:`,
-				error
-			);
-		}
-	}
-
-	return { verified: false };
 }

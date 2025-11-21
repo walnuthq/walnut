@@ -76,16 +76,16 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 							</CopyToClipboardElement>
 						</h1>
 						{contractData && getNetworkBadge(contractData.deployedSources, parseChain)}
-						{contractData && contractData.verified ? <VerifiedBadge /> : <NonVerifiedBadge />}
+						{contractData && (contractData.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
 					</div>
 					{contractData && (
 						<>
 							<ContractDetails contractData={contractData} />
-							<ClassSourceCode
+							{/* <ClassSourceCode
 								isClassVerified={contractData.verified}
 								sourceCode={contractData.sourceCode ?? {}}
 								isContract={true}
-							/>
+							/> */}
 						</>
 					)}
 					{contractData ? null : error && error.status ? (
@@ -142,10 +142,6 @@ function getNetworkBadge(
 	deployedSources: GetContractResponse['deployedSources'],
 	parseChain: ParseChainFn
 ) {
-	if (!deployedSources.length) {
-		return <p className="text-sm text-muted-foreground lg:mt-0">Not found on supported networks</p>;
-	}
-
 	const networksArray = deployedSources
 		.map((source) => {
 			const identifier = source.chainId || source.value || source.rpcUrl;
