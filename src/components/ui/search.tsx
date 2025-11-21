@@ -392,7 +392,7 @@ const SearchItem = ({
 		<CommandItem
 			onSelect={handleSearchItem}
 			className={`truncate cursor-pointer !bg-transparent hover:!bg-accent flex gap-2 ${
-				network || (data.source.chainId && chainData) ? 'flex justify-between' : ''
+				network || (data.source.chainId && chainData) ? 'flex items-center gap-2' : ''
 			}`}
 			style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
 		>

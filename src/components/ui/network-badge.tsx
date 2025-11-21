@@ -227,7 +227,7 @@ export function NetworkBadge({
 					side="bottom"
 					sideOffset={5}
 				>
-					<div className="text-xs text-center pb-1 mb-2">{title}</div>
+					<div className="text-xs text-center ">{title}</div>
 
 					<div className="space-y-2">
 						<div className="flex flex-wrap gap-2">
