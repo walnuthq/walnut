@@ -1,4 +1,11 @@
-import { createPublicClient, http, type GetTransactionErrorType, type Hash } from 'viem';
+import {
+	createPublicClient,
+	http,
+	type GetTransactionErrorType,
+	type Hash,
+	isAddress,
+	type Address
+} from 'viem';
 import { type NextRequest, NextResponse } from 'next/server';
 import { type SearchDataResponse, type SearchData, AuthType } from '@/lib/types';
 import { mapChainIdNumberToEnum } from '@/lib/utils';
@@ -27,6 +34,7 @@ export const GET = async (
 
 	const { hash } = await params;
 	const hashAsHash = hash as Hash;
+	const hashAsAddress = isAddress(hash) ? (hash as Address) : undefined;
 	// Prefer chain keys sent via ?chains=KEY1,KEY2; fallback to rpc_urls; default to all enabled.
 	type Pair = { key?: string; rpcUrl: string };
 	let pairs: Pair[] = [];
@@ -123,10 +131,37 @@ export const GET = async (
 			}
 		})
 	);
+	const contracts: (SearchData | undefined)[] =
+		hashAsAddress
+			? await Promise.all(
+					pairs.map(async ({ rpcUrl, key }) => {
+						const client = createPublicClient({ transport: http(rpcUrl) });
+						try {
+							const bytecode = await client.getCode({ address: hashAsAddress });
+							if (bytecode && bytecode !== '0x') {
+								let resolvedChainId: string;
+								if (key) {
+									resolvedChainId = key;
+								} else {
+									const numeric = await client.getChainId();
+									resolvedChainId = mapChainIdNumberToEnum(numeric) || numeric.toString();
+								}
+								return {
+									source: { chainId: resolvedChainId, rpcUrl: undefined },
+									hash: hashAsAddress
+								};
+							}
+						} catch (error) {
+							console.error('getCode error', error);
+						}
+					})
+			  )
+			: [];
+
 	const response: SearchDataResponse = {
 		transactions: transactions.filter((transaction: SearchData | undefined) => !!transaction),
 		classes: [],
-		contracts: []
+		contracts: contracts.filter((contract: SearchData | undefined) => !!contract)
 	};
 	return NextResponse.json(response);
 };
@@ -142,6 +177,7 @@ export const POST = async (
 
 	const { hash } = await params;
 	const hashAsHash = hash as Hash;
+	const hashAsAddress = isAddress(hash) ? (hash as Address) : undefined;
 	try {
 		const body = (await request.json()) as { chains?: string[] } | undefined;
 		const chains = (body?.chains ?? []).map((c) => c.trim()).filter(Boolean);
@@ -222,10 +258,37 @@ export const POST = async (
 			})
 		);
 
+		const contracts: (SearchData | undefined)[] =
+			hashAsAddress && pairs.length > 0
+				? await Promise.all(
+						pairs.map(async ({ rpcUrl, key }) => {
+							const client = createPublicClient({ transport: http(rpcUrl) });
+							try {
+								const bytecode = await client.getCode({ address: hashAsAddress });
+								if (bytecode && bytecode !== '0x') {
+									let resolvedChainId: string;
+									if (key) {
+										resolvedChainId = key;
+									} else {
+										const numeric = await client.getChainId();
+										resolvedChainId = mapChainIdNumberToEnum(numeric) || numeric.toString();
+									}
+									return {
+										source: { chainId: resolvedChainId, rpcUrl: undefined },
+										hash: hashAsAddress
+									};
+								}
+							} catch (error) {
+								console.error('getCode error', error);
+							}
+						})
+				  )
+				: [];
+
 		const response: SearchDataResponse = {
 			transactions: transactions.filter((transaction: SearchData | undefined) => !!transaction),
 			classes: [],
-			contracts: []
+			contracts: contracts.filter((contract: SearchData | undefined) => !!contract)
 		};
 		return NextResponse.json(response);
 	} catch (e) {
