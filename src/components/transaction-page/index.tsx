@@ -214,25 +214,27 @@ export function TransactionPage({
 									{l2TxHash && (
 										<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
 											Transaction{' '}
-											<CopyToClipboardElement
-												value={l2TxHash}
-												toastDescription="The address has been copied."
-												className="hidden lg:block p-0"
-											>
-												<AddressLink address={l2TxHash}>{l2TxHash}</AddressLink>
-											</CopyToClipboardElement>
-											<CopyToClipboardElement
-												value={l2TxHash}
-												toastDescription="The address has been copied."
-												className="lg:hidden p-0"
-											>
-												<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
-											</CopyToClipboardElement>
-											{chainDetails && <NetworkBadge network={chainDetails} />}
+											<div className=" gap-2 flex flex-nowrap items-center">
+												<CopyToClipboardElement
+													value={l2TxHash}
+													toastDescription="The address has been copied."
+													className="hidden lg:block p-0"
+												>
+													<AddressLink address={l2TxHash}>{l2TxHash}</AddressLink>
+												</CopyToClipboardElement>
+												<CopyToClipboardElement
+													value={l2TxHash}
+													toastDescription="The address has been copied."
+													className="lg:hidden p-0"
+												>
+													<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
+												</CopyToClipboardElement>
+												{chainDetails && <NetworkBadge network={chainDetails} />}
+											</div>
 										</h1>
 									)}
 									{l1TxHash && (
-										<h2 className="text-base leading-6 flex flex-nowrap items-center">
+										<h2 className="text-base leading-6 flex flex-nowrap gap-2 items-center">
 											Corresponding L1 Transaction{' '}
 											<CopyToClipboardElement
 												value={l1TxHash}
