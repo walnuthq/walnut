@@ -14,6 +14,7 @@ import { Container } from '@/components/ui/container';
 import { UserSection } from '@/components/auth/user-section';
 import { authClient } from '@/lib/auth-client';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { useUserContext } from '@/lib/context/user-context-provider';
 import { isAuthorizationRequiredFeatureActive } from '@/app/api/feature-flag-service';
 import { useTheme } from 'next-themes';
 import {
@@ -32,6 +33,7 @@ export function HeaderNav({
 	hideUserSection?: boolean;
 }) {
 	const { data: session, isPending } = authClient.useSession();
+	const { isLogged } = useUserContext();
 	const { trackingActive } = useSettings();
 	const { setTheme, resolvedTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
@@ -148,11 +150,19 @@ export function HeaderNav({
 									</div>
 								)}
 								<div className="hidden md:block">
-									<Link href="/simulate-transaction">
-										<Button variant="outline">
-											<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-										</Button>
-									</Link>
+									{isLogged ? (
+										<Link href="/simulate-transaction">
+											<Button variant="outline">
+												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+											</Button>
+										</Link>
+									) : (
+										<Link href="/login">
+											<Button variant="outline">
+												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+											</Button>
+										</Link>
+									)}
 								</div>
 							</div>
 							{!hideUserSection && (
@@ -199,9 +209,15 @@ export function HeaderNav({
 					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-t shadow-md border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
 							<div>
-								<Link href={`/simulate-transaction`}>
-									<Button variant="ghost"> Simulate transaction</Button>
-								</Link>
+								{isLogged ? (
+									<Link href={`/simulate-transaction`}>
+										<Button variant="ghost"> Simulate transaction</Button>
+									</Link>
+								) : (
+									<Link href="/login">
+										<Button variant="ghost"> Simulate transaction</Button>
+									</Link>
+								)}
 							</div>
 							<div>
 								<a href="/settings">
