@@ -22,6 +22,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from './ui/dropdown-menu';
+import { useEffect, useState } from 'react';
 
 export function HeaderNav({
 	isMainPage = false,
@@ -32,9 +33,10 @@ export function HeaderNav({
 }) {
 	const { data: session, isPending } = authClient.useSession();
 	const { trackingActive } = useSettings();
-	const { theme, setTheme, resolvedTheme } = useTheme();
-
-	const Icon = resolvedTheme === 'dark' ? MoonIcon : SunIcon;
+	const { setTheme, resolvedTheme } = useTheme();
+	const [mounted, setMounted] = useState(false);
+	useEffect(() => setMounted(true), []);
+	const Icon = mounted && resolvedTheme === 'dark' ? MoonIcon : SunIcon;
 	return (
 		<Disclosure as="nav" className={`${!isMainPage && 'bg-background  border-b border-border'}`}>
 			{() => (
@@ -173,15 +175,17 @@ export function HeaderNav({
 							)}
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<button
-										className="
+									{mounted && (
+										<button
+											className="
 											p-2 hover:bg-accent rounded-sm ml-3 hidden md:block
 											focus:outline-none focus:ring-0
 											focus-visible:outline-none focus-visible:ring-0
 										"
-									>
-										<Icon className="w-[1.2rem] h-[1.2rem]" />
-									</button>
+										>
+											<Icon className="w-[1.2rem] h-[1.2rem]" />
+										</button>
+									)}
 								</DropdownMenuTrigger>
 								<DropdownMenuContent>
 									<DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>

@@ -21,8 +21,8 @@ export function CodeViewer({
 	results?: InternalFnCallIO[];
 	codeLocation: CodeLocation | undefined;
 }) {
-	const { theme } = useTheme(); // 'light' | 'dark' | 'system'
-	const isDark = theme === 'dark';
+	const { resolvedTheme } = useTheme(); // 'light' | 'dark' | 'system'
+	const isDark = resolvedTheme === 'dark';
 	const editorRef = useRef<Editor.IStandaloneCodeEditor | null>(null);
 	const [editorDecorations, setEditorDecorations] =
 		useState<Editor.IEditorDecorationsCollection | null>(null);
