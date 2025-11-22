@@ -38,63 +38,68 @@ export function DebuggerView() {
 	} = debuggerContext;
 
 	return (
-		<ResizablePanelGroup direction="horizontal" className="w-full flex flex-row">
-			<ResizablePanel
-				defaultSize={30}
-				className="flex flex-col justify-between gap-4 border-neutral-200"
+		<div className="flex w-full flex-1 min-h-0">
+			<ResizablePanelGroup
+				direction="horizontal"
+				className="flex w-full flex-1 flex-row min-h-0 overflow-hidden"
 			>
-				<Sidebar handleFileClick={setActiveFile} />
-			</ResizablePanel>
-			<ResizableHandle withHandle className="w-[1px]" />
-			<ResizablePanel defaultSize={70} className="flex flex-col flex-grow">
-				<Controls
-					nextStep={nextStep}
-					previousStep={prevStep}
-					stepIndex={currentStepIndex}
-					totalSteps={totalSteps}
-					contractCall={contractCall}
-					activeFile={activeFile}
-				/>
-				<div className="flex-grow">
-					{currentStep?.withLocation ? (
-						<CodeViewer
-							key={`${contractCall?.classHash}-${activeFile}`} // Force re-render only on contract/file change, not on every step
-							content={activeFile ? sourceCode[activeFile] : ''}
-							codeLocation={codeLocation}
-							highlightClass={`${
-								isExpressionHover ? 'bg-yellow-500' : 'bg-yellow-300'
-							} bg-opacity-20 dark:bg-opacity-10 transition-all`}
-							args={codeLocation ? currentStep.withLocation.arguments : undefined}
-							results={codeLocation ? currentStep.withLocation.results : undefined}
-						/>
-					) : (
-						<Alert className="m-4 w-fit">
-							<ExclamationTriangleIcon className="h-5 w-5" />
-							<AlertTitle>No Source Code Available</AlertTitle>
-							<AlertDescription>
-								<p className="mt-2 mb-1">
-									Contract Address:{' '}
-									<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
-								</p>
-								<p>
-									The source code for this contract is missing. To enable the step-by-step debugger,
-									verify the contract on Sourcify by following{' '}
-									<a
-										href={VERIFY_DOCS_URL}
-										className="underline-offset-4 hover:underline text-blue-500"
-										target="_blank"
-										rel="noreferrer noopener"
-									>
-										this guide
-									</a>
-									.
-								</p>
-							</AlertDescription>
-						</Alert>
-					)}
-				</div>
-			</ResizablePanel>
-		</ResizablePanelGroup>
+				<ResizablePanel
+					defaultSize={30}
+					className="flex min-h-0 flex-col justify-between gap-4 border-neutral-200"
+				>
+					<Sidebar handleFileClick={setActiveFile} />
+				</ResizablePanel>
+				<ResizableHandle withHandle className="w-[1px]" />
+				<ResizablePanel defaultSize={70} className="flex flex-col flex-grow min-h-0">
+					<Controls
+						nextStep={nextStep}
+						previousStep={prevStep}
+						stepIndex={currentStepIndex}
+						totalSteps={totalSteps}
+						contractCall={contractCall}
+						activeFile={activeFile}
+					/>
+					<div className="relative flex-1 min-h-0 overflow-hidden">
+						{currentStep?.withLocation ? (
+							<CodeViewer
+								key={`${contractCall?.classHash}-${activeFile}`} // Force re-render only on contract/file change, not on every step
+								content={activeFile ? sourceCode[activeFile] : ''}
+								codeLocation={codeLocation}
+								highlightClass={`${
+									isExpressionHover ? 'bg-yellow-500' : 'bg-yellow-300'
+								} bg-opacity-20 dark:bg-opacity-10 transition-all`}
+								args={codeLocation ? currentStep.withLocation.arguments : undefined}
+								results={codeLocation ? currentStep.withLocation.results : undefined}
+							/>
+						) : (
+							<Alert className="m-4 w-fit">
+								<ExclamationTriangleIcon className="h-5 w-5" />
+								<AlertTitle>No Source Code Available</AlertTitle>
+								<AlertDescription>
+									<p className="mt-2 mb-1">
+										Contract Address:{' '}
+										<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
+									</p>
+									<p>
+										The source code for this contract is missing. To enable the step-by-step
+										debugger, verify the contract on Sourcify by following{' '}
+										<a
+											href={VERIFY_DOCS_URL}
+											className="underline-offset-4 hover:underline text-blue-500"
+											target="_blank"
+											rel="noreferrer noopener"
+										>
+											this guide
+										</a>
+										.
+									</p>
+								</AlertDescription>
+							</Alert>
+						)}
+					</div>
+				</ResizablePanel>
+			</ResizablePanelGroup>
+		</div>
 	);
 }
 
