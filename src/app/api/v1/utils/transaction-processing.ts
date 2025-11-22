@@ -32,6 +32,9 @@ export interface TransactionParameters {
 	nonce?: number;
 	chainId?: string;
 	session?: any;
+	value?: string;
+	transactionIndexInBlock?: number;
+	totalTransactionsInBlock?: number;
 }
 
 /**
@@ -76,6 +79,32 @@ export const fetchTransactionAndTrace = async (
 				parameters.session
 		  );
 
+	// Get block info first if we need to calculate txIndex for simulation
+	// When blockNumber is not provided, fetch latest block
+	let blockTransactions: bigint | undefined = undefined;
+	let latestBlockNumber: bigint | undefined = undefined;
+	if (!parameters.txHash) {
+		try {
+			const block = await safeViemCall(
+				() =>
+					publicClient.getBlock(
+						parameters.blockNumber ? { blockNumber: parameters.blockNumber } : undefined
+					),
+				'getBlock',
+				chainId as number,
+				parameters.session
+			);
+			const blockAny = block as any;
+			latestBlockNumber = blockAny.number;
+			// block.transactions is an array, get its length
+			blockTransactions = BigInt(
+				Array.isArray((block as any).transactions) ? (block as any).transactions.length : 0
+			);
+		} catch (error) {
+			console.warn('Failed to fetch block for txIndex calculation:', error);
+		}
+	}
+
 	const [transaction, traceResult] = await Promise.all([
 		parameters.txHash
 			? safeViemCall(
@@ -86,10 +115,18 @@ export const fetchTransactionAndTrace = async (
 			  )
 			: {
 					to: parameters.to,
-					blockNumber: parameters.blockNumber,
+					blockNumber: parameters.blockNumber || latestBlockNumber,
 					nonce: parameters.nonce,
 					from: parameters.from,
-					transactionIndex: 0
+					// Prioritize explicitly provided transactionIndexInBlock,
+					// then use last position in block if we have block info, otherwise default to 0
+					transactionIndex:
+						parameters.transactionIndexInBlock !== undefined &&
+						parameters.transactionIndexInBlock !== null
+							? parameters.transactionIndexInBlock
+							: blockTransactions && blockTransactions > 0
+							? Number(blockTransactions) - 1
+							: 0
 			  },
 		parameters.txHash
 			? safeViemCall(
@@ -143,14 +180,22 @@ export const fetchContracts = async (
 	chainId: number
 ) => {
 	const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceResult), 'to');
-	const [{ timestamp, transactions }, sourcifyContracts] = await Promise.all([
-		publicClient.getBlock({ blockNumber: transaction.blockNumber }),
+	// If transaction.blockNumber is undefined, fetch latest block
+	const blockQuery = transaction.blockNumber ? { blockNumber: transaction.blockNumber } : undefined;
+	const [{ timestamp, transactions: blockTransactions }, sourcifyContracts] = await Promise.all([
+		publicClient.getBlock(blockQuery),
 		Promise.allSettled(
 			flattenedTraceTransactionResult
 				.filter(({ type }) => type === 'CALL' || type === 'DELEGATECALL')
 				.map(({ to }) => fetchContract(to, publicClient, chainId))
 		)
 	]);
+
+	const transactions: bigint = Array.isArray(blockTransactions)
+		? BigInt(blockTransactions.length)
+		: typeof blockTransactions === 'bigint'
+		? blockTransactions
+		: BigInt(0);
 
 	// Filter out failed contract fetches and get only verified contracts
 	const verifiedContracts = sourcifyContracts

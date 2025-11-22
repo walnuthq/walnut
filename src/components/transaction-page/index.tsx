@@ -176,6 +176,23 @@ export function TransactionPage({
 			if (l2TransactionData.blockNumber)
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (chainId) params.set('chainId', chainId);
+			if (l2TransactionData.value) params.set('value', l2TransactionData.value);
+			// Include transactionIndexInBlock and totalTransactionsInBlock for precise re-simulation
+			if (
+				l2TransactionData.transactionIndexInBlock !== undefined &&
+				l2TransactionData.transactionIndexInBlock !== null
+			) {
+				params.set('transactionIndexInBlock', l2TransactionData.transactionIndexInBlock.toString());
+			}
+			if (
+				l2TransactionData.totalTransactionsInBlock !== undefined &&
+				l2TransactionData.totalTransactionsInBlock !== null
+			) {
+				params.set(
+					'totalTransactionsInBlock',
+					l2TransactionData.totalTransactionsInBlock.toString()
+				);
+			}
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};

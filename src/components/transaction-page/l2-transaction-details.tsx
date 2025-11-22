@@ -145,6 +145,23 @@ export function TransactionDetails({
 		});
 	}
 
+	// 9. Value
+	if (transactionData.value) {
+		const valueNum = BigInt(transactionData.value);
+		const ethValue = Number(valueNum) / 1e18;
+		const formatter = new Intl.NumberFormat(navigator.language, {
+			maximumFractionDigits: 6
+		});
+		details.push({
+			name: 'Value',
+			value:
+				valueNum === BigInt(0)
+					? '0'
+					: `${formatter.format(ethValue)} ETH (${transactionData.value} wei)`,
+			isCopyable: true
+		});
+	}
+
 	// 9. Transaction version
 	/* if (transactionData.transactionVersion) {
 		details.push({

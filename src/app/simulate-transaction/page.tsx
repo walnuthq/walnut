@@ -22,8 +22,11 @@ export default async function Page({
 			const transactionVersion = resolvedSearchParams.transactionVersion as string;
 			const chainId = resolvedSearchParams.chainId as string;
 			const nonce = resolvedSearchParams.nonce as string;
+			const value = resolvedSearchParams.value as string;
 			const txHashParams = resolvedSearchParams.txHash as string;
 			const demoParam = resolvedSearchParams.demo as string;
+			const transactionIndexInBlock = resolvedSearchParams.transactionIndexInBlock as string;
+			const totalTransactionsInBlock = resolvedSearchParams.totalTransactionsInBlock as string;
 
 			if (txHashParams) {
 				txHash = txHashParams;
@@ -52,6 +55,28 @@ export default async function Page({
 
 				if (nonce) {
 					payload.nonce = parseInt(nonce);
+				}
+
+				if (value) {
+					payload.value = value;
+				}
+
+				if (
+					transactionIndexInBlock !== undefined &&
+					transactionIndexInBlock !== null &&
+					transactionIndexInBlock !== '' &&
+					!isNaN(+transactionIndexInBlock)
+				) {
+					payload.transactionIndexInBlock = parseInt(transactionIndexInBlock);
+				}
+
+				if (
+					totalTransactionsInBlock !== undefined &&
+					totalTransactionsInBlock !== null &&
+					totalTransactionsInBlock !== '' &&
+					!isNaN(+totalTransactionsInBlock)
+				) {
+					payload.totalTransactionsInBlock = parseInt(totalTransactionsInBlock);
 				}
 
 				simulationPayload = payload;

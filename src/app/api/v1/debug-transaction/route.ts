@@ -149,22 +149,48 @@ export const POST = async (request: NextRequest) => {
 			blockNumber: parameters.blockNumber,
 			nonce: parameters.nonce,
 			chainId: parameters.chainId,
-			session
+			session,
+			transactionIndexInBlock: parameters.transactionIndexInBlock ?? undefined,
+			totalTransactionsInBlock: parameters.totalTransactionsInBlock ?? undefined
 		});
 
 		try {
+			// Calculate txIndex: prioritize explicitly provided transactionIndexInBlock,
+			// then use last position in block when count is known, otherwise fallback to transaction's index
+			let txIndex: number | undefined = undefined;
+			if (
+				parameters.transactionIndexInBlock !== undefined &&
+				parameters.transactionIndexInBlock !== null
+			) {
+				// Use explicitly provided transactionIndexInBlock for precise simulation
+				txIndex = parameters.transactionIndexInBlock;
+			} else if (transactions && transactions > 0) {
+				// Prioritize using last position in block when transactionIndexInBlock is not explicitly provided
+				// This ensures we don't use a default value of 0 when we know there are more transactions
+				txIndex = Number(transactions) - 1;
+			} else if (
+				transaction.transactionIndex !== undefined &&
+				transaction.transactionIndex !== null
+			) {
+				// Fallback to transaction's index if available (only when transactions count is unknown)
+				txIndex = transaction.transactionIndex;
+			}
+
 			const soldbResult = await soldb({
 				command: parameters.txHash ? 'trace' : 'simulate',
 				txHash: parameters.txHash,
 				to: transaction.to || undefined,
 				calldata: parameters.calldata,
 				from: parameters.senderAddress,
+				// Only pass blockNumber if it was explicitly provided in parameters
+				// If not provided, soldb will use latest block automatically
 				blockNumber: parameters.blockNumber,
 				rpcUrl: parameters.rpcUrl,
 				ethdebugDirs,
 				cwd,
 				chainId,
-				session
+				session,
+				txIndex
 			});
 
 			const { traceCall, steps, contracts, status, error } = soldbResult;

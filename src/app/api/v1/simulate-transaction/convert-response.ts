@@ -154,6 +154,23 @@ const traceCallResponseToTransactionSimulationResult = ({
 	);
 	const traceMap = flattenTraceToMap(traceCall);
 
+	// Extract value from traceCall (first call with value, or from traceCall itself)
+	const extractValue = (tc: any): string | undefined => {
+		if (tc.value !== undefined && tc.value !== null && tc.value !== 0) {
+			return tc.value.toString();
+		}
+		// Check children
+		if (tc.calls && Array.isArray(tc.calls)) {
+			for (const call of tc.calls) {
+				if (call.value !== undefined && call.value !== null && call.value !== 0) {
+					return call.value.toString();
+				}
+			}
+		}
+		return undefined;
+	};
+	const transactionValue = extractValue(traceCall);
+
 	// Contract calls
 	const contractCallsMap = Object.values(traceMap)
 		.filter(
@@ -385,8 +402,13 @@ const traceCallResponseToTransactionSimulationResult = ({
 			transactionVersion: 1,
 			transactionType: type,
 			transactionIndexInBlock: transactionIndex,
-			totalTransactionsInBlock: transactions.length,
-			l2TxHash: txHash
+			// transactions is a string array with one element representing the count
+			totalTransactionsInBlock:
+				transactions && transactions.length > 0 && transactions[0]
+					? Number(transactions[0])
+					: undefined,
+			l2TxHash: txHash,
+			value: transactionValue
 		}
 	};
 };
