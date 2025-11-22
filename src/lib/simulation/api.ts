@@ -16,7 +16,9 @@ export async function simulateTransactionByData(
 				transaction_version: simulationPayload.transactionVersion,
 				nonce: simulationPayload.nonce,
 				chain_id: simulationPayload.chainId,
-				value: simulationPayload.value
+				value: simulationPayload.value,
+				transaction_index_in_block: simulationPayload.transactionIndexInBlock ?? null,
+				total_transactions_in_block: simulationPayload.totalTransactionsInBlock ?? null
 			}
 		},
 		renameToCamelCase: true,

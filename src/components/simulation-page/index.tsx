@@ -160,6 +160,22 @@ export function SimulationPage({
 			// Use value from transactionData if available, otherwise from simulationPayload
 			const valueToUse = l2TransactionData.value || simulationPayload?.value;
 			if (valueToUse) params.set('value', valueToUse);
+			// Include transactionIndexInBlock and totalTransactionsInBlock for precise re-simulation
+			if (
+				l2TransactionData.transactionIndexInBlock !== undefined &&
+				l2TransactionData.transactionIndexInBlock !== null
+			) {
+				params.set('transactionIndexInBlock', l2TransactionData.transactionIndexInBlock.toString());
+			}
+			if (
+				l2TransactionData.totalTransactionsInBlock !== undefined &&
+				l2TransactionData.totalTransactionsInBlock !== null
+			) {
+				params.set(
+					'totalTransactionsInBlock',
+					l2TransactionData.totalTransactionsInBlock.toString()
+				);
+			}
 			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};

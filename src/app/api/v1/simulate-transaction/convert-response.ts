@@ -402,7 +402,11 @@ const traceCallResponseToTransactionSimulationResult = ({
 			transactionVersion: 1,
 			transactionType: type,
 			transactionIndexInBlock: transactionIndex,
-			totalTransactionsInBlock: transactions.length,
+			// transactions is a string array with one element representing the count
+			totalTransactionsInBlock:
+				transactions && transactions.length > 0 && transactions[0]
+					? Number(transactions[0])
+					: undefined,
 			l2TxHash: txHash,
 			value: transactionValue
 		}

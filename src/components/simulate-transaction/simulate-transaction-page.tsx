@@ -87,6 +87,10 @@ export function SimulateTransactionPage({
 		simulationPayload?.blockNumber ?? ''
 	);
 
+	const [_transactionIndexInBlock, _setTransactionIndexInBlock] = useState<number | ''>(
+		simulationPayload?.transactionIndexInBlock ?? ''
+	);
+
 	const [_value, _setValue] = useState<string>(() =>
 		getDisplayValueFromPayload(simulationPayload?.value)
 	);
@@ -310,6 +314,22 @@ export function SimulateTransactionPage({
 		}
 	};
 
+	const handleTransactionIndexInBlockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const inputValue = e.target.value;
+
+		if (inputValue === '') {
+			_setTransactionIndexInBlock('');
+			return;
+		}
+
+		if (/^0$|^[1-9]\d*$/.test(inputValue)) {
+			const numValue = parseInt(inputValue, 10);
+			_setTransactionIndexInBlock(numValue);
+		} else {
+			e.target.value = _transactionIndexInBlock !== null ? _transactionIndexInBlock.toString() : '';
+		}
+	};
+
 	const normalizeEtherValue = (value: string) => {
 		if (!value) return '';
 		let normalized = value.trim();
@@ -417,6 +437,7 @@ export function SimulateTransactionPage({
 
 		_setSenderAddress(simulationPayload.senderAddress ?? '');
 		_setBlockNumber(simulationPayload.blockNumber ?? '');
+		_setTransactionIndexInBlock(simulationPayload.transactionIndexInBlock ?? '');
 		if (simulationPayload.value !== undefined) {
 			_setValue(getDisplayValueFromPayload(simulationPayload.value));
 			_setValueUnit(getUnitFromValue(simulationPayload.value));
@@ -574,7 +595,10 @@ export function SimulateTransactionPage({
 				return;
 			}
 
-			const simulationPayload: SimulationPayload = {
+			// Save original totalTransactionsInBlock from prop (for re-simulation)
+			const originalTotalTransactionsInBlock = simulationPayload?.totalTransactionsInBlock;
+
+			const newSimulationPayload: SimulationPayload = {
 				senderAddress: _senderAddress,
 				calls: processedCalls,
 				blockNumber: _blockNumber === '' ? undefined : _blockNumber,
@@ -584,24 +608,38 @@ export function SimulateTransactionPage({
 
 			if (_chain) {
 				if (_chain.chainId) {
-					simulationPayload.chainId = _chain.chainId;
+					newSimulationPayload.chainId = _chain.chainId;
 				} else if (_chain.network) {
 					if (_chain.network.networkName) {
-						simulationPayload.chainId = _chain.network.networkName;
+						newSimulationPayload.chainId = _chain.network.networkName;
 					}
 				}
 			} else {
 				throw new Error('Chain is not defined');
 			}
 
+			// Use transactionIndexInBlock from form field
+			if (_transactionIndexInBlock !== '' && _transactionIndexInBlock !== null) {
+				newSimulationPayload.transactionIndexInBlock = _transactionIndexInBlock;
+			}
+
+			// Preserve totalTransactionsInBlock from original simulationPayload prop (for re-simulation)
 			if (
-				simulationPayload.senderAddress === '' ||
-				!validateHexFormat(simulationPayload.senderAddress) ||
-				![1, 3].includes(simulationPayload.transactionVersion)
+				originalTotalTransactionsInBlock !== undefined &&
+				originalTotalTransactionsInBlock !== null
+			) {
+				newSimulationPayload.totalTransactionsInBlock = originalTotalTransactionsInBlock;
+			}
+
+			if (
+				newSimulationPayload.senderAddress === '' ||
+				newSimulationPayload.senderAddress === '' ||
+				!validateHexFormat(newSimulationPayload.senderAddress) ||
+				![1, 3].includes(newSimulationPayload.transactionVersion)
 			) {
 				setAlert(true);
 			} else {
-				openSimulationPage(simulationPayload);
+				openSimulationPage(newSimulationPayload);
 			}
 		}
 	}
@@ -1037,6 +1075,25 @@ export function SimulateTransactionPage({
 									/>
 									<p className="text-xs text-muted-foreground col-span-3 col-start-2">
 										If you leave the field empty, the latest block will be used.
+									</p>
+								</div>
+
+								<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
+									<Label htmlFor="transaction-index" className="text-right">
+										Transaction index
+									</Label>
+									<Input
+										type="text"
+										inputMode="numeric"
+										id="transaction-index"
+										value={_transactionIndexInBlock ?? ''}
+										onChange={handleTransactionIndexInBlockChange}
+										className="col-span-3 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+										placeholder="Auto"
+									/>
+									<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+										Transaction index in block. If empty, the last transaction in block will be
+										used.
 									</p>
 								</div>
 

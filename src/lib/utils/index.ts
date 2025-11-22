@@ -21,6 +21,8 @@ export interface SimulationPayload {
 	rpcUrl?: string;
 	chainId?: string;
 	value?: string;
+	transactionIndexInBlock?: number | null;
+	totalTransactionsInBlock?: number | null;
 }
 
 export function cn(...inputs: ClassValue[]) {
@@ -165,6 +167,8 @@ export function extractSimulationPayloadWithCalldata(
 	const nonce = searchParams.get('nonce');
 	const chainId = searchParams.get('chainId');
 	const value = searchParams.get('value');
+	const transactionIndexInBlock = searchParams.get('transactionIndexInBlock');
+	const totalTransactionsInBlock = searchParams.get('totalTransactionsInBlock');
 
 	if (senderAddress && calldata && transactionVersion) {
 		const parsedCalldata = parseCalldata(calldata);
@@ -175,7 +179,13 @@ export function extractSimulationPayloadWithCalldata(
 			transactionVersion: parseInt(transactionVersion),
 			nonce: nonce ? parseInt(nonce) : undefined,
 			chainId: chainId ?? undefined,
-			value: value ?? undefined
+			value: value ?? undefined,
+			transactionIndexInBlock: transactionIndexInBlock
+				? parseInt(transactionIndexInBlock)
+				: undefined,
+			totalTransactionsInBlock: totalTransactionsInBlock
+				? parseInt(totalTransactionsInBlock)
+				: undefined
 		};
 
 		if (blockNumber) {
@@ -260,6 +270,19 @@ export function openSimulationPage(simulationPayload: SimulationPayload): void {
 		params.set('nonce', simulationPayload.nonce.toString());
 	if (simulationPayload.chainId) params.set('chainId', simulationPayload.chainId);
 	if (simulationPayload.value) params.set('value', simulationPayload.value);
+	// Include transactionIndexInBlock and totalTransactionsInBlock if provided (for re-simulation)
+	if (
+		simulationPayload.transactionIndexInBlock !== undefined &&
+		simulationPayload.transactionIndexInBlock !== null
+	) {
+		params.set('transactionIndexInBlock', simulationPayload.transactionIndexInBlock.toString());
+	}
+	if (
+		simulationPayload.totalTransactionsInBlock !== undefined &&
+		simulationPayload.totalTransactionsInBlock !== null
+	) {
+		params.set('totalTransactionsInBlock', simulationPayload.totalTransactionsInBlock.toString());
+	}
 
 	window.location.href = `/simulations?${params.toString()}`;
 }

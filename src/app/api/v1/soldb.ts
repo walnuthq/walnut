@@ -55,7 +55,8 @@ const soldb = async ({
 	cwd,
 	chainId,
 	session,
-	value
+	value,
+	txIndex
 }: {
 	command: 'trace' | 'simulate';
 	txHash?: Hash;
@@ -69,6 +70,7 @@ const soldb = async ({
 	chainId?: number;
 	session?: AuthType['session'] | null;
 	value?: string;
+	txIndex?: number;
 }): Promise<DebugCallResponse> => {
 	const args =
 		command === 'trace'
@@ -76,6 +78,9 @@ const soldb = async ({
 			: ['simulate', to!, '--raw-data', calldata!, '--from', from!];
 	if (command === 'simulate' && blockNumber) {
 		args.push('--block', blockNumber.toString());
+	}
+	if (command === 'simulate' && txIndex !== undefined && txIndex !== null) {
+		args.push('--tx-index', txIndex.toString());
 	}
 	if (command === 'simulate' && value && value.trim() !== '') {
 		// Format value: if it's a decimal number (contains dot) and doesn't end with 'ether', add 'ether' suffix

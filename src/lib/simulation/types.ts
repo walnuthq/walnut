@@ -296,4 +296,6 @@ export interface SimulationPayloadWithCalldata {
 	chainId?: string;
 	rpcUrl?: string;
 	value?: string;
+	transactionIndexInBlock?: number | null;
+	totalTransactionsInBlock?: number | null;
 }
