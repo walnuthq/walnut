@@ -295,9 +295,7 @@ export function CodeViewer({
 			}}
 			value={content}
 			language="solidity"
-			className={cn(
-				'whitespace-pre-wrap overflow-x-scroll p-0 m-0 w-full h-full absolute top-0 left-0'
-			)}
+			className={cn('whitespace-pre-wrap overflow-x-scroll p-0 m-0 w-full h-full')}
 		/>
 	);
 }
