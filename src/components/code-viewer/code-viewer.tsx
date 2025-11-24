@@ -21,8 +21,8 @@ export function CodeViewer({
 	results?: InternalFnCallIO[];
 	codeLocation: CodeLocation | undefined;
 }) {
-	const { theme } = useTheme(); // 'light' | 'dark' | 'system'
-	const isDark = theme === 'dark';
+	const { resolvedTheme } = useTheme(); // 'light' | 'dark' | 'system'
+	const isDark = resolvedTheme === 'dark';
 	const editorRef = useRef<Editor.IStandaloneCodeEditor | null>(null);
 	const [editorDecorations, setEditorDecorations] =
 		useState<Editor.IEditorDecorationsCollection | null>(null);
@@ -295,9 +295,7 @@ export function CodeViewer({
 			}}
 			value={content}
 			language="solidity"
-			className={cn(
-				'whitespace-pre-wrap overflow-x-scroll p-0 m-0 w-full h-full absolute top-0 left-0'
-			)}
+			className={cn('whitespace-pre-wrap overflow-x-scroll p-0 m-0 w-full h-full')}
 		/>
 	);
 }
