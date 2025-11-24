@@ -108,7 +108,7 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 					onValueChange={onValueChange}
 					className="flex flex-col flex-1 overflow-hidden min-h-0"
 				>
-					<TabsList className="inline-flex w-full sm:w-fit dark:bg-card justify-start sm:justify-center overflow-x-scroll">
+					<TabsList className="inline-flex w-full sm:w-fit dark:bg-card justify-start sm:justify-center overflow-x-scroll sm:overflow-x-hidden">
 						<TabsTrigger value="transaction-details" className="block sm:hidden">
 							Transaction Details
 						</TabsTrigger>

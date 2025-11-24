@@ -2,7 +2,7 @@ import { JSX, SVGProps } from 'react';
 import { Container } from '@/components/ui/container';
 import { Separator } from '@/components/ui/separator';
 
-const navigation = [
+export const navigation = [
 	{
 		name: 'Telegram',
 		href: 'https://t.me/walnuthq', // Replace with your actual Telegram link
