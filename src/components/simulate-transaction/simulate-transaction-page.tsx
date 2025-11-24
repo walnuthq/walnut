@@ -22,7 +22,7 @@ import { fetchContractFunctions } from '@/lib/contracts';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useRouter } from 'next/navigation';
-import { createCalldataDecoder, DecodedCalldata } from '@/lib/calldata-utils';
+import { createCalldataDecoder, DecodedCalldata, encodeCalldata } from '@/lib/calldata-utils';
 import responseEntrypoints from '@/lib/utils/demo_data/entrypoints.json';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatEther, parseEther } from 'viem';
@@ -162,6 +162,7 @@ export function SimulateTransactionPage({
 							contractAddress: call.address,
 							functionName: decoded.functionName,
 							args: decoded.args,
+							argsWithTypes: decoded.argsWithTypes,
 							rawCalldata: decoded.rawCalldata,
 							abi: abi
 						});
@@ -565,13 +566,39 @@ export function SimulateTransactionPage({
 		_setContractCalls(newCalls);
 	}, [_numberOfContracts]);
 
-	function onDialogSubmit() {
+	async function onDialogSubmit() {
 		if (isDemo) {
 			window.location.href = `demo/simulation`;
 		} else {
-			const processedCalls = _contractCalls.map((call) => ({
+			// Encode calldata if we have decoded data with ABI
+			let encodedCalldata: string | null = null;
+			if (_decodedCalldata && _contractABI) {
+				try {
+					encodedCalldata = await encodeCalldata(
+						_decodedCalldata,
+						_contractCalls[0]?.address,
+						_contractABI
+					);
+					console.log('ENCODED CALLDATA:', {
+						functionName: _decodedCalldata.functionName,
+						args: _decodedCalldata.args,
+						argsWithTypes: _decodedCalldata.argsWithTypes,
+						encodedCalldata
+					});
+				} catch (error) {
+					console.error('Failed to encode calldata:', error);
+				}
+			}
+
+			const processedCalls = _contractCalls.map((call, index) => ({
 				...call,
-				calldata: call.calldata.trim() === '' ? '' : call.calldata
+				// Use encoded calldata if available, otherwise use existing calldata
+				calldata:
+					index === 0 && encodedCalldata
+						? encodedCalldata
+						: call.calldata.trim() === ''
+						? ''
+						: call.calldata
 			}));
 
 			const allCallsValid = processedCalls.every(

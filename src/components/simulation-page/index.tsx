@@ -23,6 +23,12 @@ import { getCacheWithTTL, safeStringify, setCacheWithTTL } from '@/lib/utils/cac
 import { NetworkBadge } from '../ui/network-badge';
 import { ServerError } from '../ui/server-error';
 import { FetchError } from '@/lib/utils';
+import {
+	decodeCalldata,
+	fetchABIFromInternalAPI,
+	fetchABIFromSourcify
+} from '@/lib/calldata-utils';
+
 export function SimulationPage({
 	simulationPayload
 }: {
@@ -111,6 +117,71 @@ export function SimulationPage({
 			fetchData();
 		}
 	}, [simulationPayload, trackingActive, trackingFlagLoaded]);
+
+	// Decode calldata when l2TransactionData is available
+	useEffect(() => {
+		const decodeAndLogCalldata = async () => {
+			if (!l2TransactionData) return;
+
+			try {
+				// Get the first contract call to extract contract address
+				const contractCallsMap = l2TransactionData.simulationResult?.contractCallsMap;
+				if (!contractCallsMap || Object.keys(contractCallsMap).length === 0) {
+					console.log('DECODED CALLDATA: No contract calls found');
+					return;
+				}
+
+				// Get the first contract call
+				const firstCallId = Object.keys(contractCallsMap)[0];
+				const firstContractCall = contractCallsMap[firstCallId];
+				const contractAddress = firstContractCall?.entryPoint?.codeAddress;
+
+				// Get the first calldata from the array
+				const rawCalldata = l2TransactionData.calldata?.[0];
+				if (!rawCalldata || !rawCalldata.startsWith('0x')) {
+					console.log('DECODED CALLDATA: No valid calldata found');
+					return;
+				}
+
+				// Get chainId
+				const chainId = l2TransactionData.chainId || simulationPayload?.chainId;
+				if (!chainId) {
+					console.log('DECODED CALLDATA: No chainId available');
+					return;
+				}
+
+				// Try to fetch ABI from internal API first, then Sourcify
+				let abi = null;
+				if (contractAddress) {
+					abi = await fetchABIFromInternalAPI(contractAddress, chainId);
+					if (!abi) {
+						abi = await fetchABIFromSourcify(contractAddress, chainId);
+					}
+				}
+
+				// Decode calldata
+				const decoded = await decodeCalldata(rawCalldata, contractAddress, abi || undefined);
+
+				if (decoded) {
+					console.log('DECODED CALLDATA:', {
+						rawCalldata,
+						contractAddress: contractAddress || 'Unknown',
+						functionName: decoded.functionName,
+						args: decoded.args,
+						argsWithTypes: decoded.argsWithTypes,
+						abi: abi ? 'Available' : 'Not available'
+					});
+				} else {
+					console.log('DECODED CALLDATA: Failed to decode calldata');
+				}
+			} catch (error) {
+				console.warn('Error decoding calldata:', error);
+			}
+		};
+
+		decodeAndLogCalldata();
+	}, [l2TransactionData, simulationPayload?.chainId]);
+
 	const network = simulationPayload?.rpcUrl ? getNetworkByRpcUrl(simulationPayload?.rpcUrl) : null;
 	const chainDetails = network?.networkName
 		? parseChain(network?.networkName)

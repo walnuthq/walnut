@@ -103,7 +103,29 @@ const soldb = async ({
 		'--json'
 	];
 
-	console.log('Executing soldb command:', fullCommand.join(' '));
+	// Log the command in a readable format
+	if (command === 'simulate') {
+		console.log('=== SOLDB COMMAND ===');
+		console.log('soldb simulate', to);
+		console.log('  --raw-data', calldata);
+		console.log('  --from', from);
+		if (blockNumber) console.log('  --block', blockNumber.toString());
+		if (txIndex !== undefined && txIndex !== null) console.log('  --tx-index', txIndex.toString());
+		if (value && value.trim() !== '') {
+			let formattedValue = value.trim();
+			if (
+				/^[0-9]*\.[0-9]+$/.test(formattedValue) &&
+				!formattedValue.toLowerCase().endsWith('ether')
+			) {
+				formattedValue = `${formattedValue}ether`;
+			}
+			console.log('  --value', formattedValue);
+		}
+		ethdebugDirs?.forEach((dir) => console.log('  --ethdebug-dir', dir));
+		console.log('  --rpc', '[REDACTED]');
+		console.log('  --json');
+		console.log('==========================================');
+	}
 	if (cwd) {
 		console.log('Working directory:', cwd);
 	}
@@ -151,8 +173,12 @@ const soldb = async ({
 
 		if (err.stdout) {
 			errorMessage = err.stdout.trim();
+			// Sanitize RPC URL from stdout
+			errorMessage = sanitizeErrorMessage(errorMessage);
 		} else if (err.message) {
 			errorMessage = err.message;
+			// Sanitize RPC URL from error message
+			errorMessage = sanitizeErrorMessage(errorMessage);
 		} else {
 			errorMessage = 'Unknown error occurred';
 		}
