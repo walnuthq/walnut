@@ -56,7 +56,14 @@ export async function fetchApi<ResponseDataType>(
 		let errorMsg = await response.text();
 		try {
 			const json = JSON.parse(errorMsg);
-			if (json.error) errorMsg = json.error;
+			// Prefer context.originalMessage (complete error message from soldb), then details, then error field
+			if (json.context?.originalMessage) {
+				errorMsg = json.context.originalMessage;
+			} else if (json.details) {
+				errorMsg = json.details;
+			} else if (json.error) {
+				errorMsg = json.error;
+			}
 		} catch {}
 
 		// Create error with status code for better error handling

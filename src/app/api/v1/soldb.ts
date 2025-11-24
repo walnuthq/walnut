@@ -54,7 +54,9 @@ const soldb = async ({
 	ethdebugDirs,
 	cwd,
 	chainId,
-	session
+	session,
+	value,
+	txIndex
 }: {
 	command: 'trace' | 'simulate';
 	txHash?: Hash;
@@ -67,6 +69,8 @@ const soldb = async ({
 	cwd?: string;
 	chainId?: number;
 	session?: AuthType['session'] | null;
+	value?: string;
+	txIndex?: number;
 }): Promise<DebugCallResponse> => {
 	const args =
 		command === 'trace'
@@ -74,6 +78,20 @@ const soldb = async ({
 			: ['simulate', to!, '--raw-data', calldata!, '--from', from!];
 	if (command === 'simulate' && blockNumber) {
 		args.push('--block', blockNumber.toString());
+	}
+	if (command === 'simulate' && txIndex !== undefined && txIndex !== null) {
+		args.push('--tx-index', txIndex.toString());
+	}
+	if (command === 'simulate' && value && value.trim() !== '') {
+		// Format value: if it's a decimal number (contains dot) and doesn't end with 'ether', add 'ether' suffix
+		let formattedValue = value.trim();
+		if (
+			/^[0-9]*\.[0-9]+$/.test(formattedValue) &&
+			!formattedValue.toLowerCase().endsWith('ether')
+		) {
+			formattedValue = `${formattedValue}ether`;
+		}
+		args.push('--value', formattedValue);
 	}
 
 	const fullCommand = [
@@ -129,6 +147,8 @@ const soldb = async ({
 
 		// Extract the actual error message from soldb
 		let errorMessage = '';
+		let errorDetails: string | undefined = undefined;
+
 		if (err.stdout) {
 			errorMessage = err.stdout.trim();
 		} else if (err.message) {
@@ -137,25 +157,47 @@ const soldb = async ({
 			errorMessage = 'Unknown error occurred';
 		}
 
-		// Try to parse JSON response and extract relevant fields
+		// Try to parse JSON response and extract relevant fields from uniform error format
+		let errorType: string | undefined = undefined;
+		let errorContext: Record<string, any> = {};
+
 		try {
 			const jsonResponse = JSON.parse(errorMessage);
-			if (jsonResponse.soldbFailed || jsonResponse.error?.message) {
-				const parts = [];
-				if (jsonResponse.soldbFailed) {
-					parts.push(jsonResponse.soldbFailed);
+
+			// Check for uniform error format: { soldbFailed, error: { message, type, ... } }
+			if (jsonResponse.error && typeof jsonResponse.error === 'object') {
+				// Use error.message as the main message (clean original message)
+				if (jsonResponse.error.message) {
+					errorMessage = jsonResponse.error.message;
 				}
-				if (jsonResponse.error?.message) {
-					parts.push(jsonResponse.error.message);
+				// Extract error type for frontend handling
+				if (jsonResponse.error.type) {
+					errorType = jsonResponse.error.type;
+					errorDetails = `Error type: ${jsonResponse.error.type}`;
 				}
-				errorMessage = parts.join(' - ');
+				// Extract all additional fields from error object (available_balance, requested_value, etc.)
+				Object.keys(jsonResponse.error).forEach((key) => {
+					if (key !== 'message' && key !== 'type') {
+						errorContext[key] = jsonResponse.error[key];
+					}
+				});
+			} else if (jsonResponse.soldbFailed) {
+				// Fallback to soldbFailed if error object doesn't exist
+				errorMessage = jsonResponse.soldbFailed;
 			}
 		} catch {
 			// If not JSON, use the original message
 		}
 
-		// Throw a structured SoldbExecutionError
-		throw new SoldbExecutionError(errorMessage, chainId, undefined, session);
+		// Throw a structured SoldbExecutionError with error type and context
+		throw new SoldbExecutionError(
+			errorMessage,
+			chainId,
+			errorDetails,
+			session,
+			errorType,
+			errorContext
+		);
 	}
 };
 
@@ -210,29 +252,54 @@ export const soldbListEvents = async ({
 		}
 
 		let errorMessage = 'Failed to fetch events';
+		let errorDetails: string | undefined = undefined;
+
 		if (err.stdout) {
 			errorMessage = err.stdout.trim();
 		} else if (err.message) {
 			errorMessage = err.message;
 		}
 
+		// Try to parse JSON response and extract relevant fields from uniform error format
+		let errorType: string | undefined = undefined;
+		let errorContext: Record<string, any> = {};
+
 		try {
 			const jsonResponse = JSON.parse(errorMessage);
-			if (jsonResponse.soldbFailed || jsonResponse.error?.message) {
-				const parts = [];
-				if (jsonResponse.soldbFailed) {
-					parts.push(jsonResponse.soldbFailed);
+
+			// Check for uniform error format: { soldbFailed, error: { message, type, ... } }
+			if (jsonResponse.error && typeof jsonResponse.error === 'object') {
+				// Use error.message as the main message (clean original message)
+				if (jsonResponse.error.message) {
+					errorMessage = jsonResponse.error.message;
 				}
-				if (jsonResponse.error?.message) {
-					parts.push(jsonResponse.error.message);
+				// Extract error type for frontend handling
+				if (jsonResponse.error.type) {
+					errorType = jsonResponse.error.type;
+					errorDetails = `Error type: ${jsonResponse.error.type}`;
 				}
-				errorMessage = parts.join(' - ');
+				// Extract all additional fields from error object (available_balance, requested_value, etc.)
+				Object.keys(jsonResponse.error).forEach((key) => {
+					if (key !== 'message' && key !== 'type') {
+						errorContext[key] = jsonResponse.error[key];
+					}
+				});
+			} else if (jsonResponse.soldbFailed) {
+				// Fallback to soldbFailed if error object doesn't exist
+				errorMessage = jsonResponse.soldbFailed;
 			}
 		} catch {
 			// If not JSON, use the original message
 		}
 
-		throw new SoldbExecutionError(errorMessage, undefined, undefined, null);
+		throw new SoldbExecutionError(
+			errorMessage,
+			undefined,
+			errorDetails,
+			null,
+			errorType,
+			errorContext
+		);
 	}
 };
 

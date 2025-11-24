@@ -24,6 +24,25 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useRouter } from 'next/navigation';
 import { createCalldataDecoder, DecodedCalldata } from '@/lib/calldata-utils';
 import responseEntrypoints from '@/lib/utils/demo_data/entrypoints.json';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { formatEther, parseEther } from 'viem';
+
+type ValueUnit = 'wei' | 'ether';
+
+const getUnitFromValue = (value?: string): ValueUnit => {
+	if (value && value.toLowerCase().endsWith('ether')) {
+		return 'ether';
+	}
+	return 'wei';
+};
+
+const getDisplayValueFromPayload = (value?: string): string => {
+	if (!value) return '';
+	if (getUnitFromValue(value) === 'ether') {
+		return value.slice(0, -5);
+	}
+	return value;
+};
 
 export function SimulateTransactionPage({
 	txHash,
@@ -66,6 +85,17 @@ export function SimulateTransactionPage({
 
 	const [_blockNumber, _setBlockNumber] = useState<number | ''>(
 		simulationPayload?.blockNumber ?? ''
+	);
+
+	const [_transactionIndexInBlock, _setTransactionIndexInBlock] = useState<number | ''>(
+		simulationPayload?.transactionIndexInBlock ?? ''
+	);
+
+	const [_value, _setValue] = useState<string>(() =>
+		getDisplayValueFromPayload(simulationPayload?.value)
+	);
+	const [_valueUnit, _setValueUnit] = useState<ValueUnit>(() =>
+		getUnitFromValue(simulationPayload?.value)
 	);
 
 	const [_transactionVersion, _setTransactionVersion] = useState<number>(
@@ -284,11 +314,137 @@ export function SimulateTransactionPage({
 		}
 	};
 
+	const handleTransactionIndexInBlockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const inputValue = e.target.value;
+
+		if (inputValue === '') {
+			_setTransactionIndexInBlock('');
+			return;
+		}
+
+		if (/^0$|^[1-9]\d*$/.test(inputValue)) {
+			const numValue = parseInt(inputValue, 10);
+			_setTransactionIndexInBlock(numValue);
+		} else {
+			e.target.value = _transactionIndexInBlock !== null ? _transactionIndexInBlock.toString() : '';
+		}
+	};
+
+	const normalizeEtherValue = (value: string) => {
+		if (!value) return '';
+		let normalized = value.trim();
+
+		if (normalized === '') return '';
+		if (normalized.startsWith('.')) {
+			normalized = `0${normalized}`;
+		}
+		if (normalized.endsWith('.')) {
+			normalized = normalized.slice(0, -1);
+		}
+
+		return normalized;
+	};
+
+	const toWei = (value: string, unit: ValueUnit): bigint | null => {
+		const trimmed = value.trim();
+		if (trimmed === '') return null;
+
+		try {
+			if (unit === 'wei') {
+				return BigInt(trimmed);
+			}
+
+			const normalized = normalizeEtherValue(trimmed);
+			if (normalized === '') {
+				return null;
+			}
+
+			return parseEther(normalized);
+		} catch (error) {
+			console.warn('Failed to convert value to wei:', error);
+			return null;
+		}
+	};
+
+	const formatFromWei = (weiValue: bigint, unit: ValueUnit) => {
+		return unit === 'wei' ? weiValue.toString() : formatEther(weiValue);
+	};
+
+	const handleValueUnitChange = (nextUnit: ValueUnit | '') => {
+		if (!nextUnit || nextUnit === _valueUnit) {
+			return;
+		}
+
+		if (_value.trim() === '') {
+			_setValueUnit(nextUnit);
+			return;
+		}
+
+		const weiValue = toWei(_value, _valueUnit);
+		if (weiValue === null) {
+			_setValueUnit(nextUnit);
+			return;
+		}
+
+		_setValue(formatFromWei(weiValue, nextUnit));
+		_setValueUnit(nextUnit);
+	};
+
+	const getValueForPayload = (): string | undefined => {
+		const trimmed = _value.trim();
+		if (trimmed === '') {
+			return undefined;
+		}
+
+		if (_valueUnit === 'ether') {
+			const normalized = normalizeEtherValue(trimmed);
+			return normalized === '' ? undefined : `${normalized}ether`;
+		}
+
+		return trimmed;
+	};
+
+	const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		let inputValue = e.target.value;
+
+		if (inputValue === '') {
+			_setValue('');
+			return;
+		}
+
+		if (_valueUnit === 'wei') {
+			if (/^\d+$/.test(inputValue)) {
+				_setValue(inputValue);
+			} else {
+				e.target.value = _value;
+			}
+			return;
+		}
+
+		if (inputValue.startsWith('.')) {
+			inputValue = `0${inputValue}`;
+		}
+
+		if (/^\d+(\.\d*)?$/.test(inputValue)) {
+			_setValue(inputValue);
+		} else {
+			e.target.value = _value;
+		}
+	};
+
 	useEffect(() => {
 		if (!simulationPayload) return;
 
 		_setSenderAddress(simulationPayload.senderAddress ?? '');
 		_setBlockNumber(simulationPayload.blockNumber ?? '');
+		_setTransactionIndexInBlock(simulationPayload.transactionIndexInBlock ?? '');
+		if (simulationPayload.value !== undefined) {
+			_setValue(getDisplayValueFromPayload(simulationPayload.value));
+			_setValueUnit(getUnitFromValue(simulationPayload.value));
+		} else {
+			_setValue('');
+			_setValueUnit('wei');
+		}
 
 		if (simulationPayload.chainId) {
 			_setChain({ chainId: simulationPayload.chainId });
@@ -439,33 +595,51 @@ export function SimulateTransactionPage({
 				return;
 			}
 
-			const simulationPayload: SimulationPayload = {
+			// Save original totalTransactionsInBlock from prop (for re-simulation)
+			const originalTotalTransactionsInBlock = simulationPayload?.totalTransactionsInBlock;
+
+			const newSimulationPayload: SimulationPayload = {
 				senderAddress: _senderAddress,
 				calls: processedCalls,
 				blockNumber: _blockNumber === '' ? undefined : _blockNumber,
-				transactionVersion: _transactionVersion
+				transactionVersion: _transactionVersion,
+				value: getValueForPayload()
 			};
 
 			if (_chain) {
 				if (_chain.chainId) {
-					simulationPayload.chainId = _chain.chainId;
+					newSimulationPayload.chainId = _chain.chainId;
 				} else if (_chain.network) {
 					if (_chain.network.networkName) {
-						simulationPayload.chainId = _chain.network.networkName;
+						newSimulationPayload.chainId = _chain.network.networkName;
 					}
 				}
 			} else {
 				throw new Error('Chain is not defined');
 			}
 
+			// Use transactionIndexInBlock from form field
+			if (_transactionIndexInBlock !== '' && _transactionIndexInBlock !== null) {
+				newSimulationPayload.transactionIndexInBlock = _transactionIndexInBlock;
+			}
+
+			// Preserve totalTransactionsInBlock from original simulationPayload prop (for re-simulation)
 			if (
-				simulationPayload.senderAddress === '' ||
-				!validateHexFormat(simulationPayload.senderAddress) ||
-				![1, 3].includes(simulationPayload.transactionVersion)
+				originalTotalTransactionsInBlock !== undefined &&
+				originalTotalTransactionsInBlock !== null
+			) {
+				newSimulationPayload.totalTransactionsInBlock = originalTotalTransactionsInBlock;
+			}
+
+			if (
+				newSimulationPayload.senderAddress === '' ||
+				newSimulationPayload.senderAddress === '' ||
+				!validateHexFormat(newSimulationPayload.senderAddress) ||
+				![1, 3].includes(newSimulationPayload.transactionVersion)
 			) {
 				setAlert(true);
 			} else {
-				openSimulationPage(simulationPayload);
+				openSimulationPage(newSimulationPayload);
 			}
 		}
 	}
@@ -901,6 +1075,60 @@ export function SimulateTransactionPage({
 									/>
 									<p className="text-xs text-muted-foreground col-span-3 col-start-2">
 										If you leave the field empty, the latest block will be used.
+									</p>
+								</div>
+
+								<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
+									<Label htmlFor="transaction-index" className="text-right">
+										Transaction index
+									</Label>
+									<Input
+										type="text"
+										inputMode="numeric"
+										id="transaction-index"
+										value={_transactionIndexInBlock ?? ''}
+										onChange={handleTransactionIndexInBlockChange}
+										className="col-span-3 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+										placeholder="Auto"
+									/>
+									<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+										Transaction index in block. If empty, the last transaction in block will be
+										used.
+									</p>
+								</div>
+
+								<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
+									<Label htmlFor="value" className="text-right">
+										Value
+									</Label>
+									<div className="col-span-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+										<Input
+											type="text"
+											inputMode={_valueUnit === 'wei' ? 'numeric' : 'decimal'}
+											id="value"
+											value={_value}
+											onChange={handleValueChange}
+											className="font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none flex-1"
+											placeholder={_valueUnit === 'wei' ? '0' : '0.05'}
+										/>
+										<ToggleGroup
+											type="single"
+											value={_valueUnit}
+											onValueChange={(unit) => handleValueUnitChange(unit as ValueUnit | '')}
+											aria-label="Value unit"
+											className="justify-start sm:justify-center"
+										>
+											<ToggleGroupItem value="wei" className="px-3">
+												Wei
+											</ToggleGroupItem>
+											<ToggleGroupItem value="ether" className="px-3">
+												Ether
+											</ToggleGroupItem>
+										</ToggleGroup>
+									</div>
+									<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+										Optional ETH value. Use the toggle to switch between wei and ether - the input
+										converts automatically. Leave empty to send 0.
 									</p>
 								</div>
 
