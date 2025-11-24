@@ -1,4 +1,4 @@
-import { SimulationResult, FlameNode } from '@/lib/simulation';
+import { SimulationResult, FlameNode, L2TransactionData } from '@/lib/simulation';
 import { DebuggerPayload } from '@/lib/debugger';
 import {
 	CallTraceContextProvider,
@@ -28,19 +28,16 @@ import { Error } from '@/components/ui/error';
 import ErrorAlert from '../ui/error-alert';
 import { Button } from '../ui/button';
 import { copyToClipboard } from '@/lib/utils';
+import { TransactionDetails } from '../transaction-page/l2-transaction-details';
 
 export function CallTraceRoot({
-	simulationResult,
-	l2Flamegraph,
-	l1DataFlamegraph,
+	transactionData,
 	debuggerPayload,
 	txHash,
 	chainId,
 	rpcUrl
 }: {
-	simulationResult: SimulationResult;
-	l2Flamegraph: FlameNode | undefined;
-	l1DataFlamegraph: FlameNode | undefined;
+	transactionData: L2TransactionData;
 	debuggerPayload: DebuggerPayload | null;
 	txHash?: string;
 	chainId?: string;
@@ -48,10 +45,11 @@ export function CallTraceRoot({
 }) {
 	return (
 		<CallTraceContextProvider
-			simulationResult={simulationResult}
-			l2Flamegraph={l2Flamegraph}
-			l1DataFlamegraph={l1DataFlamegraph}
+			simulationResult={transactionData.simulationResult}
+			l2Flamegraph={transactionData.l2Flamegraph}
+			l1DataFlamegraph={transactionData.l1DataFlamegraph}
 			debuggerPayload={debuggerPayload}
+			transactionData={transactionData}
 		>
 			<EventsContextProvider txHash={txHash} chainId={chainId} rpcUrl={rpcUrl} shouldLoad={true}>
 				{debuggerPayload && (
@@ -76,7 +74,8 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 		l1DataFlamegraph,
 		setChosenCallName,
 		debuggerPayload,
-		callWithError
+		callWithError,
+		transactionData
 	} = useCallTrace();
 	const { events, loading, error } = useEvents();
 	const onCopyToClipboardClick = (message: string) => {
@@ -109,13 +108,25 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 					onValueChange={onValueChange}
 					className="flex flex-col flex-1 overflow-hidden min-h-0"
 				>
-					<TabsList className="flex md:inline-flex md:w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
+					<TabsList className="inline-flex w-full sm:w-fit dark:bg-card justify-start sm:justify-center overflow-x-scroll">
+						<TabsTrigger value="transaction-details" className="block sm:hidden">
+							Transaction Details
+						</TabsTrigger>
 						<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 						<TabsTrigger value="events-list">Events</TabsTrigger>
 						<TabsTrigger value="debugger">Debugger</TabsTrigger>
-						{/*<TabsTrigger value="storage-changes">Storage</TabsTrigger>
-					<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>*/}
 					</TabsList>
+					<TabsContent
+						value="transaction-details"
+						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+							activeTab !== 'transaction-details' ? 'hidden' : ''
+						}`}
+					>
+						<TransactionDetails
+							transactionData={transactionData}
+							// rpcUrl={rpcUrl}
+						/>
+					</TabsContent>
 					<TabsContent
 						value="call-trace"
 						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
