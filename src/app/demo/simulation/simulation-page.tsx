@@ -81,12 +81,7 @@ export function SimulationPage({
 		content = (
 			<>
 				<TransactionDetails transactionData={l2TransactionData} isDemo />
-				<CallTraceRoot
-					simulationResult={l2TransactionData.simulationResult}
-					l2Flamegraph={l2TransactionData?.flamechart}
-					l1DataFlamegraph={l2TransactionData?.l1DataFlamechart}
-					debuggerPayload={debuggerPayload}
-				/>
+				<CallTraceRoot transactionData={l2TransactionData} debuggerPayload={debuggerPayload} />
 			</>
 		);
 	}
