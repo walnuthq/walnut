@@ -32,7 +32,8 @@ export type TabId =
 	| 'debugger'
 	| 'storage-changes'
 	| 'gas-profiler'
-	| 'transaction-details';
+	| 'transaction-details'
+	| 'input-output';
 
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };

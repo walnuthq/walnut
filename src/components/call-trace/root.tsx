@@ -17,7 +17,8 @@ import CalldataSearch from '../ui/calldata-search';
 import {
 	PlusCircleIcon,
 	MinusCircleIcon,
-	ClipboardDocumentIcon
+	ClipboardDocumentIcon,
+	ClockIcon
 } from '@heroicons/react/24/outline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { CommonCallTrace } from './common-call-trace';
@@ -29,6 +30,7 @@ import ErrorAlert from '../ui/error-alert';
 import { Button } from '../ui/button';
 import { copyToClipboard } from '@/lib/utils';
 import { TransactionDetails } from '../transaction-page/l2-transaction-details';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 export function CallTraceRoot({
 	transactionData,
@@ -109,12 +111,15 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 					className="flex flex-col flex-1 overflow-hidden min-h-0"
 				>
 					<TabsList className="inline-flex w-full sm:w-fit dark:bg-card justify-start sm:justify-center overflow-x-scroll sm:overflow-x-hidden">
-						<TabsTrigger value="transaction-details" className="block sm:hidden">
+						<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
+						<TabsTrigger value="transaction-details" className="md:hidden">
 							Transaction Details
 						</TabsTrigger>
-						<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
+						<TabsTrigger value="input-output">Input/Output</TabsTrigger>
 						<TabsTrigger value="events-list">Events</TabsTrigger>
 						<TabsTrigger value="debugger">Debugger</TabsTrigger>
+						<TabsTrigger value="storage-changes">Storage</TabsTrigger>
+						<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
 					</TabsList>
 					<TabsContent
 						value="transaction-details"
@@ -126,6 +131,25 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 							transactionData={transactionData}
 							// rpcUrl={rpcUrl}
 						/>
+					</TabsContent>
+					<TabsContent
+						value="input-output"
+						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+							activeTab !== 'input-output' ? 'hidden' : ''
+						}`}
+					>
+						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
+							<ScrollArea className="flex-1 overflow-auto">
+								{/* <MultiCallIO /> */}
+								<Alert className="m-4 w-fit ">
+									<div className="flex items-center gap-2">
+										<ClockIcon className="h-5 w-5" />
+										<div className="font-medium">Coming soon.</div>
+									</div>
+								</Alert>
+								<ScrollBar orientation="horizontal" />
+							</ScrollArea>
+						</div>
 					</TabsContent>
 					<TabsContent
 						value="call-trace"
@@ -243,7 +267,13 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 					>
 						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
 							<ScrollArea className="flex-1 overflow-auto">
-								<StorageChanges />
+								{/* <StorageChanges /> */}
+								<Alert className="m-4 w-fit ">
+									<div className="flex items-center gap-2">
+										<ClockIcon className="h-5 w-5" />
+										<div className="font-medium">Coming soon.</div>
+									</div>
+								</Alert>
 							</ScrollArea>
 						</div>
 					</TabsContent>
@@ -255,7 +285,13 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 					>
 						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
 							<ScrollArea className="flex-1 overflow-auto dark:bg-card">
-								<GasProfiler l2Flamegraph={l2Flamegraph} l1DataFlamegraph={l1DataFlamegraph} />
+								{/* <GasProfiler l2Flamegraph={l2Flamegraph} l1DataFlamegraph={l1DataFlamegraph} /> */}
+								<Alert className="m-4 w-fit ">
+									<div className="flex items-center gap-2">
+										<ClockIcon className="h-5 w-5" />
+										<div className="font-medium">Coming soon.</div>
+									</div>
+								</Alert>
 							</ScrollArea>
 						</div>
 					</TabsContent>
