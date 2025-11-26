@@ -128,23 +128,3 @@
 		}
 	}
 }
-
-@keyframes scroll-hint-rtl {
-	0% {
-		transform: translateX(100vw);
-		opacity: 0;
-	}
-	10% {
-		opacity: 1;
-	}
-	90% {
-		opacity: 1;
-	}
-	100% {
-		transform: translateX(-100%);
-		opacity: 0;
-	}
-}
-.animate-scroll-hint-rtl {
-	animation: scroll-hint-rtl 3s ease-in-out 2s infinite;
-}

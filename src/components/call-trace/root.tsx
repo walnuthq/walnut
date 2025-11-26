@@ -21,7 +21,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { CommonCallTrace } from './common-call-trace';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import StorageChanges from '../storage-changes';
 import { GasProfiler } from '../gas-profiler';
 import { Error } from '@/components/ui/error';
@@ -90,33 +90,6 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 		},
 		[setActiveTab, activeTab, setChosenCallName]
 	);
-
-	const [scrollState, setScrollState] = useState({ isStart: true, isEnd: false });
-	const tabsListRef = useRef<HTMLDivElement>(null);
-
-	const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-		const target = e.currentTarget;
-		const isStart = target.scrollLeft <= 10;
-		const isEnd = target.scrollLeft + target.clientWidth >= target.scrollWidth - 10;
-
-		setScrollState({ isStart, isEnd });
-	};
-
-	useEffect(() => {
-		const checkInitialScroll = () => {
-			if (tabsListRef.current) {
-				const isStart = tabsListRef.current.scrollLeft <= 10;
-				const isEnd =
-					tabsListRef.current.scrollLeft + tabsListRef.current.clientWidth >=
-					tabsListRef.current.scrollWidth - 10;
-				setScrollState({ isStart, isEnd });
-			}
-		};
-
-		checkInitialScroll();
-		window.addEventListener('resize', checkInitialScroll);
-		return () => window.removeEventListener('resize', checkInitialScroll);
-	}, []);
 	return (
 		<>
 			{simulationResult.executionResult.executionStatus !== 'SUCCEEDED' && callWithError && (
@@ -135,41 +108,14 @@ function CallTraceRootContent({ txHash }: { txHash?: string }) {
 					onValueChange={onValueChange}
 					className="flex flex-col flex-1 overflow-hidden min-h-0"
 				>
-					<div className="relative sm:contents">
-						<TabsList
-							ref={tabsListRef}
-							onScroll={handleScroll}
-							className="inline-flex w-full sm:w-fit dark:bg-card justify-start sm:justify-center overflow-x-scroll sm:overflow-x-hidden"
-						>
-							<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
-							<TabsTrigger value="transaction-details" className="md:hidden">
-								Transaction Details
-							</TabsTrigger>
-							<TabsTrigger value="input-output">Input/Output</TabsTrigger>
-							<TabsTrigger value="events-list">Events</TabsTrigger>
-							<TabsTrigger value="debugger">Debugger</TabsTrigger>
-							<TabsTrigger value="storage-changes">Storage</TabsTrigger>
-							<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
-						</TabsList>
-
-						{!scrollState.isStart && (
-							<div className="sm:hidden absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background via-background/50 to-transparent pointer-events-none transition-opacity duration-300" />
-						)}
-
-						{!scrollState.isEnd && (
-							<div className="sm:hidden absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/50 to-transparent pointer-events-none transition-opacity duration-300" />
-						)}
-						{!scrollState.isEnd && (
-							<div className="sm:hidden absolute top-0 right-0 w-full h-px pointer-events-none overflow-hidden rounded-tl-md">
-								<div className="h-full w-20 bg-gradient-to-l from-transparent via-border to-transparent animate-scroll-hint-rtl" />
-							</div>
-						)}
-						{!scrollState.isEnd && (
-							<div className="sm:hidden absolute bottom-0 right-0 w-full h-px pointer-events-none overflow-hidden rounded-bl-md">
-								<div className="h-full w-20 bg-gradient-to-l from-transparent via-border to-transparent animate-scroll-hint-rtl" />
-							</div>
-						)}
-					</div>
+					<TabsList className="inline-flex w-full sm:w-fit dark:bg-card justify-start sm:justify-center overflow-x-scroll sm:overflow-x-hidden">
+						<TabsTrigger value="transaction-details" className="block sm:hidden">
+							Transaction Details
+						</TabsTrigger>
+						<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
+						<TabsTrigger value="events-list">Events</TabsTrigger>
+						<TabsTrigger value="debugger">Debugger</TabsTrigger>
+					</TabsList>
 					<TabsContent
 						value="transaction-details"
 						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
