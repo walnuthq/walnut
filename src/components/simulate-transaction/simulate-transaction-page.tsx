@@ -826,12 +826,22 @@ export function SimulateTransactionPage({
 								<h1 className="text-xl font-medium flex flex-nowrap items-center">
 									{title}
 									{txHash && (
-										<CopyToClipboardElement
-											value={txHash}
-											toastDescription="The address has been copied."
-										>
-											{shortenHash(txHash)}
-										</CopyToClipboardElement>
+										<>
+											<CopyToClipboardElement
+												value={txHash}
+												toastDescription="The address has been copied."
+												className="lg:hidden block"
+											>
+												{shortenHash(txHash)}
+											</CopyToClipboardElement>
+											<CopyToClipboardElement
+												value={txHash}
+												className="lg:block hidden"
+												toastDescription="The address has been copied."
+											>
+												{txHash}
+											</CopyToClipboardElement>
+										</>
 									)}
 								</h1>
 								<h3 className="text-muted-foreground">{description}</h3>
