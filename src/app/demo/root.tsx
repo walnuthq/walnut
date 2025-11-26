@@ -1,4 +1,4 @@
-import { SimulationResult, FlameNode } from '@/lib/simulation';
+import { SimulationResult, FlameNode, L2TransactionData } from '@/lib/simulation';
 import { DebuggerPayload } from '@/lib/debugger';
 import {
 	CallTraceContextProvider,
@@ -23,22 +23,19 @@ import { GasProfiler } from '@/components/gas-profiler';
 import { EventsList } from '@/components/call-trace/event-entries';
 
 export function CallTraceRoot({
-	simulationResult,
-	l2Flamegraph,
-	l1DataFlamegraph,
+	transactionData,
 	debuggerPayload
 }: {
-	simulationResult: SimulationResult;
-	l2Flamegraph: FlameNode | undefined;
-	l1DataFlamegraph: FlameNode | undefined;
+	transactionData: L2TransactionData;
 	debuggerPayload: DebuggerPayload | null;
 }) {
 	return (
 		<CallTraceContextProvider
-			simulationResult={simulationResult}
-			l2Flamegraph={l2Flamegraph}
-			l1DataFlamegraph={l1DataFlamegraph}
+			simulationResult={transactionData.simulationResult}
+			l2Flamegraph={transactionData.l2Flamegraph}
+			l1DataFlamegraph={transactionData.l1DataFlamegraph}
 			debuggerPayload={debuggerPayload}
+			transactionData={transactionData}
 		>
 			{debuggerPayload && (
 				<DebuggerContextProvider debuggerPayload={debuggerPayload}>

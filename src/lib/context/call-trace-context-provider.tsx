@@ -17,7 +17,8 @@ import {
 	SimulationDebuggerData,
 	SimulationResult,
 	FlameNode,
-	CompilationSummary
+	CompilationSummary,
+	L2TransactionData
 } from '@/lib/simulation';
 import { DebuggerPayload } from '@/lib/debugger';
 
@@ -25,7 +26,14 @@ interface StringBooleanDict {
 	[key: string]: boolean;
 }
 
-export type TabId = 'call-trace' | 'events-list' | 'debugger' | 'storage-changes' | 'gas-profiler';
+export type TabId =
+	| 'call-trace'
+	| 'events-list'
+	| 'debugger'
+	| 'storage-changes'
+	| 'gas-profiler'
+	| 'transaction-details'
+	| 'input-output';
 
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };
@@ -55,6 +63,7 @@ interface CallTraceContextProps {
 	setChosenCallName: (callName: string | null) => void;
 	compilationSummary?: CompilationSummary;
 	callWithError: ContractCall | FunctionCall | undefined;
+	transactionData: L2TransactionData;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -81,7 +90,8 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	scrollToTraceLineElement: (key: number) => undefined,
 	chosenCallName: null,
 	setChosenCallName: () => undefined,
-	callWithError: undefined
+	callWithError: undefined,
+	transactionData: {} as L2TransactionData
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -90,8 +100,16 @@ export const CallTraceContextProvider: React.FC<
 		l2Flamegraph: FlameNode | undefined;
 		l1DataFlamegraph: FlameNode | undefined;
 		debuggerPayload: DebuggerPayload | null;
+		transactionData: L2TransactionData;
 	}>
-> = ({ children, simulationResult, l2Flamegraph, l1DataFlamegraph, debuggerPayload }) => {
+> = ({
+	children,
+	simulationResult,
+	l2Flamegraph,
+	l1DataFlamegraph,
+	debuggerPayload,
+	transactionData
+}) => {
 	// This collapses calls starting with "core".
 	// If call has children: only parent is collapsed
 	const initiallyCollapsed: StringBooleanDict = useMemo(() => {
@@ -251,7 +269,8 @@ export const CallTraceContextProvider: React.FC<
 				chosenCallName,
 				setChosenCallName,
 				compilationSummary: simulationResult.compilationSummary,
-				callWithError
+				callWithError,
+				transactionData
 			}}
 		>
 			{children}

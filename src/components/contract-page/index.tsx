@@ -55,51 +55,81 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	return (
 		<>
 			<HeaderNav />
-			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
-				<Container className="py-6">
-					<div className="flex items-center gap-4 mt-4 mb-2 mr-2">
-						<h1 className="text-base font-medium leading-6  flex flex-nowrap items-center">
-							Contract{' '}
-							<CopyToClipboardElement
-								value={contractAddress}
-								toastDescription="The address has been copied."
-								className="hidden lg:block p-0"
-							>
-								<AddressLink address={contractAddress}>{contractAddress}</AddressLink>
-							</CopyToClipboardElement>
-							<CopyToClipboardElement
-								value={contractAddress}
-								toastDescription="The address has been copied."
-								className="lg:hidden p-0"
-							>
-								<AddressLink address={contractAddress}>{shortenHash(contractAddress)}</AddressLink>
-							</CopyToClipboardElement>
-						</h1>
-						{contractData && getNetworkBadge(contractData.deployedSources, parseChain)}
-						{contractData && (contractData.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
+			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
+				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
+					<div className="xl:flex flex-row items-baseline justify-between">
+						<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
+							<h1 className="text-base font-medium leading-6">
+								<div className="flex flex-wrap items-center gap-1">
+									<span>Contract</span>
+									<CopyToClipboardElement
+										value={contractAddress}
+										toastDescription="The address has been copied."
+										className="hidden lg:block p-0 mr-2 hover:bg-inherit"
+									>
+										<AddressLink address={contractAddress}>{contractAddress}</AddressLink>
+									</CopyToClipboardElement>
+									<CopyToClipboardElement
+										value={contractAddress}
+										toastDescription="The address has been copied."
+										className="lg:hidden p-0 mr-2 hover:bg-inherit"
+									>
+										<AddressLink address={contractAddress}>
+											{shortenHash(contractAddress)}
+										</AddressLink>
+									</CopyToClipboardElement>
+
+									<div className="hidden md:flex  gap-2 ">
+										{contractData && getNetworkBadge(contractData.deployedSources, parseChain)}
+										{contractData &&
+											(contractData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
+									</div>
+								</div>
+							</h1>
+						</div>
+						<div className="flex md:hidden gap-2 justify-between">
+							{contractData && getNetworkBadge(contractData.deployedSources, parseChain)}
+							{contractData && (contractData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
+						</div>
 					</div>
-					{contractData && (
-						<>
-							<ContractDetails contractData={contractData} />
-							{/* <ClassSourceCode
+					<div className="hidden md:block">
+						{contractData && <ContractDetails contractData={contractData} />}
+					</div>
+					<div className="flex-1  md:hidden flex flex-col overflow-hidden min-h-0 ">
+						{contractData ? (
+							<>
+								<ContractDetails contractData={contractData} />
+								{/* <ClassSourceCode
 								isClassVerified={contractData.verified}
 								sourceCode={contractData.sourceCode ?? {}}
 								isContract={true}
 							/> */}
-						</>
-					)}
-					{contractData ? null : error && error.status ? (
-						error.status >= 500 && error.status < 600 ? (
-							<ServerError message={error.toString()} />
+							</>
+						) : error ? (
+							<Error message={error.message} />
 						) : (
-							<Error message={error.toString()} />
-						)
-					) : (
-						<Loader randomQuote={false} />
-					)}
+							<Loader randomQuote={false} />
+						)}
+					</div>
+					<div className="hidden md:block">
+						{contractData ? (
+							<></>
+						) : // <ClassSourceCode
+						// 	isClassVerified={contractData.verified}
+						// 	sourceCode={contractData.sourceCode ?? {}}
+						// 	isContract={true}
+						// />
+						error ? (
+							<Error message={error.message} />
+						) : (
+							<Loader randomQuote={false} />
+						)}
+					</div>
 				</Container>
-				<Footer />
 			</main>
+			<div className="hidden md:block">
+				<Footer />
+			</div>
 		</>
 	);
 }

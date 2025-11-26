@@ -202,9 +202,7 @@ export function TransactionPage({
 							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} isDemo />
 
 							<CallTraceRoot
-								simulationResult={l2TransactionData.simulationResult}
-								l2Flamegraph={l2TransactionData.flamechart}
-								l1DataFlamegraph={l2TransactionData.l1DataFlamechart}
+								transactionData={l2TransactionData}
 								debuggerPayload={debuggerPayload}
 							/>
 						</>

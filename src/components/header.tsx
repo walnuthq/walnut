@@ -142,7 +142,7 @@ export function HeaderNav({
 							)}
 
 							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
-								{!isMainPage && (
+								{!isMainPage && hideUserSection && (
 									<div className="w-auto max-w-xs md:w-80">
 										<Search className="w-full" placeholder="Search"></Search>
 									</div>
