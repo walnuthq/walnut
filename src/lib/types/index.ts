@@ -25,7 +25,8 @@ export enum ChainId {
 	OP_MAIN = 'OP_MAIN',
 	ETH_MAIN = 'ETH_MAIN',
 	ETH_SEPOLIA = 'ETH_SEPOLIA',
-	ARBITRUM_ONE = 'ARBITRUM_ONE'
+	ARBITRUM_ONE = 'ARBITRUM_ONE',
+	CITREA_TESTNET = "CITREA_TESTNET"
 }
 
 export interface TenantNetwork {
