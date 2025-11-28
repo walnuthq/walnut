@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import optimismLogo from '@/assets/network-logos/optimism.svg';
 import ethLogo from '@/assets/network-logos/eth.svg';
 import arbitrumLogo from '@/assets/network-logos/arbitrum.svg';
+import citreaLogo from '@/assets/network-logos/citrea.svg';
 import Image from 'next/image';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -35,6 +36,14 @@ function getNetworkStyle(network: Network) {
 			logo: arbitrumLogo,
 			class:
 				'bg-blue-100 border-blue-400 hover:!bg-blue-200 text-variable dark:hover:!bg-blue-600 dark:bg-opacity-40 dark:bg-blue-500 dark:text-white'
+		};
+	}
+
+	if (network.stack === 'Citrea' && !network.customNetworkName) {
+		return {
+			logo: citreaLogo,
+			class:
+				'bg-orange-100 border-orange-400 hover:!bg-orange-200 text-orange-600 dark:hover:!bg-orange-600 dark:bg-opacity-40 dark:bg-orange-500 dark:text-orange-200'
 		};
 	}
 

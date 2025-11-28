@@ -8,7 +8,8 @@ export enum ChainKey {
 	POWERLOOM_DEVNET = 'POWERLOOM_DEVNET',
 	POWERLOOM_MAINNET = 'POWERLOOM_MAINNET',
 	ARBITRUM_ONE = 'ARBITRUM_ONE',
-	ARBITRUM_SEPOLIA = 'ARBITRUM_SEPOLIA'
+	ARBITRUM_SEPOLIA = 'ARBITRUM_SEPOLIA',
+	CITREA_TESTNET = 'CITREA_TESTNET'
 }
 
 export type ChainMeta = {
@@ -26,6 +27,8 @@ export type ChainMeta = {
 	verificationType: 'sourcify' | 'blockscout';
 	// Provider label for better rpc identification
 	label: string;
+	// Whether this network is publicly accessible without authentication
+	isPublic?: boolean;
 };
 
 export const CHAINS_META: Record<ChainKey, ChainMeta> = {
@@ -35,7 +38,8 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		chainId: 10,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_MAIN',
 		verificationType: 'sourcify',
-		label: 'Optimism Mainnet Alchemy RPC'
+		label: 'Optimism Mainnet Alchemy RPC',
+		isPublic: true
 	},
 	[ChainKey.OP_SEPOLIA]: {
 		key: ChainKey.OP_SEPOLIA,
@@ -43,7 +47,8 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		chainId: 11155420,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_OP_SEPOLIA',
 		verificationType: 'sourcify',
-		label: 'Optimism Sepolia Alchemy RPC'
+		label: 'Optimism Sepolia Alchemy RPC',
+		isPublic: true
 	},
 	[ChainKey.POWERLOOM_DEVNET]: {
 		key: ChainKey.POWERLOOM_DEVNET,
@@ -71,7 +76,8 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		chainId: 42161,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_ARBITRUM_ONE',
 		verificationType: 'sourcify',
-		label: 'Arbitrum One RPC'
+		label: 'Arbitrum One RPC',
+		isPublic: true
 	},
 	[ChainKey.ARBITRUM_SEPOLIA]: {
 		key: ChainKey.ARBITRUM_SEPOLIA,
@@ -79,20 +85,59 @@ export const CHAINS_META: Record<ChainKey, ChainMeta> = {
 		chainId: 421614,
 		rpcEnvVar: 'NEXT_PUBLIC_RPC_ARBITRUM_SEPOLIA',
 		verificationType: 'sourcify',
-		label: 'Arbitrum Sepolia RPC'
+		label: 'Arbitrum Sepolia RPC',
+		isPublic: true
+	},
+	[ChainKey.CITREA_TESTNET]: {
+		key: ChainKey.CITREA_TESTNET,
+		displayName: 'Citrea Testnet',
+		chainId: 5115,
+		rpcEnvVar: 'NEXT_PUBLIC_RPC_CITREA_TESTNET',
+		explorerApiEnvVar: 'NEXT_PUBLIC_EXPLORER_API_CITREA_TESTNET',
+		explorerType: 'blockscout_v2',
+		verificationType: 'blockscout',
+		label: 'Citrea Testnet RPC',
+		isPublic: true
 	}
 };
 
+/**
+ * Automatically generate PUBLIC_NETWORKS from CHAINS_META
+ * Networks with isPublic: true are included
+ */
+export const PUBLIC_NETWORKS: ChainKey[] = Object.values(CHAINS_META)
+	.filter((meta) => meta.isPublic === true)
+	.map((meta) => meta.key);
+
+/**
+ * Automatically generate mapChainIdToChainKey from CHAINS_META
+ * This eliminates the need to manually maintain this mapping
+ */
+export function mapChainIdToChainKey(chainId: string): ChainKey | undefined {
+	const chainKey = chainId.toUpperCase() as ChainKey;
+	if (chainKey in CHAINS_META) {
+		return chainKey;
+	}
+	return undefined;
+}
+
+/**
+ * Gets all chain keys that have RPC URLs configured
+ * A chain is enabled if it has a valid RPC URL in environment variables
+ */
 export function getEnabledChainKeys(): ChainKey[] {
-	const list = process.env.NEXT_PUBLIC_CHAINS;
-	if (!list) return [];
-	return list
-		.split(',')
-		.map((s) => s.trim())
-		.filter(Boolean)
-		.map((k) => k.toUpperCase())
-		.map((k) => k as ChainKey)
-		.filter((k) => Object.prototype.hasOwnProperty.call(CHAINS_META, k));
+	return Object.values(CHAINS_META)
+		.filter((meta) => {
+			const rpcEnvVar = meta.rpcEnvVar;
+			// If it's already a URL, it's configured
+			if (rpcEnvVar?.startsWith('http://') || rpcEnvVar?.startsWith('https://')) {
+				return true;
+			}
+			// Otherwise check if env var is set
+			const rpcUrl = (process.env as any)[rpcEnvVar] as string | undefined;
+			return rpcUrl !== undefined && rpcUrl.trim() !== '';
+		})
+		.map((meta) => meta.key);
 }
 
 export function getRpcUrlForChain(key: ChainKey): string | undefined {
@@ -119,18 +164,6 @@ export function getLabelForChainIdNumber(chainIdNumber: number): string {
 	}
 	// Fallback for unmapped chain IDs
 	return `Chain ${chainIdNumber}`;
-}
-
-export function mapChainIdToChainKey(chainId: string): ChainKey | undefined {
-	const mapping: Record<string, ChainKey> = {
-		OP_MAIN: ChainKey.OP_MAIN,
-		OP_SEPOLIA: ChainKey.OP_SEPOLIA,
-		POWERLOOM_DEVNET: ChainKey.POWERLOOM_DEVNET,
-		POWERLOOM_MAINNET: ChainKey.POWERLOOM_MAINNET,
-		ARBITRUM_ONE: ChainKey.ARBITRUM_ONE,
-		ARBITRUM_SEPOLIA: ChainKey.ARBITRUM_SEPOLIA
-	};
-	return mapping[chainId];
 }
 
 export function getDisplayNameForChainId(chainId: string): string {

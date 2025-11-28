@@ -1,4 +1,10 @@
-import { ChainKey, CHAINS_META, getRpcUrlForChain, getRpcUrlForChainSafe } from './networks';
+import {
+	ChainKey,
+	CHAINS_META,
+	getRpcUrlForChain,
+	getRpcUrlForChainSafe,
+	PUBLIC_NETWORKS
+} from './networks';
 import { getSupportedNetworks } from './get-supported-networks';
 import { AuthType } from './types';
 import { NextResponse } from 'next/server';
@@ -7,9 +13,6 @@ import {
 	RpcUrlNotFoundError,
 	AuthenticationRequiredError
 } from './errors';
-
-// Define publicly accessible networks that don't require authentication
-export const PUBLIC_NETWORKS = [ChainKey.OP_SEPOLIA, ChainKey.OP_MAIN];
 
 export interface PublicNetworkCheckResult {
 	isPublicNetworkRequest: boolean;
