@@ -110,6 +110,29 @@ export const PUBLIC_NETWORKS: ChainKey[] = Object.values(CHAINS_META)
 	.map((meta) => meta.key);
 
 /**
+ * Checks if a chain identifier (key or numeric ID) is a public network
+ * @param chainIdentifier - Chain ID as string key or numeric ID
+ * @returns true if the chain is a public network
+ */
+export function isPublicNetwork(chainIdentifier: string | number): boolean {
+	// Check if it's a public network key
+	if (typeof chainIdentifier === 'string') {
+		if (PUBLIC_NETWORKS.includes(chainIdentifier as ChainKey)) {
+			return true;
+		}
+	}
+
+	// Check if the numeric chain ID matches any public network
+	const chainIdNumber =
+		typeof chainIdentifier === 'number' ? chainIdentifier : Number(chainIdentifier);
+	if (!isNaN(chainIdNumber)) {
+		return PUBLIC_NETWORKS.some((key) => CHAINS_META[key].chainId === chainIdNumber);
+	}
+
+	return false;
+}
+
+/**
  * Automatically generate mapChainIdToChainKey from CHAINS_META
  * This eliminates the need to manually maintain this mapping
  */
