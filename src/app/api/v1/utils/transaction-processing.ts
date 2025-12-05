@@ -105,7 +105,6 @@ export const fetchTransactionAndTrace = async (
 		}
 	}
 
-	// For simulations (no txHash), skip traceCall - soldb will handle it
 	const isSimulation = !parameters.txHash;
 
 	const [transaction, traceResult] = await Promise.all([
@@ -142,29 +141,25 @@ export const fetchTransactionAndTrace = async (
 					chainId as number,
 					parameters.session
 			  )
-			: (() => {
-					if (isSimulation) {
-						return Promise.resolve(null);
-					} else {
-						return safeViemCall(
-							() => {
-								const traceCallParams = {
-									from: parameters.from,
-									to: parameters.to,
-									data: parameters.calldata,
-									blockNrOrHash: parameters.blockNumber
-										? `0x${parameters.blockNumber.toString(16)}`
-										: 'latest',
-									tracer: 'callTracer'
-								};
-								return tracingClient.traceCall(traceCallParams);
-							},
-							'traceCall',
-							chainId as number,
-							parameters.session
-						);
-					}
-			  })()
+			: // For simulations, run traceCall to discover all contracts that will be called
+			  // This allows us to compile all necessary contracts before running the actual simulation
+			  safeViemCall(
+					() => {
+						const traceCallParams = {
+							from: parameters.from,
+							to: parameters.to,
+							data: parameters.calldata,
+							blockNrOrHash: parameters.blockNumber
+								? `0x${parameters.blockNumber.toString(16)}`
+								: 'latest',
+							tracer: 'callTracer'
+						};
+						return tracingClient.traceCall(traceCallParams);
+					},
+					'traceCall',
+					chainId as number,
+					parameters.session
+			  )
 	]);
 
 	// Validate transaction and trace result
@@ -174,8 +169,8 @@ export const fetchTransactionAndTrace = async (
 			'ERROR: eth_getTransactionByHash failed - missing to address and not a CREATE transaction'
 		);
 	}
-	// For simulations, traceResult can be null - soldb will handle the tracing
-	if (!traceResult && !isSimulation) {
+	// traceResult should always be available now (from traceTransaction or traceCall)
+	if (!traceResult) {
 		throw new Error('ERROR: debug_traceTransaction/debug_traceCall failed');
 	}
 
@@ -191,7 +186,8 @@ export const fetchContracts = async (
 	publicClient: any,
 	chainId: number
 ) => {
-	// For simulations, traceResult is null - fetch contract only for transaction.to
+	// Extract all unique contract addresses from trace result
+	// traceResult is always available now (from traceTransaction or traceCall)
 	const flattenedTraceTransactionResult = traceResult
 		? uniqBy(flattenTraceCall(traceResult), 'to')
 		: transaction.to
