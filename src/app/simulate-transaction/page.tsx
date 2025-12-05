@@ -86,7 +86,7 @@ export default async function Page({
 
 	return (
 		<SimulateTransactionPage
-			isDemo={isDemo}
+			// isDemo={isDemo}
 			txHash={txHash}
 			simulationPayload={simulationPayload}
 			title={simulationPayload && 'Re-simulate'}
