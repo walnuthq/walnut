@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRpcUrlForChainSafe } from '@/lib/networks';
+import { isPublicNetwork } from '@/lib/networks';
 import { createPublicClient, http } from 'viem';
 import fetchContract from '@/app/api/v1/fetch-contract';
 import { type Contract } from '@/app/api/v1/types';
@@ -11,6 +11,7 @@ import {
 	AuthenticationRequiredError,
 	NetworkNotSupportedError
 } from '@/lib/errors';
+import { getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
 
 export const GET = async (
 	request: NextRequest,
@@ -19,13 +20,17 @@ export const GET = async (
 	// Get chainId early for better error messages
 	const chainId = request.nextUrl.searchParams.get('chain_id');
 
+	// Check if it's a public network request
+	const isPublicNetworkRequest = chainId ? isPublicNetwork(chainId) : false;
+
 	const authSession = await getServerSession();
-	if (!authSession) {
+	// Only require authentication for non-public networks
+	if (!authSession && !isPublicNetworkRequest) {
 		const authError = new AuthenticationRequiredError(chainId || undefined, null);
 		return NextResponse.json(authError.toJSON(), { status: authError.statusCode });
 	}
 
-	const session = authSession.session; // Extract the session object
+	const session = authSession?.session || null; // Extract the session object (may be null for public networks)
 
 	const { address } = await params;
 	try {
@@ -34,8 +39,8 @@ export const GET = async (
 			return NextResponse.json(chainIdError.toJSON(), { status: chainIdError.statusCode });
 		}
 
-		// Get RPC URL for the chain
-		const rpcUrl = getRpcUrlForChainSafe(chainId, session);
+		// Get RPC URL for the chain (works for both public and private networks)
+		const rpcUrl = getRpcUrlForChainOptimized(chainId, session);
 		const publicClient = createPublicClient({ transport: http(rpcUrl) });
 		const contractAddress = address as `0x${string}`;
 

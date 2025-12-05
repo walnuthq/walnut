@@ -12,14 +12,50 @@ import {
 	isSoldbNotInstalledError,
 	isTimeoutError,
 	isConnectionError,
+	isInsufficientFundsError,
+	isExecutionRevertedError,
+	isNonceError,
+	isGasError,
+	extractRpcError,
+	extractInsufficientFundsDetails,
+	extractRevertReason,
 	SoldbTimeoutError,
 	RpcConnectionError,
 	SoldbExecutionError,
+	InsufficientFundsError,
+	ExecutionRevertedError,
+	NonceTooLowError,
+	GasEstimationError,
+	RpcError,
 	sanitizeErrorMessage
 } from '@/lib/errors';
 import type { AuthType } from '@/lib/types';
 
 const execFile = promisify(execFileCb);
+
+/**
+ * Determines appropriate HTTP status code based on error message content
+ */
+const determineStatusCode = (message: string): number => {
+	const lowerMessage = message.toLowerCase();
+
+	// Client errors (4xx) - issues with the request/transaction
+	if (lowerMessage.includes('insufficient funds')) return 400;
+	if (lowerMessage.includes('nonce')) return 400;
+	if (lowerMessage.includes('revert')) return 400;
+	if (lowerMessage.includes('invalid')) return 400;
+	if (lowerMessage.includes('not found')) return 404;
+	if (lowerMessage.includes('unauthorized') || lowerMessage.includes('forbidden')) return 403;
+	if (lowerMessage.includes('rate limit') || lowerMessage.includes('too many requests')) return 429;
+	if (lowerMessage.includes('gas')) return 400;
+
+	// Server errors (5xx) - issues with the server/RPC
+	if (lowerMessage.includes('timeout')) return 504;
+	if (lowerMessage.includes('unavailable') || lowerMessage.includes('service')) return 503;
+
+	// Default to 500 for unknown errors
+	return 500;
+};
 
 const rawWalnutTraceCallToWalnutTraceCall = (
 	rawWalnutTraceCall: RawWalnutTraceCall
@@ -189,6 +225,43 @@ const soldb = async ({
 			// If not JSON, use the original message
 		}
 
+		// Combine stdout and message for detection
+		const fullErrorText = `${err.stdout || ''} ${err.message || ''} ${errorMessage}`;
+
+		// Check for specific RPC/execution errors and throw with appropriate status codes
+		if (isInsufficientFundsError({ message: fullErrorText })) {
+			const details = extractInsufficientFundsDetails({ message: fullErrorText });
+			throw new InsufficientFundsError(
+				details?.address || 'unknown',
+				details?.available || 'unknown',
+				details?.required || 'unknown',
+				chainId,
+				session
+			);
+		}
+
+		if (isExecutionRevertedError({ message: fullErrorText })) {
+			const reason = extractRevertReason({ message: fullErrorText });
+			throw new ExecutionRevertedError(reason || undefined, chainId, session);
+		}
+
+		if (isNonceError({ message: fullErrorText })) {
+			throw new NonceTooLowError('unknown', undefined, undefined, chainId, session);
+		}
+
+		if (isGasError({ message: fullErrorText })) {
+			throw new GasEstimationError(errorMessage, chainId, session);
+		}
+
+		// Check for generic RPC error with code
+		const rpcError = extractRpcError({ message: fullErrorText, stdout: err.stdout });
+		if (rpcError) {
+			throw new RpcError(rpcError.code, rpcError.message, chainId, session, errorContext);
+		}
+
+		// Determine appropriate status code based on error message content
+		const statusCode = determineStatusCode(errorMessage);
+
 		// Throw a structured SoldbExecutionError with error type and context
 		throw new SoldbExecutionError(
 			errorMessage,
@@ -196,7 +269,8 @@ const soldb = async ({
 			errorDetails,
 			session,
 			errorType,
-			errorContext
+			errorContext,
+			statusCode
 		);
 	}
 };
@@ -292,13 +366,43 @@ export const soldbListEvents = async ({
 			// If not JSON, use the original message
 		}
 
+		// Combine stdout and message for detection
+		const fullErrorText = `${err.stdout || ''} ${err.message || ''} ${errorMessage}`;
+
+		// Check for specific RPC/execution errors
+		if (isInsufficientFundsError({ message: fullErrorText })) {
+			const details = extractInsufficientFundsDetails({ message: fullErrorText });
+			throw new InsufficientFundsError(
+				details?.address || 'unknown',
+				details?.available || 'unknown',
+				details?.required || 'unknown',
+				undefined,
+				null
+			);
+		}
+
+		if (isExecutionRevertedError({ message: fullErrorText })) {
+			const reason = extractRevertReason({ message: fullErrorText });
+			throw new ExecutionRevertedError(reason || undefined, undefined, null);
+		}
+
+		// Check for generic RPC error with code
+		const rpcError = extractRpcError({ message: fullErrorText, stdout: err.stdout });
+		if (rpcError) {
+			throw new RpcError(rpcError.code, rpcError.message, undefined, null, errorContext);
+		}
+
+		// Determine appropriate status code
+		const statusCode = determineStatusCode(errorMessage);
+
 		throw new SoldbExecutionError(
 			errorMessage,
 			undefined,
 			errorDetails,
 			null,
 			errorType,
-			errorContext
+			errorContext,
+			statusCode
 		);
 	}
 };
