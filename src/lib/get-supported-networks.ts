@@ -1,15 +1,25 @@
-import { ChainKey, CHAINS_META, getEnabledChainKeys } from './networks';
-import { AuthType, ChainMeta } from './types';
+import { CHAINS_META, getEnabledChainIds, PUBLIC_NETWORKS } from './networks';
+import { ChainId, AuthType, ChainMeta } from './types';
 
 export function getSupportedNetworks(session: AuthType['session']): ChainMeta[] {
-	const staticNetworks = getEnabledChainKeys().map((key) => CHAINS_META[key]);
+	// Get enabled networks (those with RPC URLs configured)
+	const enabledNetworkKeys = getEnabledChainIds();
+	const enabledNetworks = enabledNetworkKeys.map((key) => CHAINS_META[key]);
+
+	// Also include all public networks, even if RPC URL is not configured
+	// Filter out duplicates - only add public networks that are not already in enabled networks
+	const publicNetworksWithoutRpc = PUBLIC_NETWORKS.filter(
+		(key) => !enabledNetworkKeys.includes(key)
+	).map((key) => CHAINS_META[key]);
+
+	const staticNetworks = [...enabledNetworks, ...publicNetworksWithoutRpc];
 
 	// Map all tenant networks from session
 	const tenantNetworks: ChainMeta[] =
 		session?.tenantNetworks?.map((network) => {
 			// Key = DISPLAY_NAME in CAPS with underscores (fallback to tenantName)
 			const base = (network.displayName || network.tenantName).toUpperCase();
-			const tenantChainKey = base.replace(/[^A-Z0-9]+/g, '_') as ChainKey;
+			const tenantChainKey = base.replace(/[^A-Z0-9]+/g, '_') as ChainId;
 
 			return {
 				key: tenantChainKey,
@@ -27,7 +37,7 @@ export function getSupportedNetworks(session: AuthType['session']): ChainMeta[] 
 }
 
 export function getRpcUrlForTenantChain(
-	chainKey: ChainKey,
+	chainKey: ChainId,
 	session: AuthType['session']
 ): string | undefined {
 	// Find network by key and return direct RPC URL if present (tenant networks)

@@ -4,7 +4,9 @@
  * This module provides custom error classes
  */
 
-import { ChainKey, CHAINS_META, getChainKeyByNumber } from '@/lib/networks';
+import { CHAINS_META, getChainIdByNumber } from '@/lib/networks';
+import { ChainId } from './types';
+
 import { getSupportedNetworks } from '@/lib/get-supported-networks';
 import type { AuthType } from '@/lib/types';
 
@@ -20,12 +22,12 @@ function getChainLabel(chainId: string | number, session?: AuthType['session'] |
 	// Convert to number for consistent lookups
 	const chainIdNumber = typeof chainId === 'number' ? chainId : parseInt(chainId, 10);
 
-	// For string chainId, first check if it's a known ChainKey (fastest O(1) lookup)
+	// For string chainId, first check if it's a known ChainId (fastest O(1) lookup)
 	// Use label for static networks (more descriptive with RPC provider info)
-	if (typeof chainId === 'string' && chainId in ChainKey) {
+	if (typeof chainId === 'string' && chainId in ChainId) {
 		return (
-			CHAINS_META[chainId as ChainKey]?.label ||
-			CHAINS_META[chainId as ChainKey]?.displayName ||
+			CHAINS_META[chainId as ChainId]?.label ||
+			CHAINS_META[chainId as ChainId]?.displayName ||
 			chainId
 		);
 	}
@@ -58,7 +60,7 @@ function getChainLabel(chainId: string | number, session?: AuthType['session'] |
 
 	// Check static CHAINS_META by numeric chainId and return label (more descriptive)
 	if (!isNaN(chainIdNumber)) {
-		const chainKey = getChainKeyByNumber(chainIdNumber);
+		const chainKey = getChainIdByNumber(chainIdNumber);
 		if (chainKey) {
 			const label = CHAINS_META[chainKey]?.label || CHAINS_META[chainKey]?.displayName;
 			if (label) {
@@ -1064,8 +1066,8 @@ function extractDebugMethod(error: any): string | null {
 function extractNetworkLabelFromUrl(url: string): string {
 	// Check for common RPC providers and networks
 	if (url.includes('optimism') || url.includes('op-')) {
-		if (url.includes('sepolia')) return CHAINS_META[ChainKey.OP_SEPOLIA].displayName;
-		if (url.includes('mainnet')) return CHAINS_META[ChainKey.OP_MAIN].displayName;
+		if (url.includes('sepolia')) return CHAINS_META[ChainId.OP_SEPOLIA].displayName;
+		if (url.includes('mainnet')) return CHAINS_META[ChainId.OP_MAIN].displayName;
 	}
 
 	// If we can't identify, return generic label

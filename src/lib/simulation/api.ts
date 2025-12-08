@@ -59,7 +59,7 @@ export async function simulateCustomNetworkTransactionByHash({
 }): Promise<TransactionSimulationResult> {
 	// Validate that either chainKey is provided
 	if (!chainKey && !rpcUrl) {
-		throw new Error('ChainKey must be provided to simulate transaction');
+		throw new Error('ChainId must be provided to simulate transaction');
 	}
 
 	return await fetchApi<TransactionSimulationResult>(`/v1/simulate-transaction`, {

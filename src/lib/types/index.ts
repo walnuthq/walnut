@@ -1,8 +1,7 @@
 import { auth } from '../auth';
-import { ChainKey } from '../networks';
 
 export type ChainMeta = {
-	key: ChainKey;
+	key: ChainId;
 	displayName: string;
 	chainId: number;
 	// Name of the env var that holds the RPC URL (do NOT put the URL here)
@@ -15,18 +14,30 @@ export type ChainMeta = {
 	// Preferred verification method for contracts
 	verificationType: 'sourcify' | 'blockscout';
 	// Provider label for better RPC identification (e.g., "Optimism Mainnet Alchemy RPC")
-	label?: string;
+	label: string;
+	// Whether this network is publicly accessible without authentication
+	isPublic?: boolean;
 };
 
 export enum ChainId {
-	SN_MAIN = 'SN_MAIN',
-	SN_SEPOLIA = 'SN_SEPOLIA',
-	OP_SEPOLIA = 'OP_SEPOLIA',
-	OP_MAIN = 'OP_MAIN',
+	// Ethereum chains
 	ETH_MAIN = 'ETH_MAIN',
 	ETH_SEPOLIA = 'ETH_SEPOLIA',
+	// Starknet chains
+	SN_MAIN = 'SN_MAIN',
+	SN_SEPOLIA = 'SN_SEPOLIA',
+	// EVM chains
+	OP_MAIN = 'OP_MAIN',
+	OP_SEPOLIA = 'OP_SEPOLIA',
+	POWERLOOM_DEVNET = 'POWERLOOM_DEVNET',
+	POWERLOOM_MAINNET = 'POWERLOOM_MAINNET',
 	ARBITRUM_ONE = 'ARBITRUM_ONE',
-	CITREA_TESTNET = "CITREA_TESTNET"
+	ARBITRUM_SEPOLIA = 'ARBITRUM_SEPOLIA',
+	CITREA_TESTNET = 'CITREA_TESTNET',
+	UNICHAIN_MAINNET = 'UNICHAIN_MAINNET',
+	UNICHAIN_TESTNET = 'UNICHAIN_TESTNET',
+	BOB_MAINNET = 'BOB_MAINNET',
+	BOB_SEPOLIA = 'BOB_SEPOLIA'
 }
 
 export interface TenantNetwork {
