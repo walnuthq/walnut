@@ -6,13 +6,7 @@ export function getSupportedNetworks(session: AuthType['session']): ChainMeta[] 
 	const enabledNetworkKeys = getEnabledChainIds();
 	const enabledNetworks = enabledNetworkKeys.map((key) => CHAINS_META[key]);
 
-	// Also include all public networks, even if RPC URL is not configured
-	// Filter out duplicates - only add public networks that are not already in enabled networks
-	const publicNetworksWithoutRpc = PUBLIC_NETWORKS.filter(
-		(key) => !enabledNetworkKeys.includes(key)
-	).map((key) => CHAINS_META[key]);
-
-	const staticNetworks = [...enabledNetworks, ...publicNetworksWithoutRpc];
+	const staticNetworks = [...enabledNetworks];
 
 	// Map all tenant networks from session
 	const tenantNetworks: ChainMeta[] =
