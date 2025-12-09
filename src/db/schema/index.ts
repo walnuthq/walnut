@@ -72,3 +72,36 @@ export const verification = schema.table('verification', {
 	value: text('value').notNull(),
 	expiresAt: timestamp('expiresAt').notNull()
 });
+
+export const apiKey = schema.table('apikey', {
+	// Better-auth required fields
+	id: text('id').primaryKey(), // better-auth uses text, not uuid
+	name: text('name'), // optional
+	start: text('start'), // starting characters of the key (text, not timestamp!)
+	prefix: text('prefix'), // API key prefix
+	key: text('key').unique().notNull(), // hashed API key (must be unique)
+	userId: text('userId')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	// Rate limiting & refill fields
+	refillInterval: integer('refillInterval'), // interval in milliseconds
+	refillAmount: integer('refillAmount'), // amount to refill
+	lastRefillAt: timestamp('lastRefillAt'), // when last refilled
+	// Status fields
+	enabled: boolean('enabled').default(true).notNull(), // better-auth uses 'enabled', not 'isActive'
+	rateLimitEnabled: boolean('rateLimitEnabled').default(true).notNull(),
+	rateLimitTimeWindow: integer('rateLimitTimeWindow').default(86400000), // milliseconds
+	rateLimitMax: integer('rateLimitMax').default(10),
+	requestCount: integer('requestCount').default(0).notNull(),
+	remaining: integer('remaining'), // remaining requests
+	lastRequest: timestamp('lastRequest'), // better-auth uses 'lastRequest', not 'lastUsedAt'
+	expiresAt: timestamp('expiresAt'),
+	// Timestamps
+	createdAt: timestamp('createdAt').defaultNow().notNull(),
+	updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+	// Additional fields
+	permissions: text('permissions'), // JSON string of permissions
+	metadata: text('metadata'), // JSON string of metadata
+	// Custom field for multi-tenancy (nullable to allow better-auth to create, then we update it)
+	tenantId: uuid('tenantId').references(() => tenant.id, { onDelete: 'cascade' })
+});

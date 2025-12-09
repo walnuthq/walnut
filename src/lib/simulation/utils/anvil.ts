@@ -14,40 +14,102 @@ export async function startAnvilFork(
 	const forkBlock = forkBlockNumber ?? blockNumber;
 	logger.info({ forkBlock, blockNumber }, 'Starting local anvil fork...');
 
-	const anvil = spawn('anvil', [
-		'--fork-url',
-		rpcForkUrl,
-		'--fork-block-number',
-		forkBlock.toString(),
-		'--steps-tracing',
-		'--silent'
-	]);
-
 	let anvilError = '';
+	let anvilOutput = '';
+	let anvilExited = false;
+	let exitCode: number | null = null;
+
+	// Check if anvil process starts successfully
+	const anvil = spawn(
+		'anvil',
+		[
+			'--fork-url',
+			rpcForkUrl,
+			'--fork-block-number',
+			forkBlock.toString(),
+			'--steps-tracing',
+			'--silent'
+		],
+		{
+			// Ensure we can see errors
+			stdio: ['ignore', 'pipe', 'pipe']
+		}
+	);
+
+	anvil.stdout?.on('data', (data) => {
+		anvilOutput += data.toString();
+		logger.debug({ stdout: data.toString() }, 'Anvil stdout');
+	});
+
 	anvil.stderr?.on('data', (data) => {
 		anvilError += data.toString();
 		logger.warn({ stderr: data.toString() }, 'Anvil stderr');
 	});
 
 	anvil.on('error', (err) => {
-		logger.error({ err }, 'Failed to start anvil');
+		logger.error({ err, rpcForkUrl, forkBlock }, 'Failed to spawn anvil process');
+		// Check if it's ENOENT (command not found)
+		if ((err as any).code === 'ENOENT') {
+			throw new Error(
+				'Anvil is not installed. Please install Foundry: curl -L https://foundry.paradigm.xyz | bash && foundryup'
+			);
+		}
 		throw new Error(`Failed to start anvil: ${err.message}`);
 	});
 
+	// Check if process exits immediately (indicates anvil not found or error)
+	anvil.on('exit', (code, signal) => {
+		anvilExited = true;
+		exitCode = code;
+		if (code !== null && code !== 0) {
+			logger.error({ code, signal, anvilError, anvilOutput }, 'Anvil process exited unexpectedly');
+		}
+	});
+
 	// Wait for anvil to be ready with retries
-	const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
-	let retries = 10;
+	// Increased timeout: 30 retries * 1s = 30 seconds max wait time
+	const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545', undefined, {
+		// Increase provider timeout
+		staticNetwork: false
+	});
+
+	let retries = 5;
+	const retryDelay = 1000; // 1 second between retries
+
 	while (retries > 0) {
+		// Check if anvil process exited
+		if (anvilExited && exitCode !== 0) {
+			anvil.kill();
+			const errorMsg = anvilError
+				? `Anvil process exited with code ${exitCode}. Error: ${anvilError}`
+				: `Anvil process exited with code ${exitCode}. Check if anvil is installed and RPC URL is accessible.`;
+			logger.error({ exitCode, anvilError, anvilOutput }, errorMsg);
+			throw new Error(errorMsg);
+		}
+
 		try {
-			await provider.getBlockNumber();
+			// Try to get block number with timeout
+			const blockNumber = await Promise.race([
+				provider.getBlockNumber(),
+				new Promise((_, reject) => setTimeout(() => reject(new Error('Provider timeout')), 2000))
+			]);
+			logger.info({ blockNumber }, 'Anvil is ready');
 			break;
 		} catch (err) {
 			retries--;
 			if (retries === 0) {
 				anvil.kill();
-				throw new Error(`Anvil failed to start. Error: ${anvilError || 'Connection timeout'}`);
+				const errorMsg = anvilError
+					? `Anvil failed to start. Error: ${anvilError}`
+					: 'Connection timeout after 30 seconds. Check if anvil is installed and RPC URL is accessible.';
+				logger.error({ anvilError, anvilOutput, retries: 0 }, errorMsg);
+				throw new Error(errorMsg);
 			}
-			await new Promise((r) => setTimeout(r, 500));
+			logger.debug(
+				{ retries, error: err instanceof Error ? err.message : String(err) },
+				'Waiting for anvil to start...'
+			);
+			await new Promise((r) => setTimeout(r, retryDelay));
 		}
 	}
 
