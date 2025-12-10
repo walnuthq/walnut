@@ -20,7 +20,7 @@ export default async function Page({
 			const calldata = resolvedSearchParams.calldata as string;
 			const blockNumber = resolvedSearchParams.blockNumber as string;
 			const transactionVersion = resolvedSearchParams.transactionVersion as string;
-			const chainId = resolvedSearchParams.chainId as string;
+			const displayName = resolvedSearchParams.chainId as string;
 			const nonce = resolvedSearchParams.nonce as string;
 			const value = resolvedSearchParams.value as string;
 			const txHashParams = resolvedSearchParams.txHash as string;
@@ -46,7 +46,7 @@ export default async function Page({
 					senderAddress,
 					calls,
 					transactionVersion: parseInt(transactionVersion),
-					chainId: chainId || undefined
+					networkName: displayName || undefined
 				};
 
 				if (blockNumber && !isNaN(+blockNumber)) {

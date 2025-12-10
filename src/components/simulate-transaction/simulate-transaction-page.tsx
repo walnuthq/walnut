@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeftIcon, PlayIcon } from '@heroicons/react/24/solid';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { shortenHash, SimulationPayload } from '@/lib/utils';
 import { Chain, NetworksSelect } from '@/components/networks-select';
-import { fetchContractDecodeCalldata } from '@/lib/contracts';
 import {
 	Select,
 	SelectContent,
@@ -20,18 +19,17 @@ import {
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
-import { normalizeDecodedCalldata, validateHexFormat } from '../../lib/utils/validation-utils';
+import { validateHexFormat } from '../../lib/utils/validation-utils';
 import { FieldAlert } from './parameter-input-components/field-alert';
 import { ContractCallFieldset } from './contract-call-fieldset';
 import { useContractFunctions } from '../hooks/use-contract-functions';
-import { useDecodeCalldata } from '../hooks/use-decode-calldata';
+import { useDecodeCalldata, DecodedCalldata, DecodedCall } from '../hooks/use-decode-calldata';
 import { useSimulationForm, useFormValidation, ValueUnit } from '../hooks/use-simulation-form';
 import {
 	handleParameterSubmission,
 	handleRawSubmission
 } from '../../lib/utils/simulation-handlers';
 import { flattenParameters } from '@/lib/utils/parameter-utils';
-import { toast } from '@/components/hooks/use-toast';
 import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group';
 import { createCalldataDecoder } from '@/lib/calldata-utils';
 import { formatEther, parseEther } from 'viem';
@@ -53,10 +51,7 @@ export function SimulateTransactionPage({
 }: SimulateTransactionPageProps) {
 	const defaultTransactionVersion = 3;
 	const router = useRouter();
-
-	console.log('simulationPayload', simulationPayload);
 	const calldataDecoder = createCalldataDecoder();
-
 	const {
 		alert,
 		setAlert,
@@ -81,45 +76,29 @@ export function SimulateTransactionPage({
 		_chain,
 		_setChain,
 		activeTabs,
-		setActiveTabs
+		setActiveTabs,
+		_value,
+		_setValue,
+		_valueUnit,
+		_setValueUnit,
+		_transactionIndexInBlock,
+		_setTransactionIndexInBlock
 	} = useSimulationForm(simulationPayload, defaultTransactionVersion);
 	const {
 		contractCallsFunctions,
 		isLoadingFunctions,
 		contractFetchErrors,
 		isLoading,
-		fetchFunctionsForContractAddress
+		fetchFunctionsForContractAddress,
+		resetContractFunctions
 	} = useContractFunctions(_chain, _contractCalls);
-
-	const getUnitFromValue = (value?: string): ValueUnit => {
-		if (value && value.toLowerCase().endsWith('ether')) {
-			return 'ether';
-		}
-		return 'wei';
-	};
-
-	const getDisplayValueFromPayload = (value?: string): string => {
-		if (!value) return '';
-		if (getUnitFromValue(value) === 'ether') {
-			return value.slice(0, -5);
-		}
-		return value;
-	};
-
-	const [_value, _setValue] = useState<string>(() =>
-		getDisplayValueFromPayload(simulationPayload?.value)
-	);
-	const [_valueUnit, _setValueUnit] = useState<ValueUnit>(() =>
-		getUnitFromValue(simulationPayload?.value)
-	);
-	const [_transactionIndexInBlock, _setTransactionIndexInBlock] = useState<number | ''>(
-		simulationPayload?.transactionIndexInBlock ?? ''
-	);
 
 	const { decodeCalldata, setDecodeCalldata } = useDecodeCalldata();
 
-	const createDecodedCalldataFromEntrypoints = () => {
-		const decodedCalls = _contractCalls.map((call) => {
+	const previousChainRef = useRef<Chain | undefined>(undefined);
+
+	const createDecodedCalldataFromEntrypoints = (): DecodedCalldata => {
+		const decodedCalls: DecodedCall[] = _contractCalls.map((call) => {
 			const contractAddress = call.address;
 			const functionName = call.function_name;
 			const functions = contractCallsFunctions[contractAddress];
@@ -157,8 +136,13 @@ export function SimulateTransactionPage({
 		return {
 			decoded_calldata: decodedCalls,
 			raw_calldata: []
-		} as unknown;
+		};
 	};
+
+	const firstContractAddress = _contractCalls[0]?.address;
+	const firstContractFunctions = firstContractAddress
+		? contractCallsFunctions[firstContractAddress]
+		: null;
 
 	useEffect(() => {
 		const autoDecodeCalldata = async () => {
@@ -171,15 +155,7 @@ export function SimulateTransactionPage({
 					const call = _contractCalls[0];
 					const functions = contractCallsFunctions[call.address];
 
-					console.log('AUTO-DECODE: Starting decode', {
-						calldata: call.calldata,
-						address: call.address,
-						hasFunctions: !!functions,
-						functionsLength: functions?.length
-					});
-
 					if (!functions || !Array.isArray(functions) || functions.length === 0) {
-						console.log('AUTO-DECODE: Skipping - no functions available yet');
 						return;
 					}
 
@@ -201,17 +177,8 @@ export function SimulateTransactionPage({
 					);
 
 					if (decoded) {
-						console.log('AUTO-DECODED CALLDATA:', {
-							contractAddress: call.address,
-							functionName: decoded.functionName,
-							args: decoded.args,
-							argsWithTypes: decoded.argsWithTypes,
-							rawCalldata: decoded.rawCalldata
-						});
-
 						_setContractCalls((prevCalls) => {
 							const newCalls = [...prevCalls];
-							console.log('Updating contract calls:', newCalls);
 							if (newCalls[0]) {
 								newCalls[0] = {
 									address: prevCalls[0].address,
@@ -233,13 +200,10 @@ export function SimulateTransactionPage({
 							}))
 						};
 
-						console.log('Setting decoded calldata:', decodedCall);
 						setDecodeCalldata({
 							decoded_calldata: [decodedCall],
 							raw_calldata: []
-						} as unknown);
-					} else {
-						console.log('AUTO-DECODE: Decode returned null');
+						});
 					}
 				} catch (error) {
 					console.warn('Auto-decode failed:', error);
@@ -249,7 +213,7 @@ export function SimulateTransactionPage({
 
 		autoDecodeCalldata();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [_contractCalls[0]?.calldata, _contractCalls[0]?.address, contractCallsFunctions]);
+	}, [_contractCalls[0]?.calldata, firstContractAddress, firstContractFunctions]);
 
 	useFormValidation(
 		_senderAddress,
@@ -261,7 +225,41 @@ export function SimulateTransactionPage({
 	);
 
 	const onChainChangedCallback = async (chain: Chain) => {
+		const previousChain = previousChainRef.current;
+		const newNetworkName = chain?.networkName || (chain?.network as any)?.networkName;
+		const previousNetworkName =
+			previousChain?.networkName || (previousChain?.network as any)?.networkName;
+
 		_setChain(chain);
+
+		const networkChanged = previousChain !== undefined && previousNetworkName !== newNetworkName;
+
+		previousChainRef.current = chain;
+
+		if (networkChanged) {
+			resetContractFunctions();
+
+			setDecodeCalldata(null);
+
+			_setContractCalls((prevCalls) =>
+				prevCalls.map((call) => ({
+					...call,
+					function_name: '',
+					calldata: ''
+				}))
+			);
+
+			setCalldataDecodeError({});
+			setServerDataLoaded(false);
+
+			const contractsWithAddresses = _contractCalls.filter(
+				(call) => call.address && validateHexFormat(call.address)
+			);
+
+			for (const call of contractsWithAddresses) {
+				await fetchFunctionsForContractAddress(call.address, newNetworkName);
+			}
+		}
 	};
 
 	const handleNumberOfContractsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -316,15 +314,16 @@ export function SimulateTransactionPage({
 			return updatedData;
 		});
 
+		const chainId = _chain?.networkName || (_chain?.network as any)?.networkName;
 		if (
 			newAddress &&
 			validateHexFormat(newAddress) &&
 			newAddress !== oldAddress &&
-			_chain?.chainId &&
+			chainId &&
 			!contractCallsFunctions[newAddress] &&
 			!isLoadingFunctions[newAddress]
 		) {
-			await fetchFunctionsForContractAddress(newAddress);
+			await fetchFunctionsForContractAddress(newAddress, String(chainId));
 		}
 	};
 
@@ -333,11 +332,35 @@ export function SimulateTransactionPage({
 		newFunctionName: string,
 		callAddress: string
 	) => {
-		console.log('newFunctionName', newFunctionName);
-		console.log(
-			'contractCallsFunctions',
-			contractCallsFunctions[callAddress].find((item) => item[0] === newFunctionName)[1].name
-		);
+		const currentCall = _contractCalls[index];
+		const currentFunctionSelector = currentCall?.function_name;
+		const currentCalldata = currentCall?.calldata || '';
+
+		const normalizeSelector = (s: string) => s?.toLowerCase?.() || '';
+		const isSameFunction =
+			normalizeSelector(currentFunctionSelector) === normalizeSelector(newFunctionName);
+
+		const calldataMatchesNewSelector =
+			currentCalldata &&
+			normalizeSelector(currentCalldata).startsWith(normalizeSelector(newFunctionName));
+
+		const shouldPreserveCalldata =
+			(isSameFunction || calldataMatchesNewSelector) && currentCalldata;
+
+		if (shouldPreserveCalldata) {
+			_setContractCalls((prevCalls) => {
+				return prevCalls.map((call, idx) => {
+					if (idx === index) {
+						return {
+							...call,
+							function_name: newFunctionName
+						};
+					}
+					return call;
+				});
+			});
+			return;
+		}
 
 		_setContractCalls((prevCalls) => {
 			return prevCalls.map((call, idx) => {
@@ -351,6 +374,7 @@ export function SimulateTransactionPage({
 				return call;
 			});
 		});
+
 		const functions = contractCallsFunctions[callAddress];
 		if (functions) {
 			const functionData = functions.find((fn: any) => fn[0] === newFunctionName);
@@ -360,7 +384,7 @@ export function SimulateTransactionPage({
 
 				setDecodeCalldata((prevData) => {
 					if (!prevData) {
-						const emptyDecodedCalls = _contractCalls.map(() => ({
+						const emptyDecodedCalls: DecodedCall[] = _contractCalls.map(() => ({
 							contract_address: '',
 							function_selector: '',
 							function_name: '',
@@ -416,7 +440,7 @@ export function SimulateTransactionPage({
 
 			const hasExistingErrors = Object.keys(calldataDecodeError).length > 0;
 
-			if (!hasAnyRawCalldata || serverDataLoaded || hasExistingErrors || !_chain?.chainId) {
+			if (!hasAnyRawCalldata || serverDataLoaded || hasExistingErrors || !_chain?.networkName) {
 				return;
 			}
 			if (!_senderAddress || !_blockNumber) {
@@ -452,26 +476,24 @@ export function SimulateTransactionPage({
 
 				setDecodeCalldata((prevData) => {
 					if (!prevData) {
-						const emptyDecodedCalls = _contractCalls.map(() => ({
+						const emptyDecodedCalls: DecodedCall[] = _contractCalls.map(() => ({
 							contract_address: '',
 							function_selector: '',
 							function_name: '',
 							parameters: []
 						}));
 
-						const baseData = {
-							decoded_calldata: emptyDecodedCalls,
-							raw_calldata: []
-						} as unknown;
-
-						baseData.decoded_calldata[index] = {
+						emptyDecodedCalls[index] = {
 							contract_address: contractAddress,
 							function_selector: functionData[0],
 							function_name: functionInfo.name,
 							parameters
 						};
 
-						return baseData;
+						return {
+							decoded_calldata: emptyDecodedCalls,
+							raw_calldata: []
+						};
 					}
 
 					const updatedData = { ...prevData };

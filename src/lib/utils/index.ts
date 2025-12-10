@@ -19,7 +19,7 @@ export interface SimulationPayload {
 	transactionVersion: number;
 	nonce?: number;
 	rpcUrl?: string;
-	chainId?: string;
+	networkName?: string;
 	value?: string;
 	transactionIndexInBlock?: number | null;
 	totalTransactionsInBlock?: number | null;
@@ -268,7 +268,7 @@ export function openSimulationPage(simulationPayload: SimulationPayload): void {
 		params.set('blockNumber', simulationPayload.blockNumber.toString());
 	if (simulationPayload.nonce !== undefined)
 		params.set('nonce', simulationPayload.nonce.toString());
-	if (simulationPayload.chainId) params.set('chainId', simulationPayload.chainId);
+	if (simulationPayload.networkName) params.set('chainId', simulationPayload.networkName);
 	if (simulationPayload.value) params.set('value', simulationPayload.value);
 	// Include transactionIndexInBlock and totalTransactionsInBlock if provided (for re-simulation)
 	if (

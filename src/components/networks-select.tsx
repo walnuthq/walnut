@@ -13,6 +13,9 @@ import { useEffect, useState } from 'react';
 export interface Chain {
 	chainId?: string;
 	network?: Network;
+	networkName?: string;
+	displayName?: string;
+	rpcUrl?: string;
 }
 
 export function NetworksSelect({
@@ -22,7 +25,7 @@ export function NetworksSelect({
 	isLoading,
 	isDemo
 }: {
-	simulationPayload?: SimulationPayloadWithCalldata | SimulationPayload;
+	simulationPayload?: SimulationPayload;
 	onChainChangedCallback: (chain: Chain) => void;
 	selectedChain?: Chain;
 	isLoading?: boolean;
@@ -35,11 +38,11 @@ export function NetworksSelect({
 	const [_chain, _setChain] = useState<Chain>(defaultChain);
 
 	useEffect(() => {
-		if (simulationPayload?.chainId) {
+		if (simulationPayload?.networkName) {
 			_setChain({
-				chainId: simulationPayload?.chainId
+				chainId: simulationPayload?.networkName
 			});
-			onChainChangedCallback({ chainId: simulationPayload?.chainId });
+			onChainChangedCallback({ displayName: simulationPayload?.networkName });
 		} else if (networks.length > 0) {
 			// Use the first available network as default
 			const defaultNetwork = networks[0];
@@ -58,14 +61,11 @@ export function NetworksSelect({
 			</Select>
 		);
 
-	function extractChain(
-		networks: Network[],
-		simulationPayload?: SimulationPayloadWithCalldata | SimulationPayload
-	): Chain {
+	function extractChain(networks: Network[], simulationPayload?: SimulationPayload): Chain {
 		if (simulationPayload) {
-			if (simulationPayload.chainId) {
+			if (simulationPayload.networkName) {
 				return {
-					chainId: simulationPayload.chainId
+					displayName: simulationPayload.networkName
 				};
 			} else if (simulationPayload.rpcUrl) {
 				const network = networks.find((n) => n.rpcUrl === simulationPayload.rpcUrl);

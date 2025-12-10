@@ -87,11 +87,7 @@ export async function handleParameterSubmission(
 			}
 
 			// Encode to raw calldata
-			const encodedCalldata = await calldataDecoder.encode(
-				decodedData,
-				contractAddress,
-				abi
-			);
+			const encodedCalldata = await calldataDecoder.encode(decodedData, contractAddress, abi);
 
 			if (!encodedCalldata) {
 				throw new Error(`Failed to encode calldata for function ${functionName}`);
@@ -118,9 +114,10 @@ export async function handleParameterSubmission(
 		};
 
 		if (_chain) {
-			if (_chain.chainId) {
-				simulationPagePayload.chainId = _chain.chainId;
+			if (_chain.networkName) {
+				simulationPagePayload.networkName = _chain.networkName;
 			} else if (_chain.network) {
+				simulationPagePayload.networkName = _chain.network.networkName;
 				simulationPagePayload.rpcUrl = _chain.network.rpcUrl;
 			}
 		} else {
@@ -188,8 +185,8 @@ export async function handleRawSubmission(
 	};
 
 	if (_chain) {
-		if (_chain.chainId) {
-			simulationPayload.chainId = _chain.chainId;
+		if (_chain.networkName) {
+			simulationPayload.networkName = _chain.networkName;
 		} else if (_chain.network) {
 			simulationPayload.rpcUrl = _chain.network.rpcUrl;
 		}

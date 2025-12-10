@@ -69,8 +69,8 @@ export function useSimulationForm(simulationPayload?: any, defaultTransactionVer
 			_setValueUnit('wei');
 		}
 
-		if (simulationPayload.chainId) {
-			_setChain({ chainId: simulationPayload.chainId });
+		if (simulationPayload.networkName) {
+			_setChain({ networkName: simulationPayload.networkName });
 		} else if (simulationPayload.rpcUrl) {
 			_setChain({
 				network: {
@@ -109,7 +109,7 @@ export function useSimulationForm(simulationPayload?: any, defaultTransactionVer
 		}
 
 		_setContractCalls(newCalls);
-	}, [_numberOfContracts, _contractCalls.length]);
+	}, [_numberOfContracts, _contractCalls.length, _chain]);
 
 	return {
 		alert,

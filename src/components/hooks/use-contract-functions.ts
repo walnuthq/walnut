@@ -17,7 +17,7 @@ export function useContractFunctions(
 		contractAddress: string,
 		chainIdOverride?: string
 	) => {
-		const chainId = chainIdOverride || chain?.chainId;
+		const chainId = chainIdOverride || chain?.networkName || (chain?.network as any)?.chainId;
 
 		if (!chainId || !validateHexFormat(contractAddress)) {
 			return;
@@ -111,11 +111,18 @@ export function useContractFunctions(
 		initializeContractFunctions();
 	}, [chain, contractCalls]);
 
+	const resetContractFunctions = () => {
+		setContractCallsFunctions({});
+		setIsLoadingFunctions({});
+		setContractFetchErrors({});
+	};
+
 	return {
 		contractCallsFunctions,
 		isLoadingFunctions,
 		contractFetchErrors,
 		isLoading,
-		fetchFunctionsForContractAddress
+		fetchFunctionsForContractAddress,
+		resetContractFunctions
 	};
 }
