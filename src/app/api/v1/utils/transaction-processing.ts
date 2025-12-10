@@ -105,6 +105,8 @@ export const fetchTransactionAndTrace = async (
 		}
 	}
 
+	const isSimulation = !parameters.txHash;
+
 	const [transaction, traceResult] = await Promise.all([
 		parameters.txHash
 			? safeViemCall(
@@ -139,9 +141,11 @@ export const fetchTransactionAndTrace = async (
 					chainId as number,
 					parameters.session
 			  )
-			: safeViemCall(
-					() =>
-						tracingClient.traceCall({
+			: // For simulations, run traceCall to discover all contracts that will be called
+			  // This allows us to compile all necessary contracts before running the actual simulation
+			  safeViemCall(
+					() => {
+						const traceCallParams = {
 							from: parameters.from,
 							to: parameters.to,
 							data: parameters.calldata,
@@ -149,7 +153,9 @@ export const fetchTransactionAndTrace = async (
 								? `0x${parameters.blockNumber.toString(16)}`
 								: 'latest',
 							tracer: 'callTracer'
-						}),
+						};
+						return tracingClient.traceCall(traceCallParams);
+					},
 					'traceCall',
 					chainId as number,
 					parameters.session
@@ -163,6 +169,7 @@ export const fetchTransactionAndTrace = async (
 			'ERROR: eth_getTransactionByHash failed - missing to address and not a CREATE transaction'
 		);
 	}
+	// traceResult should always be available now (from traceTransaction or traceCall)
 	if (!traceResult) {
 		throw new Error('ERROR: debug_traceTransaction/debug_traceCall failed');
 	}
@@ -179,7 +186,14 @@ export const fetchContracts = async (
 	publicClient: any,
 	chainId: number
 ) => {
-	const flattenedTraceTransactionResult = uniqBy(flattenTraceCall(traceResult), 'to');
+	// Extract all unique contract addresses from trace result
+	// traceResult is always available now (from traceTransaction or traceCall)
+	const flattenedTraceTransactionResult = traceResult
+		? uniqBy(flattenTraceCall(traceResult), 'to')
+		: transaction.to
+		? [{ to: transaction.to, type: 'CALL' }]
+		: [];
+
 	// If transaction.blockNumber is undefined, fetch latest block
 	const blockQuery = transaction.blockNumber ? { blockNumber: transaction.blockNumber } : undefined;
 	const [{ timestamp, transactions: blockTransactions }, sourcifyContracts] = await Promise.all([

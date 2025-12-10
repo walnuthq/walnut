@@ -2,7 +2,7 @@ import { type Abi, type Address, type PublicClient } from 'viem';
 import { whatsabi } from '@shazow/whatsabi';
 import { type Contract } from '@/app/api/v1/types';
 import {
-	getChainKeyByNumber,
+	getChainIdByNumber,
 	getExplorerApiForChain,
 	getVerificationTypeForChain
 } from '@/lib/networks';
@@ -19,7 +19,7 @@ const fetchContract = async (
 		throw new Error(`Error: no bytecode found for ${address}`);
 	}
 
-	const chainKey = getChainKeyByNumber(chainId);
+	const chainKey = getChainIdByNumber(chainId);
 	const verificationType = chainKey ? getVerificationTypeForChain(chainKey) : 'sourcify';
 
 	// Try blockscout verification method first

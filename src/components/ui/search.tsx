@@ -41,51 +41,34 @@ export function Search({
 	const [tooltipOpen, setTooltipOpen] = useState(false);
 
 	const { parseChain } = useSettings();
-	const coreNetworks = ['sn_mainnet', 'sn_sepolia']
-		.map((item) => {
-			const chainData = parseChain(item);
-			if (chainData) {
-				return (
-					<NetworkBadge
-						key={`${chainData.chain}-${chainData.stack}`}
-						network={chainData}
-						withoutStack
-					/>
-				);
-			} else {
-				return <NetworkBadge key={item} network={{ chain: item }} withoutStack />;
-			}
-		})
-		.filter(Boolean);
-	const [allAvailableNetworksString, setAllAvailableNetworksString] = useState(coreNetworks);
-
-	const fetchSearchDataResponse = useCallback(
-		async (value: string) => {
-			try {
-				// Trim whitespace from the beginning and end of the hash
-				const trimmedHash = value.trim();
-
-				// Don't make API call if hash is empty after trimming
-				if (!trimmedHash) {
-					setDataResponseResults(0);
-					setSearchDataResponse(undefined);
-					return;
-				}
-
-				const searchData: SearchDataResponse = await fetchSearchData({
-					hash: trimmedHash
-				});
-				setSearchDataResponse(searchData);
-				setDataResponseResults(
-					searchData.transactions.length + searchData.classes.length + searchData.contracts.length
-				);
-			} catch (error) {
-				setDataResponseResults(0);
-				setError(error instanceof Error ? error.message : String(error));
-			}
-		},
-		[networks]
+	const [allAvailableNetworksString, setAllAvailableNetworksString] = useState<React.ReactNode[]>(
+		[]
 	);
+
+	const fetchSearchDataResponse = useCallback(async (value: string) => {
+		try {
+			// Trim whitespace from the beginning and end of the hash
+			const trimmedHash = value.trim();
+
+			// Don't make API call if hash is empty after trimming
+			if (!trimmedHash) {
+				setDataResponseResults(0);
+				setSearchDataResponse(undefined);
+				return;
+			}
+
+			const searchData: SearchDataResponse = await fetchSearchData({
+				hash: trimmedHash
+			});
+			setSearchDataResponse(searchData);
+			setDataResponseResults(
+				searchData.transactions.length + searchData.classes.length + searchData.contracts.length
+			);
+		} catch (error) {
+			setDataResponseResults(0);
+			setError(error instanceof Error ? error.message : String(error));
+		}
+	}, []);
 
 	useEffect(() => {
 		if (!networks || networks.length === 0) {
@@ -107,8 +90,8 @@ export function Search({
 			})
 			.filter(Boolean);
 
-		setAllAvailableNetworksString([...coreNetworks, ...dynamicBadges]);
-	}, [networks]);
+		setAllAvailableNetworksString(dynamicBadges);
+	}, [networks, parseChain]);
 
 	useEffect(() => {
 		setSearchDataResponse(undefined);

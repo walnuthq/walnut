@@ -7,13 +7,12 @@ import {
 	type Address
 } from 'viem';
 import { type NextRequest, NextResponse } from 'next/server';
-import { type SearchDataResponse, type SearchData, AuthType } from '@/lib/types';
-import { mapChainIdNumberToEnum } from '@/lib/utils';
-import { ChainKey, CHAINS_META } from '@/lib/networks';
+import { type SearchDataResponse, type SearchData, AuthType, ChainId } from '@/lib/types';
+import { CHAINS_META, PUBLIC_NETWORKS, resolveChainId } from '@/lib/networks';
 import { getSupportedNetworks } from '@/lib/get-supported-networks';
 import { fetchTxFromExplorer } from '@/lib/explorer';
 import { getServerSession } from '@/lib/auth-server';
-import { checkPublicNetworkRequest, getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
+import { getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
 
 export const GET = async (
 	request: NextRequest,
@@ -24,7 +23,7 @@ export const GET = async (
 	// Check if request is for a public network
 	const chainsParam = request.nextUrl.searchParams.get('chains');
 	const isPublicNetworkRequest = chainsParam
-		? chainsParam.split(',').some((chain) => ['OP_SEPOLIA', 'OP_MAIN'].includes(chain.trim()))
+		? chainsParam.split(',').some((chain) => PUBLIC_NETWORKS.includes(chain.trim() as ChainId))
 		: true; // If no chains specified, allow public access to check all networks
 
 	// Require authentication only for non-public network requests
@@ -73,7 +72,7 @@ export const GET = async (
 	// Get supported networks - only public networks if no authentication
 	const supportedNetworks = authSession
 		? getSupportedNetworks(authSession.session)
-		: ['OP_SEPOLIA', 'OP_MAIN'].map((key) => CHAINS_META[key as ChainKey]).filter(Boolean);
+		: PUBLIC_NETWORKS.map((key) => CHAINS_META[key]).filter(Boolean);
 
 	for (const network of supportedNetworks) {
 		try {
@@ -109,7 +108,9 @@ export const GET = async (
 					resolvedChainId = key;
 				} else {
 					const numeric = await client.getChainId();
-					resolvedChainId = mapChainIdNumberToEnum(numeric) || numeric.toString();
+					// Use resolveChainId to support both static and tenant networks
+					const chainKey = resolveChainId(numeric, authSession?.session || null);
+					resolvedChainId = chainKey || numeric.toString();
 				}
 				return {
 					source: { chainId: resolvedChainId, rpcUrl: undefined },
@@ -131,32 +132,33 @@ export const GET = async (
 			}
 		})
 	);
-	const contracts: (SearchData | undefined)[] =
-		hashAsAddress
-			? await Promise.all(
-					pairs.map(async ({ rpcUrl, key }) => {
-						const client = createPublicClient({ transport: http(rpcUrl) });
-						try {
-							const bytecode = await client.getCode({ address: hashAsAddress });
-							if (bytecode && bytecode !== '0x') {
-								let resolvedChainId: string;
-								if (key) {
-									resolvedChainId = key;
-								} else {
-									const numeric = await client.getChainId();
-									resolvedChainId = mapChainIdNumberToEnum(numeric) || numeric.toString();
-								}
-								return {
-									source: { chainId: resolvedChainId, rpcUrl: undefined },
-									hash: hashAsAddress
-								};
+	const contracts: (SearchData | undefined)[] = hashAsAddress
+		? await Promise.all(
+				pairs.map(async ({ rpcUrl, key }) => {
+					const client = createPublicClient({ transport: http(rpcUrl) });
+					try {
+						const bytecode = await client.getCode({ address: hashAsAddress });
+						if (bytecode && bytecode !== '0x') {
+							let resolvedChainId: string;
+							if (key) {
+								resolvedChainId = key;
+							} else {
+								const numeric = await client.getChainId();
+								// Use resolveChainId to support both static and tenant networks
+								const chainKey = resolveChainId(numeric, authSession?.session || null);
+								resolvedChainId = chainKey || numeric.toString();
 							}
-						} catch (error) {
-							console.error('getCode error', error);
+							return {
+								source: { chainId: resolvedChainId, rpcUrl: undefined },
+								hash: hashAsAddress
+							};
 						}
-					})
-			  )
-			: [];
+					} catch (error) {
+						console.error('getCode error', error);
+					}
+				})
+		  )
+		: [];
 
 	const response: SearchDataResponse = {
 		transactions: transactions.filter((transaction: SearchData | undefined) => !!transaction),
@@ -236,7 +238,9 @@ export const POST = async (
 						resolvedChainId = key;
 					} else {
 						const numeric = await client.getChainId();
-						resolvedChainId = mapChainIdNumberToEnum(numeric) || numeric.toString();
+						// Use resolveChainId to support both static and tenant networks
+						const chainKey = resolveChainId(numeric, authSession?.session || null);
+						resolvedChainId = chainKey || numeric.toString();
 					}
 					return {
 						source: { chainId: resolvedChainId, rpcUrl: undefined },
@@ -271,7 +275,9 @@ export const POST = async (
 										resolvedChainId = key;
 									} else {
 										const numeric = await client.getChainId();
-										resolvedChainId = mapChainIdNumberToEnum(numeric) || numeric.toString();
+										// Use resolveChainId to support both static and tenant networks
+										const chainKey = resolveChainId(numeric, authSession?.session || null);
+										resolvedChainId = chainKey || numeric.toString();
 									}
 									return {
 										source: { chainId: resolvedChainId, rpcUrl: undefined },

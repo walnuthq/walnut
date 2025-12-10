@@ -16,6 +16,9 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select';
+import type { ChainMeta } from '@/lib/types';
+import { Textarea } from '../ui/textarea';
+import { fetchContractFunctions } from '@/lib/contracts';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';

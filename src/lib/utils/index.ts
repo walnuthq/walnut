@@ -131,6 +131,16 @@ export function mapChainIdNumberToEnum(chainIdNumber: number): ChainId | undefin
 			return ChainId.SN_MAIN;
 		case 1536727068981429685: // Starknet Sepolia
 			return ChainId.SN_SEPOLIA;
+		case 5115:
+			return ChainId.CITREA_TESTNET;
+		case 130:
+			return ChainId.UNICHAIN_MAINNET;
+		case 1301:
+			return ChainId.UNICHAIN_TESTNET;
+		case 60808:
+			return ChainId.BOB_MAINNET;
+		case 808813:
+			return ChainId.BOB_SEPOLIA;
 		default:
 			return undefined;
 	}
@@ -312,6 +322,10 @@ export const stackMapping: { [key: string]: string } = {
 	OP: 'Optimism',
 	op: 'Optimism',
 	eth: 'Ethereum',
+	arbitrum: 'Arbitrum',
+	citrea: 'Citrea',
+	unichain: 'Unichain',
+	bob: 'Bob',
 	'PowerLoom Devnet': 'Arbitrum'
 };
 

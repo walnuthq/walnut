@@ -1,15 +1,12 @@
-import { ChainKey, CHAINS_META, getRpcUrlForChain, getRpcUrlForChainSafe } from './networks';
+import { CHAINS_META, getRpcUrlForChain, getRpcUrlForChainSafe, PUBLIC_NETWORKS } from './networks';
+import { ChainId, AuthType } from './types';
 import { getSupportedNetworks } from './get-supported-networks';
-import { AuthType } from './types';
 import { NextResponse } from 'next/server';
 import {
 	NetworkNotSupportedError,
 	RpcUrlNotFoundError,
 	AuthenticationRequiredError
 } from './errors';
-
-// Define publicly accessible networks that don't require authentication
-export const PUBLIC_NETWORKS = [ChainKey.OP_SEPOLIA, ChainKey.OP_MAIN];
 
 export interface PublicNetworkCheckResult {
 	isPublicNetworkRequest: boolean;
@@ -33,7 +30,7 @@ export async function checkPublicNetworkRequest(
 
 		if (chainId) {
 			// Check if the chain_id is a public network key or numeric ID
-			const isPublicKey = PUBLIC_NETWORKS.includes(chainId as ChainKey);
+			const isPublicKey = PUBLIC_NETWORKS.includes(chainId as ChainId);
 			const isPublicNumericId = PUBLIC_NETWORKS.some(
 				(key) => CHAINS_META[key].chainId === Number(chainId)
 			);
@@ -72,12 +69,12 @@ export function createLoginRedirect(request: Request): NextResponse {
  * Resolves chain key from chain identifier (string or number) with session support for tenant networks
  * @param chainIdentifier - Chain ID as string or number
  * @param session - Optional authentication session for tenant networks
- * @returns ChainKey if found, undefined otherwise
+ * @returns ChainId if found, undefined otherwise
  */
-export function resolveChainKeyFromIdentifier(
+export function resolveChainIdFromIdentifier(
 	chainIdentifier: string | number,
 	session: AuthType['session'] | null = null
-): ChainKey | undefined {
+): ChainId | undefined {
 	// If we have a session, use getSupportedNetworks to include tenant networks
 	if (session) {
 		const allSupportedNetworks = getSupportedNetworks(session);
@@ -90,13 +87,13 @@ export function resolveChainKeyFromIdentifier(
 	}
 
 	// Check if it's already a chain key
-	if (Object.values(ChainKey).includes(chainIdentifier as ChainKey)) {
-		return chainIdentifier as ChainKey;
+	if (Object.values(ChainId).includes(chainIdentifier as ChainId)) {
+		return chainIdentifier as ChainId;
 	}
 
 	// Try to find by numeric chain ID in static networks
 	const chainIdNumber = Number(chainIdentifier);
-	return Object.values(ChainKey).find((key) => CHAINS_META[key].chainId === chainIdNumber);
+	return Object.values(ChainId).find((key) => CHAINS_META[key].chainId === chainIdNumber);
 }
 
 /**
@@ -110,7 +107,7 @@ export function getRpcUrlForChainOptimized(
 	chainIdentifier: string | number,
 	session: AuthType['session'] | null
 ): string {
-	const chainKey = resolveChainKeyFromIdentifier(chainIdentifier, session);
+	const chainKey = resolveChainIdFromIdentifier(chainIdentifier, session);
 
 	if (!chainKey) {
 		throw new NetworkNotSupportedError(chainIdentifier);

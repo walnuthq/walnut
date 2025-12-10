@@ -4,7 +4,9 @@
  * This module provides custom error classes
  */
 
-import { ChainKey, CHAINS_META, getChainKeyByNumber } from '@/lib/networks';
+import { CHAINS_META, getChainIdByNumber } from '@/lib/networks';
+import { ChainId } from './types';
+
 import { getSupportedNetworks } from '@/lib/get-supported-networks';
 import type { AuthType } from '@/lib/types';
 
@@ -20,12 +22,12 @@ function getChainLabel(chainId: string | number, session?: AuthType['session'] |
 	// Convert to number for consistent lookups
 	const chainIdNumber = typeof chainId === 'number' ? chainId : parseInt(chainId, 10);
 
-	// For string chainId, first check if it's a known ChainKey (fastest O(1) lookup)
+	// For string chainId, first check if it's a known ChainId (fastest O(1) lookup)
 	// Use label for static networks (more descriptive with RPC provider info)
-	if (typeof chainId === 'string' && chainId in ChainKey) {
+	if (typeof chainId === 'string' && chainId in ChainId) {
 		return (
-			CHAINS_META[chainId as ChainKey]?.label ||
-			CHAINS_META[chainId as ChainKey]?.displayName ||
+			CHAINS_META[chainId as ChainId]?.label ||
+			CHAINS_META[chainId as ChainId]?.displayName ||
 			chainId
 		);
 	}
@@ -58,7 +60,7 @@ function getChainLabel(chainId: string | number, session?: AuthType['session'] |
 
 	// Check static CHAINS_META by numeric chainId and return label (more descriptive)
 	if (!isNaN(chainIdNumber)) {
-		const chainKey = getChainKeyByNumber(chainIdNumber);
+		const chainKey = getChainIdByNumber(chainIdNumber);
 		if (chainKey) {
 			const label = CHAINS_META[chainKey]?.label || CHAINS_META[chainKey]?.displayName;
 			if (label) {
@@ -82,6 +84,18 @@ function getChainLabel(chainId: string | number, session?: AuthType['session'] |
 	const fallback = `Chain ${chainId}`;
 	console.log('Using numeric fallback:', fallback);
 	return fallback;
+}
+
+/**
+ * Sanitizes RPC error messages to remove sensitive URLs
+ * Used to prevent exposing RPC endpoints to users
+ */
+function sanitizeRpcMessage(message: string): string {
+	// Remove RPC URLs (keep the rest of the message)
+	return message
+		.replace(/https?:\/\/[^\s'"}\]]+/g, '[RPC]')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 export class WalnutError extends Error {
@@ -218,7 +232,7 @@ export class TransactionNotFoundError extends WalnutError {
 			'TRANSACTION_NOT_FOUND',
 			404,
 			`Transaction ${txHash} not found on ${chainLabel}.`,
-			`The transaction hash does not exist on ${chainLabel}.`,
+			`The transaction does not exist on ${chainLabel}.`,
 			{ txHash, chainId, chainLabel }
 		);
 	}
@@ -290,25 +304,238 @@ export class SoldbExecutionError extends WalnutError {
 		details?: string,
 		session?: AuthType['session'] | null,
 		errorType?: string,
-		errorContext?: Record<string, any>
+		errorContext?: Record<string, any>,
+		statusCode: number = 500
+	) {
+		const chainLabel = chainId ? getChainLabel(chainId, session) : null;
+		const chainInfo = chainLabel ? ` on ${chainLabel}` : '';
+		// Sanitize message to remove RPC URLs before showing to user
+		const sanitizedDetails = sanitizeRpcMessage(details || message);
+
+		super(
+			`Soldb execution failed${chainInfo}: ${message}`,
+			'SOLDB_EXECUTION_ERROR',
+			statusCode,
+			`Debug execution failed${chainInfo}.`,
+			sanitizedDetails,
+			{
+				chainId,
+				chainLabel,
+				originalMessage: sanitizeRpcMessage(message),
+				...(errorType && { errorType }),
+				...(errorContext && Object.keys(errorContext).length > 0 && { errorContext })
+			}
+		);
+	}
+}
+
+/**
+ * RPC error with specific error code - maps RPC codes to appropriate HTTP status
+ */
+export class RpcError extends WalnutError {
+	public readonly rpcCode: number;
+
+	constructor(
+		rpcCode: number,
+		message: string,
+		chainId?: string | number,
+		session?: AuthType['session'] | null,
+		context?: Record<string, any>
+	) {
+		const chainLabel = chainId ? getChainLabel(chainId, session) : null;
+		const chainInfo = chainLabel ? ` on ${chainLabel}` : '';
+		const httpStatus = mapRpcCodeToHttpStatus(rpcCode, message);
+		// Sanitize message to remove RPC URLs before showing to user
+		const sanitizedMessage = sanitizeRpcMessage(message);
+
+		super(
+			`RPC error ${rpcCode}${chainInfo}: ${message}`,
+			'RPC_ERROR',
+			httpStatus,
+			`Transaction failed${chainInfo}: ${sanitizedMessage}`,
+			sanitizedMessage,
+			{
+				chainId,
+				chainLabel,
+				rpcCode,
+				...context
+			}
+		);
+		this.rpcCode = rpcCode;
+	}
+}
+
+/**
+ * Insufficient funds error - when sender doesn't have enough balance
+ */
+export class InsufficientFundsError extends WalnutError {
+	constructor(
+		address: string,
+		available: string,
+		required: string,
+		chainId?: string | number,
+		session?: AuthType['session'] | null
 	) {
 		const chainLabel = chainId ? getChainLabel(chainId, session) : null;
 		const chainInfo = chainLabel ? ` on ${chainLabel}` : '';
 
 		super(
-			`Soldb execution failed${chainInfo}: ${message}`,
-			'SOLDB_EXECUTION_ERROR',
-			500,
-			`Debug execution failed${chainInfo}.`,
-			details || message,
+			`Insufficient funds for address ${address}${chainInfo}`,
+			'INSUFFICIENT_FUNDS',
+			400,
+			`Insufficient funds${chainInfo}. The sender address does not have enough balance.`,
+			`Address ${address} has ${available} but needs ${required}.`,
 			{
 				chainId,
 				chainLabel,
-				originalMessage: message,
-				...(errorType && { errorType }),
-				...(errorContext && Object.keys(errorContext).length > 0 && { errorContext })
+				address,
+				available,
+				required
 			}
 		);
+	}
+}
+
+/**
+ * Execution reverted error - when transaction reverts during execution
+ */
+export class ExecutionRevertedError extends WalnutError {
+	constructor(reason?: string, chainId?: string | number, session?: AuthType['session'] | null) {
+		const chainLabel = chainId ? getChainLabel(chainId, session) : null;
+		const chainInfo = chainLabel ? ` on ${chainLabel}` : '';
+		const reasonInfo = reason ? `: ${reason}` : '';
+
+		super(
+			`Execution reverted${chainInfo}${reasonInfo}`,
+			'EXECUTION_REVERTED',
+			400,
+			`Transaction execution reverted${chainInfo}.`,
+			reason || 'The transaction was reverted during execution.',
+			{
+				chainId,
+				chainLabel,
+				reason
+			}
+		);
+	}
+}
+
+/**
+ * Gas estimation failed error
+ */
+export class GasEstimationError extends WalnutError {
+	constructor(reason?: string, chainId?: string | number, session?: AuthType['session'] | null) {
+		const chainLabel = chainId ? getChainLabel(chainId, session) : null;
+		const chainInfo = chainLabel ? ` on ${chainLabel}` : '';
+
+		super(
+			`Gas estimation failed${chainInfo}`,
+			'GAS_ESTIMATION_FAILED',
+			400,
+			`Unable to estimate gas${chainInfo}.`,
+			reason || 'Gas estimation failed. The transaction may be invalid or would revert.',
+			{
+				chainId,
+				chainLabel,
+				reason
+			}
+		);
+	}
+}
+
+/**
+ * Nonce too low error
+ */
+export class NonceTooLowError extends WalnutError {
+	constructor(
+		address: string,
+		providedNonce?: number,
+		expectedNonce?: number,
+		chainId?: string | number,
+		session?: AuthType['session'] | null
+	) {
+		const chainLabel = chainId ? getChainLabel(chainId, session) : null;
+		const chainInfo = chainLabel ? ` on ${chainLabel}` : '';
+
+		super(
+			`Nonce too low for address ${address}${chainInfo}`,
+			'NONCE_TOO_LOW',
+			400,
+			`Transaction nonce is too low${chainInfo}.`,
+			providedNonce !== undefined && expectedNonce !== undefined
+				? `Provided nonce ${providedNonce}, but expected at least ${expectedNonce}.`
+				: 'The transaction nonce is lower than the current account nonce.',
+			{
+				chainId,
+				chainLabel,
+				address,
+				providedNonce,
+				expectedNonce
+			}
+		);
+	}
+}
+
+/**
+ * Maps RPC error codes to appropriate HTTP status codes
+ */
+function mapRpcCodeToHttpStatus(rpcCode: number, message: string): number {
+	// Standard JSON-RPC error codes
+	// https://www.jsonrpc.org/specification#error_object
+	// -32700: Parse error
+	// -32600: Invalid Request
+	// -32601: Method not found
+	// -32602: Invalid params
+	// -32603: Internal error
+
+	// Ethereum specific codes (typically -32000 to -32099)
+	// These are server errors but often indicate client-side issues
+
+	const lowerMessage = message.toLowerCase();
+
+	// Check message content for specific error types
+	if (lowerMessage.includes('insufficient funds')) {
+		return 400; // Bad Request - user doesn't have enough funds
+	}
+	if (lowerMessage.includes('nonce too low') || lowerMessage.includes('nonce is too low')) {
+		return 400; // Bad Request - invalid nonce
+	}
+	if (lowerMessage.includes('execution reverted') || lowerMessage.includes('revert')) {
+		return 400; // Bad Request - transaction would revert
+	}
+	if (
+		lowerMessage.includes('gas') &&
+		(lowerMessage.includes('low') || lowerMessage.includes('limit'))
+	) {
+		return 400; // Bad Request - gas issues
+	}
+	if (lowerMessage.includes('timeout') || lowerMessage.includes('timed out')) {
+		return 504; // Gateway Timeout
+	}
+	if (lowerMessage.includes('rate limit') || lowerMessage.includes('too many requests')) {
+		return 429; // Too Many Requests
+	}
+	if (lowerMessage.includes('not found') || lowerMessage.includes('does not exist')) {
+		return 404; // Not Found
+	}
+
+	// Map by RPC code
+	switch (rpcCode) {
+		case -32700: // Parse error
+		case -32600: // Invalid Request
+		case -32602: // Invalid params
+			return 400;
+		case -32601: // Method not found
+			return 501; // Not Implemented
+		case -32603: // Internal error
+			return 500;
+		default:
+			// For -32000 range (execution errors), check if it's client or server error
+			if (rpcCode >= -32099 && rpcCode <= -32000) {
+				// Most execution errors in this range are client-side issues
+				return 400;
+			}
+			return 500; // Default to server error
 	}
 }
 
@@ -534,6 +761,150 @@ export function isSourcifyError(error: any): boolean {
 	);
 }
 
+/**
+ * Extracts RPC error code and message from error
+ * Returns null if not an RPC error
+ */
+export function extractRpcError(error: any): { code: number; message: string } | null {
+	if (!error) return null;
+
+	const rawMessage = error.message || error.stdout || String(error);
+
+	// Try to find JSON-like RPC error in the message
+	// Pattern: {'code': -32000, 'message': '...'} or {"code": -32000, "message": "..."}
+	const jsonPatterns = [
+		/\{['"]?code['"]?:\s*(-?\d+),\s*['"]?message['"]?:\s*['"]([^'"]+)['"]\}/,
+		/\{['"]code['"]:\s*(-?\d+),\s*['"]message['"]:\s*['"]([^'"]+)['"]\}/
+	];
+
+	for (const pattern of jsonPatterns) {
+		const match = rawMessage.match(pattern);
+		if (match) {
+			return {
+				code: parseInt(match[1], 10),
+				message: match[2]
+			};
+		}
+	}
+
+	// Try to parse as JSON object
+	try {
+		// Sometimes the error message itself is a JSON string
+		const parsed = JSON.parse(rawMessage);
+		if (parsed.code !== undefined && parsed.message) {
+			return { code: parsed.code, message: parsed.message };
+		}
+		if (parsed.error?.code !== undefined && parsed.error?.message) {
+			return { code: parsed.error.code, message: parsed.error.message };
+		}
+	} catch {
+		// Not JSON
+	}
+
+	return null;
+}
+
+/**
+ * Detects if an error is an insufficient funds error
+ */
+export function isInsufficientFundsError(error: any): boolean {
+	if (!error) return false;
+	const message = (error.message || error.stdout || String(error)).toLowerCase();
+
+	return (
+		message.includes('insufficient funds') ||
+		message.includes('insufficient balance') ||
+		(message.includes('have') && message.includes('want') && message.includes('address'))
+	);
+}
+
+/**
+ * Extracts insufficient funds details from error message
+ */
+export function extractInsufficientFundsDetails(error: any): {
+	address?: string;
+	available?: string;
+	required?: string;
+} | null {
+	if (!error) return null;
+	const message = error.message || error.stdout || String(error);
+
+	// Pattern: "address 0x... have 123 want 456"
+	const addressMatch = message.match(/address\s+(0x[a-fA-F0-9]+)/i);
+	const haveMatch = message.match(/have\s+(\d+)/i);
+	const wantMatch = message.match(/want\s+(\d+)/i);
+
+	if (addressMatch || haveMatch || wantMatch) {
+		return {
+			address: addressMatch?.[1],
+			available: haveMatch?.[1],
+			required: wantMatch?.[1]
+		};
+	}
+
+	return null;
+}
+
+/**
+ * Detects if an error is an execution reverted error
+ */
+export function isExecutionRevertedError(error: any): boolean {
+	if (!error) return false;
+	const message = (error.message || error.stdout || String(error)).toLowerCase();
+
+	return (
+		message.includes('execution reverted') ||
+		message.includes('revert') ||
+		message.includes('vm exception') ||
+		message.includes('evmrevert')
+	);
+}
+
+/**
+ * Extracts revert reason from error message
+ */
+export function extractRevertReason(error: any): string | null {
+	if (!error) return null;
+	const message = error.message || error.stdout || String(error);
+
+	// Pattern: "execution reverted: <reason>"
+	const match = message.match(/(?:execution reverted|revert)(?:ed)?[:\s]+(.+?)(?:\s*$|\s*\{)/i);
+	return match?.[1]?.trim() || null;
+}
+
+/**
+ * Detects if an error is a nonce error
+ */
+export function isNonceError(error: any): boolean {
+	if (!error) return false;
+	const message = (error.message || error.stdout || String(error)).toLowerCase();
+
+	return (
+		message.includes('nonce too low') ||
+		message.includes('nonce is too low') ||
+		message.includes('nonce too high') ||
+		message.includes('invalid nonce')
+	);
+}
+
+/**
+ * Detects if an error is a gas-related error
+ */
+export function isGasError(error: any): boolean {
+	if (!error) return false;
+	const message = (error.message || error.stdout || String(error)).toLowerCase();
+
+	return (
+		(message.includes('gas') &&
+			(message.includes('low') ||
+				message.includes('limit') ||
+				message.includes('exceeded') ||
+				message.includes('required'))) ||
+		message.includes('out of gas') ||
+		message.includes('intrinsic gas too low')
+	);
+}
+
 // ============================================================================
 // Error Wrapping and Conversion Utilities
 // ============================================================================
@@ -588,10 +959,51 @@ export function wrapError(
 		return new SourceCodeNotFoundError('unknown', chainId, session);
 	}
 
-	// Generic soldb execution error
+	// Check for specific RPC/execution errors with appropriate status codes
+	if (isInsufficientFundsError(error)) {
+		const details = extractInsufficientFundsDetails(error);
+		return new InsufficientFundsError(
+			details?.address || 'unknown',
+			details?.available || 'unknown',
+			details?.required || 'unknown',
+			chainId,
+			session
+		);
+	}
+
+	if (isExecutionRevertedError(error)) {
+		const reason = extractRevertReason(error);
+		return new ExecutionRevertedError(reason || undefined, chainId, session);
+	}
+
+	if (isNonceError(error)) {
+		return new NonceTooLowError('unknown', undefined, undefined, chainId, session);
+	}
+
+	if (isGasError(error)) {
+		const message = error.message || error.stdout || String(error);
+		return new GasEstimationError(message, chainId, session);
+	}
+
+	// Check for generic RPC error with code
+	const rpcError = extractRpcError(error);
+	if (rpcError) {
+		return new RpcError(rpcError.code, rpcError.message, chainId, session);
+	}
+
+	// Generic soldb execution error - determine status code from message
 	if (error.message?.includes('soldb') || error.stdout) {
 		const message = error.stdout?.trim() || error.message;
-		return new SoldbExecutionError(message, chainId, undefined, session);
+		const statusCode = determineStatusCodeFromMessage(message);
+		return new SoldbExecutionError(
+			message,
+			chainId,
+			undefined,
+			session,
+			undefined,
+			undefined,
+			statusCode
+		);
 	}
 
 	// Fallback: return a generic WalnutError
@@ -603,6 +1015,29 @@ export function wrapError(
 		error.message || String(error),
 		{ chainId, originalError: error }
 	);
+}
+
+/**
+ * Determines appropriate HTTP status code based on error message content
+ */
+function determineStatusCodeFromMessage(message: string): number {
+	const lowerMessage = message.toLowerCase();
+
+	// Client errors (4xx)
+	if (lowerMessage.includes('insufficient funds')) return 400;
+	if (lowerMessage.includes('nonce')) return 400;
+	if (lowerMessage.includes('revert')) return 400;
+	if (lowerMessage.includes('invalid')) return 400;
+	if (lowerMessage.includes('not found')) return 404;
+	if (lowerMessage.includes('unauthorized') || lowerMessage.includes('forbidden')) return 403;
+	if (lowerMessage.includes('rate limit')) return 429;
+
+	// Server errors (5xx)
+	if (lowerMessage.includes('timeout')) return 504;
+	if (lowerMessage.includes('unavailable')) return 503;
+
+	// Default to 500 for unknown errors
+	return 500;
 }
 
 /**
@@ -631,8 +1066,8 @@ function extractDebugMethod(error: any): string | null {
 function extractNetworkLabelFromUrl(url: string): string {
 	// Check for common RPC providers and networks
 	if (url.includes('optimism') || url.includes('op-')) {
-		if (url.includes('sepolia')) return CHAINS_META[ChainKey.OP_SEPOLIA].displayName;
-		if (url.includes('mainnet')) return CHAINS_META[ChainKey.OP_MAIN].displayName;
+		if (url.includes('sepolia')) return CHAINS_META[ChainId.OP_SEPOLIA].displayName;
+		if (url.includes('mainnet')) return CHAINS_META[ChainId.OP_MAIN].displayName;
 	}
 
 	// If we can't identify, return generic label
