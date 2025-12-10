@@ -174,6 +174,30 @@ export function SimulationPage({
 				);
 			}
 			router.push(`/simulate-transaction?${params.toString()}`);
+		} else if (simulationPayload) {
+			const params = new URLSearchParams();
+			params.set('senderAddress', simulationPayload.senderAddress);
+
+			if (simulationPayload.calldata && simulationPayload.calldata.length > 0) {
+				params.set('calldata', simulationPayload.calldata.join(','));
+			}
+
+			if (simulationPayload.transactionVersion)
+				params.set('transactionVersion', simulationPayload.transactionVersion.toString());
+			if (simulationPayload.blockNumber)
+				params.set('blockNumber', simulationPayload.blockNumber.toString());
+			if (simulationPayload?.chainId) params.set('chainId', simulationPayload.chainId);
+			else if (simulationPayload?.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl || '');
+			if (simulationPayload.totalTransactionsInBlock)
+				params.set(
+					'totalTransactionsInBlock',
+					simulationPayload.totalTransactionsInBlock.toString()
+				);
+			if (simulationPayload.value) params.set('value', simulationPayload.value.toString());
+			if (simulationPayload.transactionIndexInBlock)
+				params.set('transactionIndexInBlock', simulationPayload.transactionIndexInBlock.toString());
+
+			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};
 
