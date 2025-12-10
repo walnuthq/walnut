@@ -53,7 +53,6 @@ export function ContractCallFieldset({
 	const contractError = call.address ? contractFetchErrors[call.address] : undefined;
 	const hasContractError = !!contractError && validateHexFormat(call.address);
 
-	console.log('call', call);
 	return (
 		<fieldset
 			key={`${index}-${call.address}-${call.function_name}`}
