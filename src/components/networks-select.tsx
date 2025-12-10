@@ -42,7 +42,7 @@ export function NetworksSelect({
 			_setChain({
 				chainId: simulationPayload?.networkName
 			});
-			onChainChangedCallback({ displayName: simulationPayload?.networkName });
+			onChainChangedCallback({ networkName: simulationPayload?.networkName });
 		} else if (networks.length > 0) {
 			// Use the first available network as default
 			const defaultNetwork = networks[0];

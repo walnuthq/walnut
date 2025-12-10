@@ -841,6 +841,7 @@ export function SimulateTransactionPage({
 											isLoadingFunctions={isLoadingFunctions}
 											contractFetchErrors={contractFetchErrors}
 											alert={alert}
+											activeTabs={activeTabs}
 											decodeCalldata={decodeCalldata}
 											serverDataLoaded={serverDataLoaded}
 											isParameterInvalid={isParameterInvalid}

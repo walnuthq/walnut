@@ -29,6 +29,7 @@ interface ContractCallFieldsetProps {
 	onParameterValueChange: (callIndex: number, paramIndex: number, newValue: any) => void;
 	onValidationChange: (isValid: boolean) => void;
 	onResetCalldata: (index: number) => void;
+	activeTabs: string;
 }
 
 export function ContractCallFieldset({
@@ -47,7 +48,8 @@ export function ContractCallFieldset({
 	onCalldataChange,
 	onParameterValueChange,
 	onValidationChange,
-	onResetCalldata
+	onResetCalldata,
+	activeTabs
 }: ContractCallFieldsetProps) {
 	const hasInvalidCalldataFormat = call.calldata !== '' && !validateCalldataString(call.calldata);
 	const contractError = call.address ? contractFetchErrors[call.address] : undefined;
@@ -101,15 +103,16 @@ export function ContractCallFieldset({
 							</p>
 						)}
 				</div>
-
-				<EntryPointSelect
-					chain={chain}
-					entryPoints={call.address ? contractCallsFunctions[call.address] : null}
-					value={call.function_name}
-					isLoading={call.address ? isLoadingFunctions[call.address] : false}
-					isError={alert && call.function_name === ''}
-					onChange={(value) => onFunctionNameChange(index, value, call.address)}
-				/>
+				{activeTabs === 'parameters' && (
+					<EntryPointSelect
+						chain={chain}
+						entryPoints={call.address ? contractCallsFunctions[call.address] : null}
+						value={call.function_name}
+						isLoading={call.address ? isLoadingFunctions[call.address] : false}
+						isError={alert && call.function_name === ''}
+						onChange={(value) => onFunctionNameChange(index, value, call.address)}
+					/>
+				)}
 
 				<TabsContent
 					value="raw"
@@ -119,7 +122,6 @@ export function ContractCallFieldset({
 						Calldata
 					</Label>
 					<Textarea
-						disabled={call.function_name === ''}
 						id={`calldata-${index}`}
 						value={call.calldata}
 						placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d`}

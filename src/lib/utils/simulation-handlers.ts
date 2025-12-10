@@ -151,9 +151,7 @@ export async function handleRawSubmission(
 		calldata: call.calldata.trim() === '' ? '' : call.calldata
 	}));
 
-	const allCallsValid = processedCalls.every(
-		(call) => validateHexFormat(call.address) && call.function_name
-	);
+	const allCallsValid = processedCalls.every((call) => validateHexFormat(call.address));
 
 	const allCalldataValid = processedCalls.every((call) => {
 		if (call.calldata.trim() === '') {
