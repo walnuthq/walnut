@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-server';
 import { getSupportedNetworks } from '@/lib/get-supported-networks';
+import { CHAINS_META, PUBLIC_NETWORKS } from '@/lib/networks';
 
 export const GET = async (_request: NextRequest) => {
 	const authSession = await getServerSession();
 
 	// Get supported networks (static + tenant if logged in)
 	const supported = getSupportedNetworks(authSession?.session || null);
+
 	const networks = supported
 		.map((n) => {
 			const rpcUrl = n.rpcEnvVar.startsWith('http')

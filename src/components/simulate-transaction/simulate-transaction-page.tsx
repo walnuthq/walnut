@@ -16,7 +16,7 @@ import {
 	SimulationPayload
 } from '@/lib/utils';
 import { Chain, NetworksSelect } from '@/components/networks-select';
-import type { ChainMeta } from '@/lib/networks';
+import type { ChainMeta } from '@/lib/types';
 import { Textarea } from '../ui/textarea';
 import { fetchContractFunctions } from '@/lib/contracts';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';

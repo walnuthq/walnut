@@ -39,7 +39,7 @@ export async function debugCustomNetworkTransactionByHash({
 	skipTracking?: boolean;
 }): Promise<DebuggerInfo> {
 	if (!chainKey && !rpcUrl) {
-		throw new Error('ChainKey must be provided to debug transaction');
+		throw new Error('ChainId must be provided to debug transaction');
 	}
 
 	return await fetchApi<DebuggerInfo>(`/v1/debug-transaction`, {

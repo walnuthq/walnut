@@ -7,8 +7,8 @@ import {
 	type Address
 } from 'viem';
 import { type NextRequest, NextResponse } from 'next/server';
-import { type SearchDataResponse, type SearchData, AuthType } from '@/lib/types';
-import { ChainKey, CHAINS_META, PUBLIC_NETWORKS, resolveChainKey } from '@/lib/networks';
+import { type SearchDataResponse, type SearchData, AuthType, ChainId } from '@/lib/types';
+import { CHAINS_META, PUBLIC_NETWORKS, resolveChainId } from '@/lib/networks';
 import { getSupportedNetworks } from '@/lib/get-supported-networks';
 import { fetchTxFromExplorer } from '@/lib/explorer';
 import { getServerSession } from '@/lib/auth-server';
@@ -23,7 +23,7 @@ export const GET = async (
 	// Check if request is for a public network
 	const chainsParam = request.nextUrl.searchParams.get('chains');
 	const isPublicNetworkRequest = chainsParam
-		? chainsParam.split(',').some((chain) => PUBLIC_NETWORKS.includes(chain.trim() as ChainKey))
+		? chainsParam.split(',').some((chain) => PUBLIC_NETWORKS.includes(chain.trim() as ChainId))
 		: true; // If no chains specified, allow public access to check all networks
 
 	// Require authentication only for non-public network requests
@@ -108,8 +108,8 @@ export const GET = async (
 					resolvedChainId = key;
 				} else {
 					const numeric = await client.getChainId();
-					// Use resolveChainKey to support both static and tenant networks
-					const chainKey = resolveChainKey(numeric, authSession?.session || null);
+					// Use resolveChainId to support both static and tenant networks
+					const chainKey = resolveChainId(numeric, authSession?.session || null);
 					resolvedChainId = chainKey || numeric.toString();
 				}
 				return {
@@ -144,8 +144,8 @@ export const GET = async (
 								resolvedChainId = key;
 							} else {
 								const numeric = await client.getChainId();
-								// Use resolveChainKey to support both static and tenant networks
-								const chainKey = resolveChainKey(numeric, authSession?.session || null);
+								// Use resolveChainId to support both static and tenant networks
+								const chainKey = resolveChainId(numeric, authSession?.session || null);
 								resolvedChainId = chainKey || numeric.toString();
 							}
 							return {
@@ -238,8 +238,8 @@ export const POST = async (
 						resolvedChainId = key;
 					} else {
 						const numeric = await client.getChainId();
-						// Use resolveChainKey to support both static and tenant networks
-						const chainKey = resolveChainKey(numeric, authSession?.session || null);
+						// Use resolveChainId to support both static and tenant networks
+						const chainKey = resolveChainId(numeric, authSession?.session || null);
 						resolvedChainId = chainKey || numeric.toString();
 					}
 					return {
@@ -275,8 +275,8 @@ export const POST = async (
 										resolvedChainId = key;
 									} else {
 										const numeric = await client.getChainId();
-										// Use resolveChainKey to support both static and tenant networks
-										const chainKey = resolveChainKey(numeric, authSession?.session || null);
+										// Use resolveChainId to support both static and tenant networks
+										const chainKey = resolveChainId(numeric, authSession?.session || null);
 										resolvedChainId = chainKey || numeric.toString();
 									}
 									return {

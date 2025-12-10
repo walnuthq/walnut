@@ -1,10 +1,10 @@
-import { ChainKey, getExplorerApiForChain } from '@/lib/networks';
+import { ChainId, getExplorerApiForChain } from '@/lib/networks';
 
 export async function fetchTxFromExplorer(
 	chainKey: string,
 	hash: string
 ): Promise<{ found: boolean } | undefined> {
-	const cfg = getExplorerApiForChain(chainKey as ChainKey);
+	const cfg = getExplorerApiForChain(chainKey as ChainId);
 	if (!cfg) return undefined;
 	const { baseUrl, type } = cfg;
 	try {
