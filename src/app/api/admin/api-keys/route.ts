@@ -53,21 +53,19 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: 'userId and name are required' }, { status: 400 });
 		}
 
-		// 2.5. Get user's tenantId before creating API key
+		// 2.5. Get user's tenantId before creating API key (optional - can be null for public users)
 		const userRecord = await db
 			.select({ tenantId: user.tenantId })
 			.from(user)
 			.where(eq(user.id, userId))
 			.limit(1);
 
-		if (!userRecord.length || !userRecord[0].tenantId) {
-			return NextResponse.json(
-				{ error: 'User not found or user has no tenant assigned' },
-				{ status: 404 }
-			);
+		if (!userRecord.length) {
+			return NextResponse.json({ error: 'User not found' }, { status: 404 });
 		}
 
-		const tenantId = userRecord[0].tenantId;
+		// tenantId is optional - can be null for users without tenant assignment
+		const tenantId = userRecord[0].tenantId || null;
 
 		// 3. Create API key using better-auth plugin
 		const result = await auth.api.createApiKey({
@@ -79,8 +77,11 @@ export async function POST(req: NextRequest) {
 			}
 		});
 
-		// 4. Update API key with tenantId (better-auth doesn't support custom fields)
-		await db.update(apiKey).set({ tenantId }).where(eq(apiKey.id, result.id));
+		// 4. Update API key with tenantId if available (better-auth doesn't support custom fields)
+		// tenantId can be null for public users without tenant assignment
+		if (tenantId) {
+			await db.update(apiKey).set({ tenantId }).where(eq(apiKey.id, result.id));
+		}
 
 		logger.info({ userId, name, keyId: result.id, tenantId }, 'Admin created API key');
 

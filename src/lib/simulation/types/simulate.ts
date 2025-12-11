@@ -100,4 +100,5 @@ export interface SimulateResponse {
 	gasInfo: GasInfo;
 	tokenTransfers: TokenTransfers; // Detailed token transfer events
 	assetChanges: AssetChangeDetailed[]; // Detailed asset changes in new format
+	simulationUrl?: string; // URL to web UI for this simulation with calldata and parameters
 }

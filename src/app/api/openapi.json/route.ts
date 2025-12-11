@@ -5,15 +5,11 @@ const openApiSpec = {
 	info: {
 		title: 'Walnut EVM Simulation API',
 		version: '1.0.0',
-		description: 'API for simulating EVM transactions and analyzing state changes.'
+		description: 'API for simulating EVM transactions'
 	},
 	servers: [
 		{
-			url: 'http://localhost:3000',
-			description: 'Local development server'
-		},
-		{
-			url: 'https://walnut.dev',
+			url: 'https://evm.walnut.dev',
 			description: 'Production server'
 		}
 	],
@@ -85,19 +81,34 @@ const openApiSpec = {
 					amount: { type: 'string' },
 					dollar_value: { type: 'string' }
 				}
+			},
+			ErrorResponse: {
+				type: 'object',
+				properties: {
+					error: {
+						type: 'string',
+						description: 'Error message'
+					},
+					details: {
+						type: 'string',
+						description: 'Additional error details (optional)'
+					}
+				},
+				required: ['error']
 			}
 		}
 	},
-	security: [
-		{
-			ApiKeyAuth: []
-		}
-	],
 	paths: {
 		'/api/simulate': {
 			post: {
 				summary: 'Simulate an EVM transaction',
-				description: 'Simulates a transaction on a forked chain and analyzes balance changes.',
+				description:
+					'Simulates a transaction on a forked chain and analyzes balance changes. Requires API key authentication via x-api-key header.',
+				security: [
+					{
+						ApiKeyAuth: []
+					}
+				],
 				requestBody: {
 					content: {
 						'application/json': {
@@ -116,19 +127,75 @@ const openApiSpec = {
 									type: 'object',
 									properties: {
 										status: { type: 'string', enum: ['SUCCESS', 'REVERTED'] },
+										gasInfo: {
+											type: 'object',
+											properties: {
+												gasUsed: { type: 'string' },
+												effectiveGasPrice: { type: 'string' },
+												totalCost: { type: 'string' }
+											}
+										},
+										tokenTransfers: {
+											type: 'object',
+											description: 'Detailed token transfer events'
+										},
 										assetChanges: {
 											type: 'array',
 											items: {
 												$ref: '#/components/schemas/AssetChange'
 											}
+										},
+										simulationUrl: {
+											type: 'string',
+											description: 'URL to web UI for this simulation with calldata and parameters',
+											example:
+												'https://evm.walnut.dev/simulations?senderAddress=0x123...&calldata=0x1,0x456...,0x789...&transactionVersion=1&chainId=OP_SEPOLIA&blockNumber=12345678&value=11300000000000000'
 										}
 									}
 								}
 							}
 						}
 					},
+					'401': {
+						description: 'API key is missing or invalid',
+						content: {
+							'application/json': {
+								schema: {
+									$ref: '#/components/schemas/ErrorResponse'
+								},
+								example: {
+									error:
+										'API key is required. Please provide it in the "api-key" or "x-api-key" header.'
+								}
+							}
+						}
+					},
+					'403': {
+						description: 'Invalid or expired API key',
+						content: {
+							'application/json': {
+								schema: {
+									$ref: '#/components/schemas/ErrorResponse'
+								},
+								example: {
+									error: 'Invalid or expired API key.'
+								}
+							}
+						}
+					},
 					'500': {
-						description: 'Simulation failed'
+						description: 'Simulation failed',
+						content: {
+							'application/json': {
+								schema: {
+									$ref: '#/components/schemas/ErrorResponse'
+								},
+								example: {
+									error: 'Simulation failed',
+									details: 'Additional error details'
+								}
+							}
+						}
 					}
 				}
 			}
@@ -137,5 +204,8 @@ const openApiSpec = {
 };
 
 export async function GET() {
+	// CORS is handled by middleware.ts for all /api/* routes
 	return NextResponse.json(openApiSpec);
 }
+
+// OPTIONS preflight is handled by middleware.ts

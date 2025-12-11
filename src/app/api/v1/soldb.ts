@@ -108,10 +108,14 @@ const soldb = async ({
 	value?: string;
 	txIndex?: number;
 }): Promise<DebugCallResponse> => {
+	// Normalize addresses to lowercase for soldb compatibility
+	const normalizedTo = to ? to.toLowerCase() : to;
+	const normalizedFrom = from ? from.toLowerCase() : from;
+
 	const args =
 		command === 'trace'
 			? ['trace', txHash!]
-			: ['simulate', to!, '--raw-data', calldata!, '--from', from!];
+			: ['simulate', normalizedTo!, '--raw-data', calldata!, '--from', normalizedFrom!];
 	if (command === 'simulate' && blockNumber) {
 		args.push('--block', blockNumber.toString());
 	}

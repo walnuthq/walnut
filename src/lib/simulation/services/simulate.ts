@@ -27,6 +27,96 @@ import {
 } from '../utils/deltas';
 import { getTokenPricesFromCoinMarketCap, calculateUSDValue } from '../utils/pricing';
 import { normalizeAndValidateTransactionData } from '../utils/validation';
+import { ethers } from 'ethers';
+import { getChainIdByNumber } from '../../networks';
+
+/**
+ * Generates a URL to the web UI for simulation with calldata and parameters
+ * Format: /simulations?calldata=0x1,address,calldata&...
+ */
+function generateSimulationUrl(
+	params: SimulateRequest,
+	chainId: number,
+	totalTransactionsInBlock?: number
+): string {
+	const baseUrl =
+		process.env.NEXT_PUBLIC_APP_URL ||
+		process.env.BETTER_AUTH_URL ||
+		(process.env.NODE_ENV === 'production' ? 'https://evm.walnut.dev' : 'http://evm.walnut.local');
+
+	// Normalize data to ensure it has even length (hex strings must have even number of characters)
+	let normalizedData: string;
+	try {
+		normalizedData = normalizeAndValidateTransactionData(params.data || '0x');
+	} catch (error) {
+		// If normalization fails, use ethers.hexlify as fallback
+		try {
+			normalizedData = ethers.hexlify(params.data || '0x');
+		} catch {
+			// Last resort: ensure even length manually
+			normalizedData = params.data || '0x';
+			if (normalizedData !== '0x' && normalizedData.length % 2 !== 0) {
+				normalizedData = normalizedData.slice(0, 2) + '0' + normalizedData.slice(2);
+			}
+		}
+	}
+
+	// Normalize addresses to lowercase for soldb compatibility
+	const normalizedFrom = params.from.toLowerCase();
+	const normalizedTo = params.to.toLowerCase();
+
+	// Build calldata in format matching serializeContractCalls:
+	// 0x1 (number of calls), address, function_name (empty), 0x1 (number of calldata lines), calldata
+	// This matches the format expected by parseContractCalls and the API
+	const calldata = `0x1,${normalizedTo},,0x1,${normalizedData}`;
+
+	// Convert chainId number to chain name (e.g., 11155420 -> OP_SEPOLIA)
+	const chainIdName = getChainIdByNumber(chainId) || chainId.toString();
+
+	const urlParams = new URLSearchParams({
+		senderAddress: normalizedFrom,
+		calldata: calldata,
+		transactionVersion: '1',
+		chainId: chainIdName
+	});
+
+	if (params.blockNumber !== undefined) {
+		urlParams.set('blockNumber', params.blockNumber.toString());
+	}
+
+	if (params.value) {
+		// Convert value to decimal string (not hex)
+		// If value is '0x0' or '0', use '0', otherwise convert hex to decimal
+		let valueDecimal = params.value;
+		if (valueDecimal.startsWith('0x')) {
+			if (valueDecimal === '0x0' || valueDecimal === '0x') {
+				valueDecimal = '0';
+			} else {
+				try {
+					const valueBigInt = BigInt(valueDecimal);
+					valueDecimal = valueBigInt.toString();
+				} catch {
+					// If conversion fails, use as is
+					valueDecimal = params.value;
+				}
+			}
+		}
+		// Only add value if it's not zero
+		if (valueDecimal !== '0') {
+			urlParams.set('value', valueDecimal);
+		}
+	}
+
+	if (params.transactionIndex !== undefined) {
+		urlParams.set('transactionIndexInBlock', params.transactionIndex.toString());
+	}
+
+	if (totalTransactionsInBlock !== undefined && totalTransactionsInBlock > 0) {
+		urlParams.set('totalTransactionsInBlock', totalTransactionsInBlock.toString());
+	}
+
+	return `${baseUrl}/simulations?${urlParams.toString()}`;
+}
 
 export async function simulateTx(params: SimulateRequest): Promise<SimulateResponse> {
 	const {
@@ -521,12 +611,48 @@ export async function simulateTx(params: SimulateRequest): Promise<SimulateRespo
 			// These would need to come from the original transaction or be estimated
 		};
 
+		// Get chainId from provider for generating simulation URL
+		let simulationUrl: string | undefined;
+		try {
+			const network = await provider.getNetwork();
+			// network.chainId is a bigint, convert to number
+			const chainId = Number(network.chainId);
+			if (!isNaN(chainId) && chainId > 0) {
+				// Try to get totalTransactionsInBlock from the original RPC (not anvil fork)
+				let totalTransactionsInBlock: number | undefined = undefined;
+				try {
+					const originalProvider = new ethers.JsonRpcProvider(rpcForkUrl);
+					const block = await originalProvider.getBlock(blockNumber, true);
+					if (block && block.transactions) {
+						// Get the actual number of transactions in the block
+						totalTransactionsInBlock = Array.isArray(block.transactions)
+							? block.transactions.length
+							: 0;
+					}
+					originalProvider.destroy();
+				} catch (blockError) {
+					logger.debug({ error: blockError }, 'Could not get totalTransactionsInBlock from block');
+				}
+
+				simulationUrl = generateSimulationUrl(params, chainId, totalTransactionsInBlock);
+				logger.info(
+					{ chainId, simulationUrl, totalTransactionsInBlock },
+					'Generated simulation URL'
+				);
+			} else {
+				logger.warn({ chainId }, 'Invalid chainId from provider, skipping URL generation');
+			}
+		} catch (urlError) {
+			logger.warn({ error: urlError }, 'Failed to generate simulation URL, continuing without it');
+		}
+
 		logger.info(
 			{
 				status,
 				gasInfo,
 				tokenTransfersCount: Object.keys(tokenTransfers).length,
-				assetChangesCount: assetChanges.length
+				assetChangesCount: assetChanges.length,
+				hasSimulationUrl: !!simulationUrl
 			},
 			'Simulation complete.'
 		);
@@ -535,7 +661,8 @@ export async function simulateTx(params: SimulateRequest): Promise<SimulateRespo
 			status,
 			gasInfo,
 			tokenTransfers,
-			assetChanges
+			assetChanges,
+			simulationUrl
 		};
 	} catch (error) {
 		logger.error({ error }, 'Error during simulation');

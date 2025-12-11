@@ -72,8 +72,9 @@ const getParameters = ({
 			blockNumber: withCalldata.block_number ? BigInt(withCalldata.block_number) : undefined,
 			blockTimestamp: withCalldata.block_timestamp,
 			nonce: withCalldata.nonce,
-			senderAddress: withCalldata.sender_address as Address,
-			to: withCalldata.calldata[0] as Address,
+			// Normalize addresses to lowercase for soldb compatibility
+			senderAddress: (withCalldata.sender_address as string).toLowerCase() as Address,
+			to: (withCalldata.calldata[0] as string).toLowerCase() as Address,
 			calldata: withCalldata.calldata[1] as Hex,
 			transactionVersion: withCalldata.transaction_version,
 			transactionType: withCalldata.transaction_type,
