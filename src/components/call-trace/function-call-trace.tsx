@@ -239,7 +239,7 @@ const FunctionCallDetails = memo(function FunctionCallDetails({
 
 	return (
 		<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-1 px-4">
-			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
+			<div className="md:w-[calc(100vw-7rem)]">
 				<div className="">
 					<InfoBox details={details} />
 				</div>
