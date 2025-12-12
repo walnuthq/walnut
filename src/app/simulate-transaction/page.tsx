@@ -1,5 +1,6 @@
 import { SimulateTransactionPage } from '@/components/simulate-transaction/simulate-transaction-page';
-import { SimulationPayload, parseContractCalls } from '@/lib/utils';
+import { SimulationPayload } from '@/lib/utils';
+import { parseContractCalls } from '@/lib/utils/contract-calls';
 
 export const runtime = 'edge';
 
@@ -11,6 +12,7 @@ export default async function Page({
 	let simulationPayload: SimulationPayload | undefined = undefined;
 	let isDemo: string | undefined = undefined;
 	let txHash: string | undefined = undefined;
+	let rawCalldata: string | undefined = undefined;
 
 	if (searchParams) {
 		const resolvedSearchParams = await searchParams;
@@ -18,9 +20,10 @@ export default async function Page({
 		if (Object.keys(resolvedSearchParams).length > 0) {
 			const senderAddress = resolvedSearchParams.senderAddress as string;
 			const calldata = resolvedSearchParams.calldata as string;
+			rawCalldata = calldata;
 			const blockNumber = resolvedSearchParams.blockNumber as string;
 			const transactionVersion = resolvedSearchParams.transactionVersion as string;
-			const chainId = resolvedSearchParams.chainId as string;
+			const displayName = resolvedSearchParams.chainId as string;
 			const nonce = resolvedSearchParams.nonce as string;
 			const value = resolvedSearchParams.value as string;
 			const txHashParams = resolvedSearchParams.txHash as string;
@@ -39,14 +42,18 @@ export default async function Page({
 			if (senderAddress && calldata && transactionVersion) {
 				const [address, initialCalldata] = calldata.split(',');
 
+				const parsedCalldata = calldata.split(',');
+
+				const calls = parseContractCalls(parsedCalldata);
+
 				// const calls = parseContractCalls(parsedCalldata);
-				const calls = [{ address, function_name: '', calldata: initialCalldata }];
+				// const calls = [{ address, function_name: '', calldata: initialCalldata }];
 
 				const payload: SimulationPayload = {
 					senderAddress,
 					calls,
 					transactionVersion: parseInt(transactionVersion),
-					chainId: chainId || undefined
+					networkName: displayName || undefined
 				};
 
 				if (blockNumber && !isNaN(+blockNumber)) {
@@ -86,10 +93,11 @@ export default async function Page({
 
 	return (
 		<SimulateTransactionPage
-			isDemo={isDemo}
+			// isDemo={isDemo}
 			txHash={txHash}
 			simulationPayload={simulationPayload}
 			title={simulationPayload && 'Re-simulate'}
+			parsedCalldata={rawCalldata}
 			description={
 				simulationPayload &&
 				'Edit the transaction details below and click "Run Simulation" to re-simulate.'

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isPublicNetwork } from '@/lib/networks';
-import { createPublicClient, http } from 'viem';
+import { getRpcUrlForChainSafe, isPublicNetwork } from '@/lib/networks';
+import { createPublicClient, http, toFunctionSelector } from 'viem';
 import fetchContract from '@/app/api/v1/fetch-contract';
 import { type Contract } from '@/app/api/v1/types';
 import { mapChainIdStringToNumber } from '@/lib/utils';
@@ -11,7 +11,7 @@ import {
 	AuthenticationRequiredError,
 	NetworkNotSupportedError
 } from '@/lib/errors';
-import { getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
+import { checkPublicNetworkRequest, getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
 
 export const GET = async (
 	request: NextRequest,
@@ -19,18 +19,22 @@ export const GET = async (
 ) => {
 	// Get chainId early for better error messages
 	const chainId = request.nextUrl.searchParams.get('chain_id');
+	const rpcUrlsParam = request.nextUrl.searchParams.get('rpc_urls');
 
 	// Check if it's a public network request
 	const isPublicNetworkRequest = chainId ? isPublicNetwork(chainId) : false;
 
 	const authSession = await getServerSession();
-	// Only require authentication for non-public networks
-	if (!authSession && !isPublicNetworkRequest) {
+	const session = authSession?.session || null;
+
+	// Allow access without authentication for public networks or when rpc_urls are provided
+	const isPublic = chainId ? checkPublicNetworkRequest(request) : false;
+	const hasRpcUrls = !!rpcUrlsParam;
+
+	if (!authSession && !isPublic && !hasRpcUrls) {
 		const authError = new AuthenticationRequiredError(chainId || undefined, null);
 		return NextResponse.json(authError.toJSON(), { status: authError.statusCode });
 	}
-
-	const session = authSession?.session || null; // Extract the session object (may be null for public networks)
 
 	const { address } = await params;
 	try {
@@ -67,37 +71,59 @@ export const GET = async (
 		const functions = abi.filter((item: any) => item.type === 'function');
 
 		// Create entrypoints response
-		const entrypoints = functions.map((func: any) => ({
-			name: func.name,
-			selector:
-				func.selector ||
-				'0x' +
-					(func.name
-						? // Calculate selector if not present
-						  require('crypto')
-								.createHash('sha3-256')
-								.update(
-									func.name +
-										'(' +
-										(func.inputs || []).map((input: any) => input.type).join(',') +
-										')'
-								)
-								.digest('hex')
-								.slice(0, 8)
-						: '00000000'),
-			inputs: func.inputs || [],
-			outputs: func.outputs || [],
-			stateMutability: func.stateMutability || 'nonpayable'
-		}));
+		const entry_point_datas = functions.map((func: any) => {
+			// Calculate function selector using viem
+			let selector = '0x00000000';
+			if (func.name) {
+				try {
+					// Build function signature: name(type1,type2,...)
+					const signature =
+						func.name +
+						'(' +
+						(func.inputs || [])
+							.map((input: any) => {
+								return input.type;
+							})
+							.join(',') +
+						')';
+					selector = toFunctionSelector(signature);
+				} catch (error) {
+					console.warn(`Failed to calculate selector for ${func.name}:`, error);
+				}
+			}
+
+			// Format inputs
+			const formattedInputs = (func.inputs || []).map((input: any) => {
+				const inputData: any = {
+					name: input.name || '',
+					type: input.type
+				};
+
+				return inputData;
+			});
+
+			// Format outputs
+			const formattedOutputs = (func.outputs || []).map((output: any) => {
+				const outputData: any = {
+					type: output.type
+				};
+
+				return outputData;
+			});
+
+			return [
+				selector,
+				{
+					name: func.name || '',
+					inputs: formattedInputs,
+					outputs: formattedOutputs,
+					state_mutability: func.stateMutability || 'nonpayable'
+				}
+			];
+		});
 
 		return NextResponse.json({
-			address: contractAddress,
-			chainId,
-			abi,
-			entrypoints,
-			contractName: contract.name,
-			verified: contract.verified,
-			verificationSource: contract.verificationSource
+			entry_point_datas
 		});
 	} catch (error: any) {
 		// Wrap error into structured error
