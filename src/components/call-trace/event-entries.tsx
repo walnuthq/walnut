@@ -82,7 +82,7 @@ const EventDetails = memo(function EventCallDetails({ call }: { call: ContractCa
 
 	return (
 		<div className="flex flex-col bg-sky-50 border-y dark:bg-background border-blue-400 py-2 px-4 ">
-			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
+			<div className="md:w-[calc(100vw-7rem)]">
 				<div className=""></div>
 				<InfoBox details={details} />
 				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATA} />}
