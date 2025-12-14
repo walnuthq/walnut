@@ -71,29 +71,45 @@ function getNetworkStyle(network: Network) {
 	};
 }
 
-function SingleNetworkBadge({
+export function SingleNetworkBadge({
 	network,
+	withoutChip,
 	withoutStack
 }: {
-	network: Network;
+	network: Network | null;
+	withoutChip?: boolean;
 	withoutStack?: boolean;
 }) {
-	const style = getNetworkStyle(network);
+	if (network) {
+		const style = getNetworkStyle(network);
 
-	return (
-		<Badge
-			className={`px-2 py-1 text-xs border rounded-full w-fit flex items-center ${
-				style.logo && 'space-x-1'
-			} ${style.class}`}
-		>
-			{style.logo ? (
-				<Image src={style.logo} alt={`${network.stack} logo`} className="w-4 h-4" />
-			) : (
-				<div className="h-4"></div>
-			)}
-			<span>{getNetworkDisplayName(network, withoutStack)}</span>
-		</Badge>
-	);
+		if (withoutChip) {
+			return (
+				<span className="flex items-center gap-2">
+					{style.logo ? (
+						<Image src={style.logo} alt={`${network.stack} logo`} className="w-4 h-4" />
+					) : (
+						<div className="h-4"></div>
+					)}
+					<span>{getNetworkDisplayName(network, withoutStack)}</span>
+				</span>
+			);
+		}
+		return (
+			<Badge
+				className={`px-2 py-1 text-xs border rounded-full w-fit flex items-center ${
+					style.logo && 'space-x-1'
+				} ${style.class}`}
+			>
+				{style.logo ? (
+					<Image src={style.logo} alt={`${network.stack} logo`} className="w-4 h-4" />
+				) : (
+					<div className="h-4"></div>
+				)}
+				<span>{getNetworkDisplayName(network, withoutStack)}</span>
+			</Badge>
+		);
+	}
 }
 
 function getNetworkDisplayName(network: Network, withoutStack?: boolean) {
