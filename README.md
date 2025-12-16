@@ -58,7 +58,7 @@ Try Walnut live at [evm.walnut.dev](https://evm.walnut.dev)
 - [ ] Gas flamechart
 - [ ] State changes
 - [ ] Cross-chain message tracing
-- [ ] Realtime monitoring
+- [ ] Real-time monitoring
 
 ## Enterprise & Privacy
 
@@ -66,7 +66,7 @@ Walnut is designed for organizations that require strict data privacy and contro
 
 ## Deployment and Self-Hosting
 
-Walnut is built for self-hosting and is designed to run within your own infrastructure, with support for advanced deployment scenarios using Docker and Kubernetes.
+Walnut is built for self-hosting and designed to run within your own infrastructure, supporting advanced deployment scenarios with Docker and Kubernetes.
 
 Docker images and deployment guides will be available soon. In the meantime, please reach out if you have specific requirements or would like to discuss custom setups.
 
