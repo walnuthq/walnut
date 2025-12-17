@@ -64,10 +64,16 @@ const getParameters = ({
 		// Use optimized RPC URL resolution
 		const rpcUrl = getRpcUrlForChainOptimized(withCalldata.chain_id, session);
 
+		// Normalize addresses to lowercase for soldb compatibility
+		const normalizedSenderAddress = (
+			withCalldata.sender_address as string
+		).toLowerCase() as Address;
+		const normalizedTo = (withCalldata.calldata[1] as string).toLowerCase() as Address;
+
 		return {
 			rpcUrl,
-			senderAddress: withCalldata.sender_address as Address,
-			to: withCalldata.calldata[1] as Address,
+			senderAddress: normalizedSenderAddress,
+			to: normalizedTo,
 			calldata: withCalldata.calldata[4] as Hex,
 			blockNumber: withCalldata.block_number ? BigInt(withCalldata.block_number) : undefined,
 			nonce: withCalldata.nonce,

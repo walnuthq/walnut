@@ -1,7 +1,9 @@
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { apiKey } from 'better-auth/plugins';
 import { db } from '../db';
+import * as schema from '../db/schema';
 
 export const auth = betterAuth({
 	secret: process.env.BETTER_AUTH_SECRET || 'fallback-secret-key-change-in-production',
@@ -14,7 +16,14 @@ export const auth = betterAuth({
 		}
 	},
 	database: drizzleAdapter(db, {
-		provider: 'pg'
+		provider: 'pg',
+		schema: {
+			user: schema.user,
+			session: schema.session,
+			account: schema.account,
+			verification: schema.verification,
+			apikey: schema.apiKey
+		}
 	}),
 	emailAndPassword: {
 		enabled: true
@@ -31,7 +40,13 @@ export const auth = betterAuth({
 			clientSecret: process.env.GITHUB_CLIENT_SECRET!
 		}
 	},
-	plugins: [nextCookies()],
+	plugins: [
+		nextCookies(),
+		apiKey({
+			// API key will be checked in 'api-key' or 'x-api-key' header
+			apiKeyHeaders: ['api-key', 'x-api-key']
+		})
+	],
 	logger: {
 		level: 'debug',
 		log: (level: string, message: string, ...args: any[]) => {
