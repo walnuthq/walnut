@@ -101,7 +101,7 @@ const openApiSpec = {
 	paths: {
 		'/api/simulate': {
 			post: {
-				summary: 'Simulate an EVM transaction',
+				summary: 'Simulate',
 				description:
 					'Simulates a transaction on a forked chain and analyzes balance changes. Requires API key authentication via x-api-key header.',
 				security: [
