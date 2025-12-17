@@ -172,7 +172,7 @@ export const POST = async (request: NextRequest) => {
 				transaction.transactionIndex !== undefined &&
 				transaction.transactionIndex !== null
 			) {
-				// Fallback to transaction's index if available (only when transactions count is unknown)
+				// Fallback to transaction's index if available (only when transaction count is unknown)
 				txIndex = transaction.transactionIndex;
 			}
 
