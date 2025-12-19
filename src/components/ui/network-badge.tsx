@@ -6,6 +6,7 @@ import arbitrumLogo from '@/assets/network-logos/arbitrum.svg';
 import citreaLogo from '@/assets/network-logos/citrea.svg';
 import unichainLogo from '@/assets/network-logos/unichain.svg';
 import bobLogo from '@/assets/network-logos/bob.svg';
+import standardLogo from '@/assets/network-logos/standard.svg';
 import Image from 'next/image';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -66,6 +67,7 @@ function getNetworkStyle(network: Network) {
 	}
 
 	return {
+		logo: standardLogo,
 		class:
 			'bg-blue-100 border-blue-400 hover:!bg-blue-200 text-variable dark:hover:!bg-blue-600 dark:bg-opacity-40 dark:bg-blue-500 dark:text-white'
 	};
