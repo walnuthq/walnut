@@ -6,6 +6,7 @@ import arbitrumLogo from '@/assets/network-logos/arbitrum.svg';
 import citreaLogo from '@/assets/network-logos/citrea.svg';
 import unichainLogo from '@/assets/network-logos/unichain.svg';
 import bobLogo from '@/assets/network-logos/bob.svg';
+import standardLogo from '@/assets/network-logos/standard.svg';
 import Image from 'next/image';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -66,34 +67,51 @@ function getNetworkStyle(network: Network) {
 	}
 
 	return {
+		logo: standardLogo,
 		class:
 			'bg-blue-100 border-blue-400 hover:!bg-blue-200 text-variable dark:hover:!bg-blue-600 dark:bg-opacity-40 dark:bg-blue-500 dark:text-white'
 	};
 }
 
-function SingleNetworkBadge({
+export function SingleNetworkBadge({
 	network,
+	withoutChip,
 	withoutStack
 }: {
-	network: Network;
+	network: Network | null;
+	withoutChip?: boolean;
 	withoutStack?: boolean;
 }) {
-	const style = getNetworkStyle(network);
+	if (network) {
+		const style = getNetworkStyle(network);
 
-	return (
-		<Badge
-			className={`px-2 py-1 text-xs border rounded-full w-fit flex items-center ${
-				style.logo && 'space-x-1'
-			} ${style.class}`}
-		>
-			{style.logo ? (
-				<Image src={style.logo} alt={`${network.stack} logo`} className="w-4 h-4" />
-			) : (
-				<div className="h-4"></div>
-			)}
-			<span>{getNetworkDisplayName(network, withoutStack)}</span>
-		</Badge>
-	);
+		if (withoutChip) {
+			return (
+				<span className="flex items-center gap-2">
+					{style.logo ? (
+						<Image src={style.logo} alt={`${network.stack} logo`} className="w-4 h-4" />
+					) : (
+						<div className="h-4"></div>
+					)}
+					<span>{getNetworkDisplayName(network, withoutStack)}</span>
+				</span>
+			);
+		}
+		return (
+			<Badge
+				className={`px-2 py-1 text-xs border rounded-full w-fit flex items-center ${
+					style.logo && 'space-x-1'
+				} ${style.class}`}
+			>
+				{style.logo ? (
+					<Image src={style.logo} alt={`${network.stack} logo`} className="w-4 h-4" />
+				) : (
+					<div className="h-4"></div>
+				)}
+				<span>{getNetworkDisplayName(network, withoutStack)}</span>
+			</Badge>
+		);
+	}
 }
 
 function getNetworkDisplayName(network: Network, withoutStack?: boolean) {
