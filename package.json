@@ -80,7 +80,7 @@
 		"autoprefixer": "^10.4.16",
 		"dotenv-cli": "^10.0.0",
 		"drizzle-kit": "^0.31.5",
-		"eslint": "^8.57.1",
+		"eslint": "^9.39.2",
 		"eslint-config-next": "^15.5.6",
 		"eslint-plugin-import": "^2.30.0",
 		"eslint-plugin-jsx-a11y": "^6.10.0",
