@@ -75,7 +75,6 @@ export function SimulateTransactionPage({
 		_blockNumber,
 		_setBlockNumber,
 		_transactionVersion,
-		_setTransactionVersion,
 		_chain,
 		_setChain,
 		activeTabs,
@@ -926,34 +925,6 @@ export function SimulateTransactionPage({
 										If you leave the field empty, the latest block will be used.
 									</p>
 								</div>
-
-								<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-2 md:gap-4">
-									<Label htmlFor="tx-version" className="md:text-right">
-										Transaction version
-									</Label>
-									<div className="md:col-span-3">
-										<Select
-											value={_transactionVersion.toString()}
-											onValueChange={(value) => _setTransactionVersion(parseInt(value))}
-										>
-											<SelectTrigger className="font-mono">
-												<SelectValue placeholder="Select version" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="1">Version 1</SelectItem>
-												<SelectItem value="3">Version 3</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-
-								{alert && (
-									<FieldAlert
-										senderAddress={_senderAddress}
-										contractCalls={_contractCalls}
-										transactionVersion={_transactionVersion}
-									/>
-								)}
 
 								<div className="flex justify-end mt-4 mb-12">
 									<Button
