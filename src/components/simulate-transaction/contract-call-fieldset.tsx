@@ -185,11 +185,12 @@ export function ContractCallFieldset({
 							<div className="flex-1">
 								<div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-2">
 									<XCircleIcon className="w-5 h-5 flex-shrink-0" />
-									<p className="font-medium">Invalid Calldata</p>
+									<p className="font-medium">Unable to Decode Calldata</p>
 								</div>
 								<p className="text-sm text-red-600/80 dark:text-red-400/80">
-									The raw calldata provided could not be decoded. Please check your input or reset
-									calldata to default values.
+									{!contractCallsFunctions[call.address]?.length
+										? "The contract's ABI is not available. Please check your input or reset calldata to default values."
+										: 'The raw calldata provided could not be decoded. Please check your input or reset calldata to default values.'}
 								</p>
 							</div>
 							<Button

@@ -179,6 +179,16 @@ export function SimulateTransactionPage({
 					);
 
 					if (decoded) {
+						if (decoded.abiDecodeError) {
+							setCalldataDecodeError((prev) => ({ ...prev, 0: true }));
+						} else {
+							setCalldataDecodeError((prev) => {
+								const newErrors = { ...prev };
+								delete newErrors[0];
+								return newErrors;
+							});
+						}
+
 						_setContractCalls((prevCalls) => {
 							const newCalls = [...prevCalls];
 							if (newCalls[0]) {
