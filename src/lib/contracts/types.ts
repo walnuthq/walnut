@@ -8,7 +8,7 @@ export interface GetContractResponse {
 	verified: boolean;
 	deployedSources: Source[];
 	solidityVersion: string;
-	classHash: string;
+	contractAddress: string;
 	sourceCode?: Record<string, string>;
 }
 

@@ -98,11 +98,11 @@ const EventCallDetails = memo(function EventCallDetails({
 		{
 			name: 'Contract Address',
 			value: contractCall.entryPoint.storageAddress
-		},
-		{
-			name: 'Class Hash',
-			value: contractCall.entryPoint.classHash
 		}
+		// {
+		// 	name: 'Class Hash',
+		// 	value: contractCall.entryPoint.classHash
+		// }
 	);
 
 	if (contractCall.entryPointName) {
