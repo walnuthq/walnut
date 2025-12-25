@@ -138,12 +138,12 @@ type ParseChainFn = ReturnType<typeof useSettings>['parseChain'];
 
 function ContractDetails({ contractData }: { contractData: GetContractResponse }) {
 	const details: InfoBoxItem[] = [
-		{
-			name: 'Contract address',
-			value: contractData.contractAddress || 'N/A',
-			isCopyable: Boolean(contractData.contractAddress),
-			valueToCopy: contractData.contractAddress
-		},
+		// {
+		// 	name: 'Contract address',
+		// 	value: contractData.contractAddress || 'N/A',
+		// 	isCopyable: Boolean(contractData.contractAddress),
+		// 	valueToCopy: contractData.contractAddress
+		// },
 		// {
 		// 	name: 'Solidity version',
 		// 	value: contractData.solidityVersion || 'Unknown'
