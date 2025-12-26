@@ -14,6 +14,118 @@ import { fetchTxFromExplorer } from '@/lib/explorer';
 import { getServerSession } from '@/lib/auth-server';
 import { getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
 
+type Pair = { key?: string; rpcUrl: string };
+
+/**
+ * Function to search transactions and contracts across multiple networks
+ * TODO: mairjamijailovic think we do not need both GET and POST 
+ */
+async function searchTransactionsAndContracts(
+	pairs: Pair[],
+	hashAsHash: Hash,
+	hashAsAddress: Address | undefined,
+	authSession: AuthType['session'] | null
+): Promise<{ transactions: SearchData[]; contracts: SearchData[] }> {
+	// Search transactions in parallel - RPC and explorer run concurrently
+	const transactionPromises = pairs.map(
+		async ({ rpcUrl, key }): Promise<SearchData | undefined> => {
+			const client = createPublicClient({ transport: http(rpcUrl) });
+
+			// Run RPC and explorer in parallel for faster results
+			const rpcPromise = (async () => {
+				try {
+					const transaction = await client.getTransaction({ hash: hashAsHash });
+					let resolvedChainId: string;
+					if (key) {
+						resolvedChainId = key;
+					} else {
+						const numeric = await client.getChainId();
+						const chainKey = resolveChainId(numeric, authSession);
+						resolvedChainId = chainKey || numeric.toString();
+					}
+					return {
+						source: { chainId: resolvedChainId, rpcUrl: undefined },
+						hash: transaction.hash
+					};
+				} catch (error) {
+					return undefined;
+				}
+			})();
+
+			// Explorer fallback - only if we have a key, run in parallel with RPC
+			const explorerPromise = key
+				? (async () => {
+						try {
+							const explorer = await fetchTxFromExplorer(key, hashAsHash);
+							if (explorer?.found) {
+								return {
+									source: { chainId: key, rpcUrl: undefined },
+									hash: hashAsHash
+								};
+							}
+							return undefined;
+						} catch (error) {
+							return undefined;
+						}
+				  })()
+				: Promise.resolve(undefined);
+
+			// Race between RPC and explorer - return first successful result
+			const [rpcResult, explorerResult] = await Promise.allSettled([rpcPromise, explorerPromise]);
+
+			if (rpcResult.status === 'fulfilled' && rpcResult.value) {
+				return rpcResult.value;
+			}
+			if (explorerResult.status === 'fulfilled' && explorerResult.value) {
+				return explorerResult.value;
+			}
+
+			return undefined;
+		}
+	);
+
+	// Use allSettled to avoid one slow network blocking others
+	const transactionResults = await Promise.allSettled(transactionPromises);
+	const transactions: SearchData[] = transactionResults
+		.map((result) => (result.status === 'fulfilled' ? result.value : undefined))
+		.filter((tx): tx is SearchData => tx !== undefined);
+
+	// Search contracts in parallel
+	const contracts: SearchData[] = hashAsAddress
+		? (
+				await Promise.allSettled(
+					pairs.map(async ({ rpcUrl, key }): Promise<SearchData | undefined> => {
+						const client = createPublicClient({ transport: http(rpcUrl) });
+						try {
+							const bytecode = await client.getCode({ address: hashAsAddress });
+							if (bytecode && bytecode !== '0x') {
+								let resolvedChainId: string;
+								if (key) {
+									resolvedChainId = key;
+								} else {
+									const numeric = await client.getChainId();
+									const chainKey = resolveChainId(numeric, authSession);
+									resolvedChainId = chainKey || numeric.toString();
+								}
+								return {
+									source: { chainId: resolvedChainId, rpcUrl: undefined },
+									hash: hashAsAddress
+								};
+							}
+						} catch (error) {
+							// Ignore errors silently
+						}
+						return undefined;
+					})
+				)
+		  )
+				.map((result) => (result.status === 'fulfilled' ? result.value : undefined))
+				.filter((contract): contract is SearchData => contract !== undefined)
+		: [];
+
+	return { transactions, contracts };
+}
+
 export const GET = async (
 	request: NextRequest,
 	{ params }: { params: Promise<{ hash: string }> }
@@ -34,8 +146,8 @@ export const GET = async (
 	const { hash } = await params;
 	const hashAsHash = hash as Hash;
 	const hashAsAddress = isAddress(hash) ? (hash as Address) : undefined;
+
 	// Prefer chain keys sent via ?chains=KEY1,KEY2; fallback to rpc_urls; default to all enabled.
-	type Pair = { key?: string; rpcUrl: string };
 	let pairs: Pair[] = [];
 	if (chainsParam) {
 		const keys = chainsParam
@@ -45,7 +157,6 @@ export const GET = async (
 		const built: Pair[] = [];
 		for (const k of keys) {
 			try {
-				// Use optimized RPC URL resolution
 				const url = getRpcUrlForChainOptimized(k, authSession?.session || null);
 				built.push({ key: k, rpcUrl: url });
 			} catch (error) {
@@ -98,72 +209,17 @@ export const GET = async (
 		}
 	}
 
-	const transactions: (SearchData | undefined)[] = await Promise.all(
-		pairs.map(async ({ rpcUrl, key }) => {
-			const client = createPublicClient({ transport: http(rpcUrl) });
-			try {
-				const transaction = await client.getTransaction({ hash: hashAsHash });
-				let resolvedChainId: string;
-				if (key) {
-					resolvedChainId = key;
-				} else {
-					const numeric = await client.getChainId();
-					// Use resolveChainId to support both static and tenant networks
-					const chainKey = resolveChainId(numeric, authSession?.session || null);
-					resolvedChainId = chainKey || numeric.toString();
-				}
-				return {
-					source: { chainId: resolvedChainId, rpcUrl: undefined },
-					hash: transaction.hash
-				};
-			} catch (error) {
-				// RPC miss → try explorer fallback for chains with explorer configured
-				if (key) {
-					const explorer = await fetchTxFromExplorer(key, hashAsHash);
-					if (explorer?.found) {
-						return {
-							source: { chainId: key, rpcUrl: undefined },
-							hash: hashAsHash
-						};
-					}
-				}
-				const { name, message } = error as GetTransactionErrorType;
-				console.error(name, message);
-			}
-		})
+	const { transactions, contracts } = await searchTransactionsAndContracts(
+		pairs,
+		hashAsHash,
+		hashAsAddress,
+		authSession?.session || null
 	);
-	const contracts: (SearchData | undefined)[] = hashAsAddress
-		? await Promise.all(
-				pairs.map(async ({ rpcUrl, key }) => {
-					const client = createPublicClient({ transport: http(rpcUrl) });
-					try {
-						const bytecode = await client.getCode({ address: hashAsAddress });
-						if (bytecode && bytecode !== '0x') {
-							let resolvedChainId: string;
-							if (key) {
-								resolvedChainId = key;
-							} else {
-								const numeric = await client.getChainId();
-								// Use resolveChainId to support both static and tenant networks
-								const chainKey = resolveChainId(numeric, authSession?.session || null);
-								resolvedChainId = chainKey || numeric.toString();
-							}
-							return {
-								source: { chainId: resolvedChainId, rpcUrl: undefined },
-								hash: hashAsAddress
-							};
-						}
-					} catch (error) {
-						console.error('getCode error', error);
-					}
-				})
-		  )
-		: [];
 
 	const response: SearchDataResponse = {
-		transactions: transactions.filter((transaction: SearchData | undefined) => !!transaction),
+		transactions,
 		classes: [],
-		contracts: contracts.filter((contract: SearchData | undefined) => !!contract)
+		contracts
 	};
 	return NextResponse.json(response);
 };
@@ -184,7 +240,6 @@ export const POST = async (
 		const body = (await request.json()) as { chains?: string[] } | undefined;
 		const chains = (body?.chains ?? []).map((c) => c.trim()).filter(Boolean);
 
-		type Pair = { key?: string; rpcUrl: string };
 		let pairs: Pair[] = [];
 		if (chains.length > 0) {
 			const built: Pair[] = [];
@@ -228,73 +283,17 @@ export const POST = async (
 			}
 		}
 
-		const transactions: (SearchData | undefined)[] = await Promise.all(
-			pairs.map(async ({ rpcUrl, key }) => {
-				const client = createPublicClient({ transport: http(rpcUrl) });
-				try {
-					const transaction = await client.getTransaction({ hash: hashAsHash });
-					let resolvedChainId: string;
-					if (key) {
-						resolvedChainId = key;
-					} else {
-						const numeric = await client.getChainId();
-						// Use resolveChainId to support both static and tenant networks
-						const chainKey = resolveChainId(numeric, authSession?.session || null);
-						resolvedChainId = chainKey || numeric.toString();
-					}
-					return {
-						source: { chainId: resolvedChainId, rpcUrl: undefined },
-						hash: transaction.hash
-					};
-				} catch (error) {
-					if (key) {
-						const explorer = await fetchTxFromExplorer(key, hashAsHash);
-						if (explorer?.found) {
-							return {
-								source: { chainId: key, rpcUrl: undefined },
-								hash: hashAsHash
-							};
-						}
-					}
-					const { name, message } = error as GetTransactionErrorType;
-					console.error(name, message);
-				}
-			})
+		const { transactions, contracts } = await searchTransactionsAndContracts(
+			pairs,
+			hashAsHash,
+			hashAsAddress,
+			authSession.session
 		);
 
-		const contracts: (SearchData | undefined)[] =
-			hashAsAddress && pairs.length > 0
-				? await Promise.all(
-						pairs.map(async ({ rpcUrl, key }) => {
-							const client = createPublicClient({ transport: http(rpcUrl) });
-							try {
-								const bytecode = await client.getCode({ address: hashAsAddress });
-								if (bytecode && bytecode !== '0x') {
-									let resolvedChainId: string;
-									if (key) {
-										resolvedChainId = key;
-									} else {
-										const numeric = await client.getChainId();
-										// Use resolveChainId to support both static and tenant networks
-										const chainKey = resolveChainId(numeric, authSession?.session || null);
-										resolvedChainId = chainKey || numeric.toString();
-									}
-									return {
-										source: { chainId: resolvedChainId, rpcUrl: undefined },
-										hash: hashAsAddress
-									};
-								}
-							} catch (error) {
-								console.error('getCode error', error);
-							}
-						})
-				  )
-				: [];
-
 		const response: SearchDataResponse = {
-			transactions: transactions.filter((transaction: SearchData | undefined) => !!transaction),
+			transactions,
 			classes: [],
-			contracts: contracts.filter((contract: SearchData | undefined) => !!contract)
+			contracts
 		};
 		return NextResponse.json(response);
 	} catch (e) {
