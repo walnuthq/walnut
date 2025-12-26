@@ -61,7 +61,7 @@ export const GET = async (
 				value: network.label
 			})),
 			solidity_version: verification.solidityVersion ?? '',
-			class_hash: checksumAddress,
+			contract_address: checksumAddress,
 			source_code: includeSourceCode ? {} : undefined
 		});
 	} catch (error: any) {

@@ -340,10 +340,10 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 			name: 'Contract Address',
 			value: call.entryPoint.storageAddress
 		},
-		{
-			name: 'Class Hash',
-			value: call.entryPoint.classHash
-		},
+		// {
+		// 	name: 'Class Hash',
+		// 	value: call.entryPoint.classHash
+		// },
 		{
 			name: 'Entrypoint Selector',
 			value: call.entryPoint.entryPointSelector
