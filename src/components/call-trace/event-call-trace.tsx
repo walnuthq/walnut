@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { InfoBox } from '@/components/ui/info-box';
@@ -87,7 +87,7 @@ const EventCallDetails = memo(function EventCallDetails({
 	if (!contractName) {
 		contractName = shortenHash(contractCall.entryPoint.storageAddress, 13);
 	}
-
+	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
 
 	details.push(
@@ -125,7 +125,14 @@ const EventCallDetails = memo(function EventCallDetails({
 				<div className="">
 					<InfoBox details={details} />
 				</div>
-				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATA} />}
+				{call.datas && (
+					<DecodeDataTable
+						decodeData={call.datas}
+						type={DataType.DATA}
+						displayFormat={displayFormat}
+						setDisplayFormat={setDisplayFormat}
+					/>
+				)}
 			</div>
 		</div>
 	);

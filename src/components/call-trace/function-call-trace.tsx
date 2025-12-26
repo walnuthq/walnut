@@ -9,13 +9,6 @@ import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { FnName } from '../ui/function-name';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { Copy } from 'lucide-react';
-import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import FunctionCallViewer from '../ui/function-call-viewer';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import AddressLink from '../address-link';
 import ValueWithTooltip from '../ui/value-with-tooltip';
 import { ErrorTooltip } from '../error-tooltip';
 
