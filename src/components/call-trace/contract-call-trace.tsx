@@ -416,8 +416,6 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 		[]
 	);
 
-	console.log('call', call);
-
 	return (
 		<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-1 px-4 ">
 			<div className="md:w-[calc(100vw-7rem)]">
