@@ -11,6 +11,7 @@ export interface DecodedCalldata {
 	args: any[];
 	argsWithTypes: FunctionArgument[];
 	rawCalldata: string;
+	abiDecodeError?: boolean;
 }
 
 export interface CalldataDecoder {
@@ -217,6 +218,9 @@ export async function decodeCalldata(
 			return null;
 		}
 
+		// Track if ABI decoding was attempted and failed
+		let abiDecodeFailed = false;
+
 		// If we have ABI, use viem's decodeFunctionData
 		if (abi && abi.length > 0) {
 			try {
@@ -260,6 +264,7 @@ export async function decodeCalldata(
 				};
 			} catch (error) {
 				console.warn('Failed to decode with ABI:', error);
+				abiDecodeFailed = true;
 			}
 		}
 
@@ -267,7 +272,10 @@ export async function decodeCalldata(
 		console.log('DECODING WITHOUT ABI: Attempting to decode using 4byte.directory');
 		const decoded = await decodeWithout4Byte(calldata);
 		if (decoded) {
-			return decoded;
+			return {
+				...decoded,
+				abiDecodeError: abiDecodeFailed
+			};
 		}
 
 		// Fallback: return basic info without ABI
@@ -275,7 +283,8 @@ export async function decodeCalldata(
 			functionName: 'Unknown',
 			args: [],
 			argsWithTypes: [],
-			rawCalldata: calldata
+			rawCalldata: calldata,
+			abiDecodeError: abiDecodeFailed
 		};
 	} catch (error) {
 		console.error('Error decoding calldata:', error);
