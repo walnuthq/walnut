@@ -350,6 +350,8 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 		}
 	];
 
+	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
+
 	if (call.erc20TokenName) {
 		details.push({
 			name: 'Token Name',
@@ -424,10 +426,23 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 							rawData={call.entryPoint.calldata}
 							decodeData={call.calldataDecoded}
 							type={DataType.CALLDATA}
+							displayFormat={displayFormat}
+							setDisplayFormat={setDisplayFormat}
 						/>
 					)}
+
 					{call.decodedResult && (
-						<DecodeDataTable decodeData={call.decodedResult} type={DataType.OUTPUT} />
+						<DecodeDataTable
+							decodeData={call.decodedResult}
+							type={DataType.OUTPUT}
+							rawData={
+								'success' in call.result
+									? (call.result.success as { retData: string[] }).retData
+									: ['']
+							}
+							displayFormat={displayFormat}
+							setDisplayFormat={setDisplayFormat}
+						/>
 					)}
 				</div>
 			</div>

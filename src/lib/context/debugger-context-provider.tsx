@@ -58,6 +58,7 @@ interface DebuggerContextProps {
 	hasDebuggableContract: boolean;
 	getStepForFunctionCall: (functionCallId: number) => DebuggerExecutionTraceEntry | undefined;
 	getStepForContractCall: (contractCallId: number) => DebuggerExecutionTraceEntry | undefined;
+	setContractCall: (contractCall: ContractCall) => void;
 }
 
 export const DebuggerContext = createContext<DebuggerContextProps | undefined>(undefined);
@@ -525,7 +526,8 @@ export const DebuggerContextProvider = ({
 				error,
 				getStepForFunctionCall,
 				getStepForContractCall,
-				hasDebuggableContract
+				hasDebuggableContract,
+				setContractCall
 			}}
 		>
 			{children}
