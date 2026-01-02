@@ -72,7 +72,7 @@ export function HeaderNav({
 										<DropdownMenuTrigger asChild>
 											<button
 												className="
-													hidden md:flex items-center gap-1 px-1.5 py-0.5 rounded-full
+													hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-full
 													bg-gradient-to-r from-purple-900/20 to-purple-700/15
 													hover:from-purple-900/30 hover:to-purple-700/25
 													border border-purple-700/40 hover:border-purple-600/60
@@ -89,7 +89,7 @@ export function HeaderNav({
 														unoptimized
 													/>
 												</div>
-												<span className="text-[10px] font-semibold bg-gradient-to-r from-purple-800 to-purple-600 dark:from-purple-400 dark:to-purple-300 bg-clip-text text-transparent">
+												<span className="text-[10px] whitespace-nowrap font-semibold bg-gradient-to-r from-purple-800 to-purple-600 dark:from-purple-400 dark:to-purple-300 bg-clip-text text-transparent">
 													Ethereum (EVM)
 												</span>
 												<svg
@@ -144,21 +144,21 @@ export function HeaderNav({
 							)}
 
 							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
-								{!isMainPage && !hideUserSection && (
+								{!isMainPage && !hideUserSection && isLogged && (
 									<div className="w-auto max-w-xs md:w-80">
 										<Search className="w-full" placeholder="Search"></Search>
 									</div>
 								)}
-								<div className="hidden md:block">
+								<div className="hidden lg:block">
 									{isLogged ? (
 										<Link href="/simulate-transaction">
-											<Button variant="outline">
+											<Button variant="outline" className="whitespace-nowrap">
 												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
 											</Button>
 										</Link>
 									) : (
 										<Link href="/login">
-											<Button variant="outline">
+											<Button variant="outline" className="whitespace-nowrap">
 												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
 											</Button>
 										</Link>
@@ -166,7 +166,7 @@ export function HeaderNav({
 								</div>
 							</div>
 							{!hideUserSection && (
-								<div className="hidden md:block">
+								<div className="hidden lg:block">
 									<div className="flex items-center">
 										<div className="flex flex-row items-center ml-3">
 											<UserSection />
@@ -175,9 +175,9 @@ export function HeaderNav({
 								</div>
 							)}
 							{!hideUserSection && (
-								<div className="flex md:hidden">
+								<div className="flex lg:hidden">
 									<div className="flex items-center">
-										<div className="flex flex-row items-center">
+										<div className="flex flex-row items-center ml-3">
 											<UserSection />
 										</div>
 									</div>
@@ -206,7 +206,7 @@ export function HeaderNav({
 						</div>
 					</Container>
 
-					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-t shadow-md border-neutral-200">
+					<Disclosure.Panel className="lg:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-t shadow-md border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
 							<div>
 								{isLogged ? (

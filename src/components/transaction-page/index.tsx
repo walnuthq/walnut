@@ -221,11 +221,11 @@ export function TransactionPage({
 		<>
 			<HeaderNav />
 			<main className="h-full flex flex-col overflow-hidden short:overflow-scroll">
-				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
+				<Container className="py-4 sm:py-6 xl:py-8 h-full flex flex-col short:min-h-[600px]">
 					{l2TransactionData ? (
 						<>
 							{/* === L2 Transaction === */}
-							<div className="lg:flex flex-row items-baseline justify-between">
+							<div className="xl:flex flex-row items-baseline justify-between">
 								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
 									{l2TxHash && (
 										<h1 className="text-base font-medium leading-6">
@@ -234,14 +234,14 @@ export function TransactionPage({
 												<CopyToClipboardElement
 													value={l2TxHash}
 													toastDescription="The address has been copied."
-													className="hidden lg:block p-0 mr-2 hover:bg-inherit"
+													className="hidden xl:block p-0 mr-2 hover:bg-inherit"
 												>
 													<AddressLink address={l2TxHash}>{l2TxHash}</AddressLink>
 												</CopyToClipboardElement>
 												<CopyToClipboardElement
 													value={l2TxHash}
 													toastDescription="The address has been copied."
-													className="lg:hidden p-0 mr-2 hover:bg-inherit"
+													className="xl:hidden p-0 mr-2 hover:bg-inherit"
 												>
 													<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 												</CopyToClipboardElement>
@@ -257,14 +257,14 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={l1TxHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block p-0"
+												className="hidden xl:block p-0"
 											>
 												{l1TxHash}
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
 												value={l1TxHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden p-0"
+												className="xl:hidden p-0"
 											>
 												{l1TxHashShort}
 											</CopyToClipboardElement>
@@ -318,7 +318,7 @@ export function TransactionPage({
 					) : l1TransactionData ? (
 						<>
 							{/* === L1 Transaction Dat === */}
-							<div className="lg:flex flex-row items-baseline justify-between">
+							<div className="xl:flex flex-row items-baseline justify-between">
 								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
 									{l1TransactionData.l1TxHash && (
 										<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
@@ -326,14 +326,14 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={l1TransactionData.l1TxHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block"
+												className="hidden xl:block"
 											>
 												{l1TransactionData.l1TxHash}
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
 												value={l1TransactionData.l1TxHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden"
+												className="xl:hidden"
 											>
 												{shortenHash(l1TransactionData.l1TxHash)}
 											</CopyToClipboardElement>
@@ -382,8 +382,8 @@ export function TransactionPage({
 																	className="font-mono cursor-pointer rounded-sm py-1 px-0"
 																>
 																	<AddressLink address={hash}>
-																		<span className="hidden lg:inline">{hash}</span>
-																		<span className="lg:hidden">{shortenHash(hash)}</span>
+																		<span className="hidden xl:inline">{hash}</span>
+																		<span className="xl:hidden">{shortenHash(hash)}</span>
 																	</AddressLink>
 																</CopyToClipboardElement>
 																<a
@@ -415,14 +415,14 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={txHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block p-0 mr-2  hover:bg-inherit"
+												className="hidden xl:block p-0 mr-2  hover:bg-inherit"
 											>
 												<AddressLink address={txHash}>{txHash}</AddressLink>
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
 												value={txHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden p-0 mr-2  hover:bg-inherit"
+												className="xl:hidden p-0 mr-2  hover:bg-inherit"
 											>
 												<AddressLink address={txHash}>{shortenHash(txHash)}</AddressLink>
 											</CopyToClipboardElement>
@@ -451,14 +451,14 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={txHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block p-0 mr-2  hover:bg-inherit"
+												className="hidden xl:block p-0 mr-2  hover:bg-inherit"
 											>
 												<AddressLink address={txHash}>{txHash}</AddressLink>
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
 												value={txHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden p-0 mr-2  hover:bg-inherit"
+												className="xl:hidden p-0 mr-2  hover:bg-inherit"
 											>
 												<AddressLink address={txHash}>{shortenHash(txHash)}</AddressLink>
 											</CopyToClipboardElement>

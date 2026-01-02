@@ -277,7 +277,7 @@ export function SimulationPage({
 			<HeaderNav />
 			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
 				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
-					<div className="xl:flex flex-row items-baseline justify-between">
+					<div className="lg:flex flex-row items-baseline justify-between">
 						<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
 							<h1 className="text-base font-medium leading-6">
 								<div className="flex flex-wrap items-center gap-2">
