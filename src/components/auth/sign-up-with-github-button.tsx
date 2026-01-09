@@ -11,7 +11,7 @@ export function SignUpWithGithubButton() {
 	};
 
 	return (
-		<Button onClick={handleGitHubLogin} variant="outline">
+		<Button onClick={handleGitHubLogin} variant="outline" className="whitespace-nowrap">
 			Sign up with GitHub
 		</Button>
 	);

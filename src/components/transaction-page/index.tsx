@@ -225,27 +225,27 @@ export function TransactionPage({
 					{l2TransactionData ? (
 						<>
 							{/* === L2 Transaction === */}
-							<div className="lg:flex flex-row items-baseline justify-between">
+							<div className="xl:flex flex-row items-baseline justify-between">
 								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
 									{l2TxHash && (
-										<h1 className="text-base font-medium leading-6">
-											<div className="flex flex-wrap items-center gap-1">
+										<h1 className="text-base font-medium leading-6 whitespace-nowrap">
+											<div className="flex flex-wrap items-center gap-1 whitespace-nowrap">
 												<span>Transaction</span>
 												<CopyToClipboardElement
 													value={l2TxHash}
 													toastDescription="The address has been copied."
-													className="hidden lg:block p-0 mr-2 hover:bg-inherit"
+													className="hidden md:block p-0 mr-2 hover:bg-inherit"
 												>
 													<AddressLink address={l2TxHash}>{l2TxHash}</AddressLink>
 												</CopyToClipboardElement>
 												<CopyToClipboardElement
 													value={l2TxHash}
 													toastDescription="The address has been copied."
-													className="lg:hidden p-0 mr-2 hover:bg-inherit"
+													className="md:hidden p-0 mr-2 hover:bg-inherit"
 												>
 													<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 												</CopyToClipboardElement>
-												<div className="hidden md:block">
+												<div className="hidden lg:block">
 													{chainDetails && <NetworkBadge network={chainDetails} />}
 												</div>
 											</div>
@@ -257,14 +257,14 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={l1TxHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block p-0"
+												className="hidden md:block p-0"
 											>
 												{l1TxHash}
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
 												value={l1TxHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden p-0"
+												className="md:hidden p-0"
 											>
 												{l1TxHashShort}
 											</CopyToClipboardElement>
@@ -272,35 +272,35 @@ export function TransactionPage({
 										</h2>
 									)}
 								</div>
-								<div className="hidden md:block">
-									<Button
-										onClick={handleReSimulateClick}
-										variant="outline"
-										disabled={l2TransactionData.transactionType !== 'INVOKE'}
-									>
-										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-									</Button>
-								</div>
-								<div className="flex md:hidden gap-2 justify-between">
+
+								<div className="flex lg:hidden gap-2 justify-between">
 									{chainDetails && <NetworkBadge network={chainDetails} />}
 									{isLogged ? (
 										<Button
 											onClick={handleReSimulateClick}
 											variant="outline"
+											className="whitespace-nowrap"
 											disabled={l2TransactionData.transactionType !== 'INVOKE'}
 										>
-											<PlayIcon className="h-4 w-4 mr-2" />
-											Re-simulate
+											<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 										</Button>
 									) : (
 										<Link href="/login">
-											<Button variant="outline">
-												<PlayIcon className="h-4 w-4 mr-2" />
-												Re-simulate
+											<Button variant="outline" className="whitespace-nowrap">
+												<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 											</Button>
 										</Link>
 									)}
 								</div>
+
+								<Button
+									onClick={handleReSimulateClick}
+									variant="outline"
+									disabled={l2TransactionData.transactionType !== 'INVOKE'}
+									className="hidden lg:flex whitespace-nowrap"
+								>
+									<PlayIcon className="h-4 w-4 mr-2 " /> Re-simulate
+								</Button>
 							</div>
 							<div className="hidden md:block">
 								{' '}
@@ -318,31 +318,47 @@ export function TransactionPage({
 					) : l1TransactionData ? (
 						<>
 							{/* === L1 Transaction Dat === */}
-							<div className="lg:flex flex-row items-baseline justify-between">
+							<div className="xl:flex flex-row items-baseline justify-between">
 								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
 									{l1TransactionData.l1TxHash && (
-										<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
-											L1 Transaction{' '}
-											<CopyToClipboardElement
-												value={l1TransactionData.l1TxHash}
-												toastDescription="The address has been copied."
-												className="hidden lg:block"
-											>
-												{l1TransactionData.l1TxHash}
-											</CopyToClipboardElement>
-											<CopyToClipboardElement
-												value={l1TransactionData.l1TxHash}
-												toastDescription="The address has been copied."
-												className="lg:hidden"
-											>
-												{shortenHash(l1TransactionData.l1TxHash)}
-											</CopyToClipboardElement>
-											{chainDetails && <NetworkBadge network={chainDetails} />}
+										<h1 className="text-base font-medium leading-6">
+											<div className="flex flex-wrap items-center gap-1">
+												L1 Transaction
+												<CopyToClipboardElement
+													value={l1TransactionData.l1TxHash}
+													toastDescription="The address has been copied."
+													className="hidden md:block p-0 mr-2 hover:bg-inherit"
+												>
+													<AddressLink address={l1TransactionData.l1TxHash}>
+														{l1TransactionData.l1TxHash}
+													</AddressLink>
+												</CopyToClipboardElement>
+												<CopyToClipboardElement
+													value={l1TransactionData.l1TxHash}
+													toastDescription="The address has been copied."
+													className="md:hidden p-0 mr-2 hover:bg-inherit"
+												>
+													<AddressLink address={l1TransactionData.l1TxHash}>
+														{shortenHash(l1TransactionData.l1TxHash)}
+													</AddressLink>
+												</CopyToClipboardElement>
+												<div className="hidden lg:block">
+													{chainDetails && <NetworkBadge network={chainDetails} />}
+												</div>
+											</div>
 										</h1>
 									)}
 								</div>
-								<Button onClick={handleReSimulateClick} variant="outline" disabled>
-									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+
+								<div className="flex lg:hidden gap-2 justify-between">
+									{chainDetails && <NetworkBadge network={chainDetails} />}
+									<Button variant="outline" disabled className="whitespace-nowrap">
+										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+									</Button>
+								</div>
+
+								<Button variant="outline" disabled className="hidden lg:flex whitespace-nowrap">
+									<PlayIcon className="h-4 w-4 mr-2 " /> Re-simulate
 								</Button>
 							</div>
 							<L1TransactionDetails transactionData={l1TransactionData} rpcUrl={rpcUrl} />
@@ -415,24 +431,33 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={txHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block p-0 mr-2  hover:bg-inherit"
+												className="hidden md:block p-0 mr-2 hover:bg-inherit"
 											>
 												<AddressLink address={txHash}>{txHash}</AddressLink>
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
 												value={txHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden p-0 mr-2  hover:bg-inherit"
+												className="md:hidden p-0 mr-2 hover:bg-inherit"
 											>
 												<AddressLink address={txHash}>{shortenHash(txHash)}</AddressLink>
 											</CopyToClipboardElement>
-											{chainDetails && <NetworkBadge network={chainDetails} />}
+											<div className="hidden lg:block">
+												{chainDetails && <NetworkBadge network={chainDetails} />}
+											</div>
 										</div>
 									</h1>
 								</div>
 
-								<Button variant="outline" disabled>
-									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								<div className="flex lg:hidden gap-2 justify-between">
+									{chainDetails && <NetworkBadge network={chainDetails} />}
+									<Button variant="outline" disabled className="whitespace-nowrap">
+										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+									</Button>
+								</div>
+
+								<Button variant="outline" disabled className="hidden lg:flex whitespace-nowrap">
+									<PlayIcon className="h-4 w-4 mr-2 " /> Re-simulate
 								</Button>
 							</div>
 							{error.status >= 500 && error.status < 600 ? (
@@ -451,32 +476,32 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={txHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block p-0 mr-2  hover:bg-inherit"
+												className="hidden md:block p-0 mr-2  hover:bg-inherit"
 											>
 												<AddressLink address={txHash}>{txHash}</AddressLink>
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
 												value={txHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden p-0 mr-2  hover:bg-inherit"
+												className="md:hidden p-0 mr-2  hover:bg-inherit"
 											>
 												<AddressLink address={txHash}>{shortenHash(txHash)}</AddressLink>
 											</CopyToClipboardElement>
-											<div className="hidden md:block">
+											<div className="hidden lg:block">
 												{chainDetails && <NetworkBadge network={chainDetails} />}
 											</div>
 										</div>
 									</h1>
 								</div>
 
-								<div className="flex md:hidden gap-2 justify-between">
+								<div className="flex lg:hidden gap-2 justify-between">
 									{chainDetails && <NetworkBadge network={chainDetails} />}
-									<Button variant="outline" disabled>
+									<Button variant="outline" disabled className="whitespace-nowrap">
 										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 									</Button>
 								</div>
 
-								<Button variant="outline" disabled className="hidden md:flex">
+								<Button variant="outline" disabled className="hidden lg:flex whitespace-nowrap">
 									<PlayIcon className="h-4 w-4 mr-2 " /> Re-simulate
 								</Button>
 							</div>
