@@ -29,7 +29,7 @@ export function CodeViewer({
 	const breakpointDecorationsRef = useRef<string[]>([]);
 	const monaco = useMonaco();
 	const [hoverLine, setHoverLine] = useState<number | null>(null);
-	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
+	const codeLocationRef = useRef<CodeLocation | undefined>(codeLocation);
 	const activeFileRef = useRef<string | undefined>(undefined);
 	const classHashRef = useRef<string | undefined>(undefined);
 	const breakPointsLinesRef = useRef<number[] | undefined>(undefined);
@@ -79,12 +79,16 @@ export function CodeViewer({
 		return fileEntry ? fileEntry.map((bp) => bp + 1) : [];
 	}, [classFileBreakpoints]);
 
+	useEffect(() => {
+		codeLocationRef.current = codeLocation;
+	}, [codeLocation]);
+
 	const highlightCodeLocation = useCallback(
 		(
 			codeLocation: CodeLocation,
 			editor: Editor.IStandaloneCodeEditor,
 			_monaco: Monaco,
-			isSmoothScroll: boolean
+			smooth: boolean
 		) => {
 			if (!_monaco || !editor) return;
 			const range = new _monaco.Range(
@@ -93,23 +97,9 @@ export function CodeViewer({
 				codeLocation.end.line + 1,
 				codeLocation.end.col + 1
 			);
-
-			const isHighlightOnScreen = isRangeVisible(range.startLineNumber, range.endLineNumber);
-
-			if (!isHighlightOnScreen) {
-				editor.revealRangeInCenter(
-					range.plusRange(
-						new _monaco.Range(
-							range.startLineNumber - 2,
-							range.startColumn,
-							range.endLineNumber,
-							range.endColumn
-						)
-					),
-					isSmoothScroll ? 0 : 1
-				);
-			}
-
+			const lineHeight = editor.getOption(_monaco.editor.EditorOption.lineHeight);
+			const targetScrollTop = (range.startLineNumber - 1) * lineHeight;
+			editor.setScrollTop(targetScrollTop, smooth ? 0 : 1);
 			editorDecorations?.clear();
 			setTimeout(() => {
 				const decorations = [
@@ -126,6 +116,14 @@ export function CodeViewer({
 		},
 		[editorDecorations, highlightClass]
 	);
+
+	useEffect(() => {
+		if (editorRef.current && content) {
+			editorRef.current.setScrollTop(0);
+			editorRef.current.setScrollLeft(0);
+			editorRef.current.setPosition({ lineNumber: 1, column: 1 });
+		}
+	}, [content]);
 
 	const handleEditorDidMount = useCallback(
 		async (editor: Editor.IStandaloneCodeEditor, monaco: Monaco) => {
@@ -180,11 +178,12 @@ export function CodeViewer({
 				}
 			});
 
-			if (codeLocation) {
-				highlightCodeLocation(codeLocation, editor, monaco, false);
+			const loc = codeLocationRef.current;
+			if (loc && activeFileRef.current && loc.filePath === activeFileRef.current) {
+				highlightCodeLocation(loc, editor, monaco, false);
 			}
 		},
-		[codeLocation, hoverLine, toggleBreakpoint, highlightCodeLocation, args, results]
+		[hoverLine, toggleBreakpoint, highlightCodeLocation]
 	);
 
 	const updateBreakpointDecorations = useCallback(
@@ -232,17 +231,14 @@ export function CodeViewer({
 
 	useEffect(() => {
 		if (editorRef.current && monaco) {
-			if (codeLocation) {
-				// Use smooth scroll when content changes, instant when same content
-				const isSmoothScroll = content !== prevCodeValue;
-				highlightCodeLocation(codeLocation, editorRef.current, monaco, isSmoothScroll);
+			if (codeLocation && activeFile && codeLocation.filePath === activeFile) {
+				highlightCodeLocation(codeLocation, editorRef.current, monaco, true);
 			} else {
 				editorRef.current.revealLineNearTop(0, 1);
 			}
-			setPrevCodeValue(content);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [codeLocation, args, results, isExpressionHover, content, contractSwitchCount]);
+	}, [codeLocation, args, results, isExpressionHover]);
 
 	useEffect(() => {
 		const styleId = 'breakpoint-style';
@@ -267,18 +263,6 @@ export function CodeViewer({
 		}
 	}, []);
 
-	const isRangeVisible = (startLine: number, endLine: number) => {
-		const editor = editorRef.current;
-		if (editor) {
-			const visibleRanges = editor.getVisibleRanges();
-			return visibleRanges.some(
-				(visibleRange) =>
-					visibleRange.startLineNumber <= endLine && visibleRange.endLineNumber >= startLine
-			);
-		}
-		return false;
-	};
-
 	return (
 		<MonacoEditor
 			onMount={handleEditorDidMount}
@@ -291,7 +275,8 @@ export function CodeViewer({
 				smoothScrolling: true,
 				lineNumbers: 'on',
 				lineNumbersMinChars: 3,
-				lineDecorationsWidth: 15
+				lineDecorationsWidth: 15,
+				stickyScroll: { enabled: false }
 			}}
 			value={content}
 			language="solidity"
