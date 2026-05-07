@@ -7,7 +7,7 @@
   <img width="2110" height="1462" alt="walnut web app screenshot" src="https://github.com/user-attachments/assets/6db44fc1-8685-433b-85fc-bd374992933d" />
 </p>
 
-![BSL License](https://img.shields.io/badge/license-BSL%201.1-purple)
+[![BSL License](https://img.shields.io/badge/license-BSL%201.1-purple)](https://github.com/walnuthq/walnut/blob/main/LICENSE.md)
 ![Built for EVM](https://img.shields.io/badge/EVM-compatible-brightgreen)
 ![Self-Hostable](https://img.shields.io/badge/self--hosted-yes-orange)
 ![Docker Support](https://img.shields.io/badge/docker-ready-2496ED?logo=docker)
