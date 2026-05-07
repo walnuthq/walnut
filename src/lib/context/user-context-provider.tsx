@@ -78,7 +78,6 @@ export const useSetGlobalOrganizationIdInUserContext = () => {
 	}
 
 	return (organizationId: string) => {
-		//todo remove when Logto introduces refreshToken on demand
 		localStorage.setItem('organizationId', organizationId);
 		context.setOrganizationId(organizationId);
 		context.setIsGlobalOrg(true);
