@@ -32,6 +32,7 @@ import {
 import type { AuthType } from '@/lib/types';
 
 const execFile = promisify(execFileCb);
+const SOLDB_BIN = process.env.SOLDB_BIN || 'soldb';
 
 /**
  * Determines appropriate HTTP status code based on error message content
@@ -134,19 +135,10 @@ const soldb = async ({
 		args.push('--value', formattedValue);
 	}
 
-	const fullCommand = [
-		'soldb',
-		...args,
-		...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
-		'--rpc',
-		rpcUrl,
-		'--json'
-	];
-
 	// Log the command in a readable format
 	if (command === 'simulate') {
 		console.log('=== SOLDB COMMAND ===');
-		console.log('soldb simulate', to);
+		console.log(`${SOLDB_BIN} simulate`, to);
 		console.log('  --raw-data', calldata);
 		console.log('  --from', from);
 		if (blockNumber) console.log('  --block', blockNumber.toString());
@@ -172,7 +164,7 @@ const soldb = async ({
 
 	try {
 		const { stdout } = await execFile(
-			'soldb',
+			SOLDB_BIN,
 			[
 				...args,
 				...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
@@ -328,13 +320,13 @@ export const soldbListEvents = async ({
 		});
 	}
 
-	console.log('Executing soldb command:', ['soldb', ...args].join(' '));
+	console.log('Executing soldb command:', [SOLDB_BIN, ...args].join(' '));
 	if (cwd) {
 		console.log('Working directory:', cwd);
 	}
 
 	try {
-		const { stdout } = await execFile('soldb', args, {
+		const { stdout } = await execFile(SOLDB_BIN, args, {
 			cwd: cwd || process.cwd(),
 			maxBuffer: 50 * 1024 * 1024 // 50MB buffer
 		});

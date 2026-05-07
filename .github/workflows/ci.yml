@@ -21,6 +21,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install SolDB CLI
+        run: cargo install --git https://github.com/walnuthq/soldb.git --branch feature/port-to-rust --package soldb-cli --bin soldb --locked
+
+      - name: Check SolDB CLI commands
+        run: |
+          soldb --help
+          soldb trace --help
+          soldb simulate --help
+          soldb list-events --help
+
       - name: Lint code
         run: npm run lint
 
