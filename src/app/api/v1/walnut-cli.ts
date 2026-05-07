@@ -110,8 +110,7 @@ const walnutCli = async ({
 		args.push('--block', blockNumber.toString());
 	}
 
-	const fullCommand = [
-		'walnut-cli',
+	const cliArgs = [
 		...args,
 		...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
 		'--rpc',
@@ -119,23 +118,13 @@ const walnutCli = async ({
 		'--json'
 	];
 
-	console.log('Executing walnut-cli command:', fullCommand.join(' '));
+	console.log('Executing walnut-cli command:', ['walnut-cli', ...cliArgs].join(' '));
 	if (cwd) {
 		console.log('Working directory:', cwd);
 	}
 
 	try {
-		const { stdout } = await execFile(
-			'walnut-cli',
-			[
-				...args,
-				...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
-				'--rpc',
-				rpcUrl,
-				'--json'
-			],
-			{ cwd }
-		);
+		const { stdout } = await execFile('walnut-cli', cliArgs, { cwd });
 		console.log('walnut-cli stdout:', stdout.substring(0, 500) + '...');
 		const rawDebugCallResponse = JSON.parse(stdout) as RawDebugCallResponse;
 		return rawDebugCallResponseToDebugCallResponse(rawDebugCallResponse);
