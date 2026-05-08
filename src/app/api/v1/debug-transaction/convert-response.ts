@@ -141,7 +141,7 @@ const debugCallResponseToTransactionSimulationResult = ({
 	const debuggerTrace: any[] = [];
 	// Process all steps in execution order (not by call hierarchy)
 	steps.forEach((step, stepIndex) => {
-		const traceCallIndex = step.traceCallIndex;
+		const traceCallIndex = step.traceCallIndex ?? 0;
 		const contractCall = contractCallsMap[traceCallIndex];
 		const functionCall = functionCallsMap[traceCallIndex];
 

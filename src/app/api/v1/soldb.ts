@@ -1,6 +1,7 @@
 import { promisify } from 'node:util';
 import { execFile as execFileCb } from 'node:child_process';
 import {
+	rawTraceLogToTraceLog,
 	type RawWalnutTraceCall,
 	type WalnutTraceCall,
 	type RawDebugCallResponse,
@@ -33,6 +34,7 @@ import type { AuthType } from '@/lib/types';
 
 const execFile = promisify(execFileCb);
 const SOLDB_BIN = process.env.SOLDB_BIN || 'soldb';
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as Address;
 
 /**
  * Determines appropriate HTTP status code based on error message content
@@ -58,27 +60,65 @@ const determineStatusCode = (message: string): number => {
 	return 500;
 };
 
+const normalizeSoldbStatus = (status: string | undefined): 'success' | 'reverted' =>
+	status?.toLowerCase() === 'reverted' ? 'reverted' : 'success';
+
+const normalizeHexOutput = (output: string | undefined | null): Hex => {
+	if (!output) return '0x';
+	return output.startsWith('0x') ? (output as Hex) : (`0x${output}` as Hex);
+};
+
 const rawWalnutTraceCallToWalnutTraceCall = (
-	rawWalnutTraceCall: RawWalnutTraceCall
-): WalnutTraceCall => ({
-	...rawWalnutTraceCall,
-	// FIXME soldb returns output as a string without 0x prefix
-	output: rawWalnutTraceCall.output
-		? rawWalnutTraceCall.output.startsWith('0x')
-			? rawWalnutTraceCall.output
-			: `0x${rawWalnutTraceCall.output}`
-		: '0x',
-	isRevertedFrame: rawWalnutTraceCall.isRevertedFrame ?? false,
-	logs: rawWalnutTraceCall.logs ?? [],
-	calls: rawWalnutTraceCall.calls?.map(rawWalnutTraceCallToWalnutTraceCall) ?? []
-});
+	rawWalnutTraceCall: RawWalnutTraceCall,
+	fallbackCallId = 0
+): WalnutTraceCall => {
+	const callId =
+		typeof rawWalnutTraceCall.callId === 'number' ? rawWalnutTraceCall.callId : fallbackCallId;
+	const calls =
+		rawWalnutTraceCall.calls?.map((call, index) =>
+			rawWalnutTraceCallToWalnutTraceCall(call, call.callId ?? callId + index + 1)
+		) ?? [];
+	const childrenCallIds = rawWalnutTraceCall.childrenCallIds ?? calls.map((call) => call.callId);
+
+	return {
+		...rawWalnutTraceCall,
+		callId,
+		parentCallId: rawWalnutTraceCall.parentCallId ?? null,
+		childrenCallIds,
+		from: (rawWalnutTraceCall.from ?? ZERO_ADDRESS) as Address,
+		to: (rawWalnutTraceCall.to ?? rawWalnutTraceCall.from ?? ZERO_ADDRESS) as Address,
+		output: normalizeHexOutput(rawWalnutTraceCall.output),
+		isRevertedFrame: rawWalnutTraceCall.isRevertedFrame ?? false,
+		logs: rawWalnutTraceCall.logs?.map(rawTraceLogToTraceLog) ?? [],
+		calls
+	};
+};
+
+const normalizeSoldbSteps = (
+	steps: RawDebugCallResponse['steps'],
+	defaultTraceCallIndex: number
+) =>
+	(steps ?? []).map((step, index) => ({
+		...step,
+		step: step.step ?? index,
+		pc: Number(step.pc ?? 0),
+		traceCallIndex:
+			typeof step.traceCallIndex === 'number' ? step.traceCallIndex : defaultTraceCallIndex
+	}));
 
 const rawDebugCallResponseToDebugCallResponse = (
 	rawDebugCallResponse: RawDebugCallResponse
-): DebugCallResponse => ({
-	...rawDebugCallResponse,
-	traceCall: rawWalnutTraceCallToWalnutTraceCall(rawDebugCallResponse.traceCall)
-});
+): DebugCallResponse => {
+	const traceCall = rawWalnutTraceCallToWalnutTraceCall(rawDebugCallResponse.traceCall, 0);
+	return {
+		...rawDebugCallResponse,
+		status: normalizeSoldbStatus(rawDebugCallResponse.status),
+		error: rawDebugCallResponse.error ?? undefined,
+		traceCall,
+		steps: normalizeSoldbSteps(rawDebugCallResponse.steps, traceCall.callId),
+		contracts: rawDebugCallResponse.contracts ?? {}
+	};
+};
 
 const soldb = async ({
 	command,

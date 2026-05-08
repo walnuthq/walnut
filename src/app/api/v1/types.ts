@@ -68,37 +68,100 @@ export const rawTraceCallToTraceCall = (traceCall: RawTraceCall): TraceCall => (
 
 export type WalnutTraceType = TraceType | 'INTERNALCALL';
 
-export type RawWalnutTraceCall = Omit<TraceCall, 'type'> & {
-	type: WalnutTraceType;
+export type SoldbJsonStatus = 'success' | 'reverted' | 'SUCCESS' | 'REVERTED' | string;
+
+export type SoldbTraceCapabilities = {
+	opcode_steps?: boolean;
+	stack?: boolean;
+	memory?: boolean;
+	storage?: boolean;
+	storage_diff?: boolean;
+	call_trace?: boolean;
+	contract_creation?: boolean;
+	logs?: boolean;
+	revert_data?: boolean;
+	gas_details?: boolean;
+	account_changes?: boolean;
+	notes?: string[];
+	[key: string]: unknown;
 };
 
-export type WalnutTraceCall = Omit<RawWalnutTraceCall, 'output' | 'logs' | 'calls'> & {
+export type SoldbTraceArtifacts = {
+	calls?: unknown[];
+	creations?: unknown[];
+	logs?: unknown[];
+	account_changes?: unknown[];
+	gas?: unknown;
+	revert_data?: string | null;
+	[key: string]: unknown;
+};
+
+export type RawWalnutTraceCall = Omit<
+	TraceCall,
+	'type' | 'value' | 'gas' | 'gasUsed' | 'logs' | 'calls'
+> & {
+	type: WalnutTraceType;
+	callId?: number;
+	parentCallId?: number | null;
+	childrenCallIds?: number[];
+	functionName?: string;
+	value?: Hex | number | bigint;
+	gas: Hex | number | bigint;
+	gasUsed: Hex | number | bigint;
+	logs?: RawTraceLog[];
+	calls?: RawWalnutTraceCall[];
+	inputs?: Record<string, unknown>;
+	outputs?: Record<string, unknown>;
+	isRevertedFrame?: boolean;
+};
+
+export type WalnutTraceCall = Omit<
+	RawWalnutTraceCall,
+	'output' | 'logs' | 'calls' | 'callId' | 'parentCallId' | 'childrenCallIds'
+> & {
 	type: WalnutTraceType;
 	output: Hex;
+	callId: number;
+	parentCallId: number | null;
+	childrenCallIds: number[];
 	isRevertedFrame?: boolean;
 	logs: TraceLog[];
 	calls: WalnutTraceCall[];
 };
 
 export type Step = {
+	step?: number;
 	pc: number;
 	traceCallIndex: number;
+	op?: string;
+	gas?: number;
+	gasCost?: number;
+	depth?: number;
+	stack?: string[];
+	snapshot?: unknown;
 };
 
 export type DebugCallContract = {
 	pcToSourceMappings: Record<number, string>;
 	sources: Record<number, string>;
-	abi: Abi;
+	abi?: Abi;
 };
 
 export type RawDebugCallResponse = {
-	status: string;
-	error: string;
+	schemaVersion?: number;
+	status: SoldbJsonStatus;
+	error?: string | null;
+	backend?: string;
+	capabilities?: SoldbTraceCapabilities;
+	artifacts?: SoldbTraceArtifacts;
 	traceCall: RawWalnutTraceCall;
-	steps: Step[];
-	contracts: Record<Address, DebugCallContract>;
+	steps?: Step[];
+	contracts?: Record<Address, DebugCallContract>;
 };
 
-export type DebugCallResponse = Omit<RawDebugCallResponse, 'traceCall'> & {
+export type DebugCallResponse = Omit<RawDebugCallResponse, 'traceCall' | 'steps' | 'status' | 'contracts'> & {
+	status: 'success' | 'reverted';
 	traceCall: WalnutTraceCall;
+	steps: Step[];
+	contracts: Record<Address, DebugCallContract>;
 };
