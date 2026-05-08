@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { NetworksList } from '@/components/settings-page/networks-list';
 
 export function CustomNetworksCard() {
 	return (
