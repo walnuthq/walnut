@@ -25,7 +25,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install SolDB CLI
-        run: cargo install --git https://github.com/walnuthq/soldb.git --branch feature/port-to-rust --package soldb-cli --bin soldb --locked
+        run: cargo install --git https://github.com/walnuthq/soldb.git --branch main --bin soldb --locked soldb-cli
 
       - name: Check SolDB CLI commands
         run: |

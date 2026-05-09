@@ -77,7 +77,7 @@ Docker images and deployment guides will be available soon. In the meantime, ple
 This project depends on [SolDB](https://github.com/walnuthq/soldb). Install it using:
 
 ```bash
-cargo install --git https://github.com/walnuthq/soldb.git --branch feature/port-to-rust --package soldb-cli --bin soldb --locked
+cargo install --git https://github.com/walnuthq/soldb.git --branch main --bin soldb --locked soldb-cli
 ```
 
 For local development with a sibling SolDB checkout:
