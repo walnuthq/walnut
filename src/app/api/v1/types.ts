@@ -143,7 +143,9 @@ export type Step = {
 
 export type DebugCallContract = {
 	pcToSourceMappings: Record<number, string>;
+	sourcePaths?: Record<number, string>;
 	sources: Record<number, string>;
+	debugAvailable?: boolean;
 	abi?: Abi;
 };
 

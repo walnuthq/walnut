@@ -1,5 +1,11 @@
 import { type Address, type Hash } from 'viem';
-import { type DebugCallContract, type WalnutTraceCall, type Contract } from '@/app/api/v1/types';
+import {
+	type DebugCallContract,
+	type WalnutTraceCall,
+	type Contract,
+	type Step
+} from '@/app/api/v1/types';
+import { buildDebuggerInfo } from '@/app/api/v1/debug-transaction/convert-response';
 import {
 	CallType,
 	type ContractCall,
@@ -119,6 +125,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 	status,
 	error,
 	traceCall,
+	steps,
 	contracts,
 	sourcifyContracts,
 	chainId,
@@ -135,6 +142,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 	status: string;
 	error: string;
 	traceCall: WalnutTraceCall;
+	steps?: Step[];
 	contracts: Record<Address, DebugCallContract>;
 	sourcifyContracts: Contract[];
 	chainId: number;
@@ -376,6 +384,14 @@ const traceCallResponseToTransactionSimulationResult = ({
 		})
 		.reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
+	const debuggerInfo = buildDebuggerInfo({
+		steps: steps ?? [],
+		contracts,
+		sourcifyContracts,
+		contractCallsMap,
+		functionCallsMap
+	});
+
 	return {
 		l2TransactionData: {
 			simulationResult: {
@@ -392,10 +408,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 						: {
 								executionStatus: 'SUCCEEDED' as const
 						  },
-				simulationDebuggerData: {
-					contractDebuggerData: {},
-					debuggerTrace: []
-				},
+				simulationDebuggerData: debuggerInfo.simulationDebuggerData,
 				storageChanges: {},
 				compilationSummary
 			},
