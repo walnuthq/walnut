@@ -106,7 +106,7 @@ const normalizeSoldbSteps = (
 			typeof step.traceCallIndex === 'number' ? step.traceCallIndex : defaultTraceCallIndex
 	}));
 
-const rawDebugCallResponseToDebugCallResponse = (
+export const rawDebugCallResponseToDebugCallResponse = (
 	rawDebugCallResponse: RawDebugCallResponse
 ): DebugCallResponse => {
 	const traceCall = rawWalnutTraceCallToWalnutTraceCall(rawDebugCallResponse.traceCall, 0);
