@@ -29,7 +29,7 @@
   - [1. Install Prerequisites](#1-install-prerequisites)
   - [2. Set Up Environment Variables](#2-set-up-environment-variables)
   - [3. Install Dependencies \& Build](#3-install-dependencies--build)
-- [4. Run the Debugger](#4-run-the-debugger)
+  - [4. Run the Debugger](#4-run-the-debugger)
 - [Contributing](#contributing)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
