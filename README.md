@@ -104,8 +104,6 @@ NEXT_PUBLIC_CHAIN_ID="11155420"
 
 ---
 
----
-
 ### 3. Install Dependencies & Build
 
 ```sh
