@@ -1,21 +1,5 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process';
-import { createServer } from 'node:net';
 import { type Hash } from 'viem';
-
-const isAddressInUse = (port: number, hostname: string) =>
-	new Promise<boolean>((resolve) => {
-		const server = createServer();
-		server.once('error', ({ code }: { code: string }) => {
-			if (code === 'EADDRINUSE') {
-				resolve(false);
-			}
-		});
-		server.once('listening', () => {
-			resolve(true);
-			server.close();
-		});
-		server.listen(port, hostname);
-	});
 
 const waitForOutput = ({ stdout }: ChildProcessWithoutNullStreams, output: string) =>
 	new Promise<void>((resolve) => {
@@ -40,10 +24,6 @@ export const spawnAnvil = async ({
 	txHash?: Hash;
 	blockNumber?: bigint;
 }) => {
-	/* const addressInUse = await isAddressInUse(port, hostname);
-	if (addressInUse) {
-		return;
-	} */
 	const anvil = spawn('anvil', [
 		'--port',
 		port.toString(),
