@@ -1,5 +1,11 @@
 import { type Address, type Hash } from 'viem';
-import { type DebugCallContract, type WalnutTraceCall, type Contract } from '@/app/api/v1/types';
+import {
+	type DebugCallContract,
+	type WalnutTraceCall,
+	type Contract,
+	type Step
+} from '@/app/api/v1/types';
+import { buildDebuggerInfo } from '@/app/api/v1/debug-transaction/convert-response';
 import {
 	CallType,
 	type ContractCall,
@@ -18,9 +24,9 @@ import {
 } from '@/app/api/v1/abi-utils';
 
 // Helper function to parse function names like "ShippingManager::initiateShipping(address,string)"
-// and extract just the part between :: and (
-function parseFunctionName(functionName: string): string {
-	if (!functionName) return functionName;
+// and extract just the part between :: and (. Returns an empty string when unavailable.
+function parseFunctionName(functionName?: string | null): string {
+	if (!functionName) return '';
 
 	// Check if the function name contains ::
 	if (functionName.includes('::')) {
@@ -102,6 +108,9 @@ function flattenTraceToMap(
 	if (parentType === 'ENTRY') {
 		node.type = 'CALL';
 	}
+	if (typeof node.callId !== 'number') {
+		node.callId = Object.keys(map).length;
+	}
 
 	// Add all nodes to the map, including ENTRY
 	map[node.callId] = node;
@@ -116,6 +125,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 	status,
 	error,
 	traceCall,
+	steps,
 	contracts,
 	sourcifyContracts,
 	chainId,
@@ -132,6 +142,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 	status: string;
 	error: string;
 	traceCall: WalnutTraceCall;
+	steps?: Step[];
 	contracts: Record<Address, DebugCallContract>;
 	sourcifyContracts: Contract[];
 	chainId: number;
@@ -184,7 +195,10 @@ const traceCallResponseToTransactionSimulationResult = ({
 		.map((tc: any) => {
 			// For CREATE transactions, use deployedContractAddress if available, otherwise use 'to'
 			const contractAddress =
-				tc.type === 'CREATE' && tc.deployedContractAddress ? tc.deployedContractAddress : tc.to;
+				tc.type === 'CREATE' && tc.deployedContractAddress
+					? tc.deployedContractAddress
+					: tc.to || traceCall.to;
+			const entryPointName = parseFunctionName(tc.functionName);
 			const sourcifyContract = sourcifyContracts.find((c) => c.address === contractAddress);
 			const inputs = tc.inputs || {};
 			const outputs = tc.outputs || {};
@@ -256,9 +270,9 @@ const traceCallResponseToTransactionSimulationResult = ({
 				),
 				contractName: sourcifyContract?.name || contractAddress,
 				entryPointName:
-					parseFunctionName(tc.functionName) === 'runtime_dispatcher'
+					entryPointName === 'runtime_dispatcher' || !entryPointName
 						? tc.input?.slice(0, 10) || ''
-						: parseFunctionName(tc.functionName),
+						: entryPointName,
 				isErc20Token: false,
 				classHash: contractAddress,
 				isDeepestPanicResult: tc.isRevertedFrame ?? false,
@@ -370,6 +384,14 @@ const traceCallResponseToTransactionSimulationResult = ({
 		})
 		.reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
+	const debuggerInfo = buildDebuggerInfo({
+		steps: steps ?? [],
+		contracts,
+		sourcifyContracts,
+		contractCallsMap,
+		functionCallsMap
+	});
+
 	return {
 		l2TransactionData: {
 			simulationResult: {
@@ -386,10 +408,7 @@ const traceCallResponseToTransactionSimulationResult = ({
 						: {
 								executionStatus: 'SUCCEEDED' as const
 						  },
-				simulationDebuggerData: {
-					contractDebuggerData: {},
-					debuggerTrace: []
-				},
+				simulationDebuggerData: debuggerInfo.simulationDebuggerData,
 				storageChanges: {},
 				compilationSummary
 			},

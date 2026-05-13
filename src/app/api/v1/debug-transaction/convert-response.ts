@@ -58,19 +58,50 @@ function parsePcToSourceMapping(
 	};
 }
 
-const debugCallResponseToTransactionSimulationResult = ({
-	traceCall,
+const normalizeAddressKey = (address: string) => address.toLowerCase();
+
+function buildDebuggerSources(contract: DebugCallContract, sourcifyContract?: Contract) {
+	const fileIndexToPath: Record<number, string> = {};
+	const sourceCode: Record<string, string> = {};
+	const sources: Record<number, string> = {};
+
+	const addSource = (sourceId: number, sourcePath: string, content: string) => {
+		if (!Number.isFinite(sourceId) || !sourcePath || !content) return;
+		fileIndexToPath[sourceId] = sourcePath;
+		sourceCode[sourcePath] = content;
+		sources[sourceId] = content;
+	};
+
+	const soldbSources = contract.sources ?? {};
+	if (contract.debugAvailable !== false && Object.keys(soldbSources).length > 0) {
+		for (const [sourceIdText, content] of Object.entries(soldbSources)) {
+			if (typeof content !== 'string') continue;
+			const sourceId = Number(sourceIdText);
+			const sourcePath = contract.sourcePaths?.[sourceId] ?? `source-${sourceId}.sol`;
+			addSource(sourceId, sourcePath, content);
+		}
+	}
+
+	if (Object.keys(sources).length === 0) {
+		const contractSources = sourcifyContract?.sources || [];
+		contractSources.forEach((source, idx) => {
+			if (!source.path || !source.content) return;
+			addSource(Number(idx), source.path, source.content);
+		});
+	}
+
+	return { fileIndexToPath, sourceCode, sources };
+}
+
+export const buildDebuggerInfo = ({
 	steps,
 	contracts,
 	sourcifyContracts,
 	contractCallsMap,
-	functionCallsMap,
-	txHash
+	functionCallsMap
 }: {
-	traceCall: WalnutTraceCall;
 	steps: Step[];
 	contracts: Record<Address, DebugCallContract>;
-	txHash: string;
 	sourcifyContracts: Contract[];
 	contractCallsMap: Record<string, ContractCall>;
 	functionCallsMap: Record<string, FunctionCall>;
@@ -81,19 +112,14 @@ const debugCallResponseToTransactionSimulationResult = ({
 	// Add null check for contracts
 	if (contracts && typeof contracts === 'object') {
 		for (const [address, contract] of Object.entries(contracts)) {
-			// 1. Find sourcifyContract for this address;
-			const sourcifyContract = sourcifyContracts.find((c) => c.address === address);
-			const contractSources = sourcifyContract?.sources || [];
-			const fileIndexToPath: Record<number, string> = {};
-			const sourceCode: Record<string, string> = {};
-			const sources: Record<number, string> = {};
-			contractSources.forEach((source, idx) => {
-				if (!source.path || !source.content) return; // skip if missing path or content
-				const cleanPath = source.path;
-				fileIndexToPath[Number(idx)] = cleanPath;
-				sourceCode[cleanPath] = source.content;
-				sources[Number(idx)] = source.content;
-			});
+			const normalizedAddress = normalizeAddressKey(address);
+			const sourcifyContract = sourcifyContracts.find(
+				(c) => normalizeAddressKey(c.address) === normalizedAddress
+			);
+			const { fileIndexToPath, sourceCode, sources } = buildDebuggerSources(
+				contract,
+				sourcifyContract
+			);
 			// Optimized filtering: group PCs by mapping to avoid duplicates
 			const pcToCodeInfo: Record<number, { codeLocations: any[] }> = {};
 			const mappingToPcs: Record<string, number[]> = {};
@@ -130,7 +156,7 @@ const debugCallResponseToTransactionSimulationResult = ({
 					};
 				}
 			}
-			contractDebuggerData[address] = {
+			contractDebuggerData[normalizedAddress] = {
 				pcToCodeInfo,
 				sourceCode
 			};
@@ -141,7 +167,7 @@ const debugCallResponseToTransactionSimulationResult = ({
 	const debuggerTrace: any[] = [];
 	// Process all steps in execution order (not by call hierarchy)
 	steps.forEach((step, stepIndex) => {
-		const traceCallIndex = step.traceCallIndex;
+		const traceCallIndex = step.traceCallIndex ?? 0;
 		const contractCall = contractCallsMap[traceCallIndex];
 		const functionCall = functionCallsMap[traceCallIndex];
 
@@ -191,12 +217,15 @@ const debugCallResponseToTransactionSimulationResult = ({
 			contractAddress = parentContractCall?.entryPoint?.storageAddress || null;
 		}
 
+		const classData = contractAddress
+			? (contractDebuggerData[contractAddress] ??
+				contractDebuggerData[normalizeAddressKey(contractAddress)])
+			: undefined;
+
 		// Skip if no contract address or no debugger data for this contract
-		if (!contractAddress || !contractDebuggerData[contractAddress]) {
+		if (!contractAddress || !classData) {
 			return;
 		}
-
-		const classData = contractDebuggerData[contractAddress];
 		const pcInfo = classData.pcToCodeInfo[step.pc];
 
 		// Skip if no PC mapping for this step
@@ -240,5 +269,28 @@ const debugCallResponseToTransactionSimulationResult = ({
 		}
 	} as DebuggerInfo;
 };
+
+const debugCallResponseToTransactionSimulationResult = ({
+	steps,
+	contracts,
+	sourcifyContracts,
+	contractCallsMap,
+	functionCallsMap
+}: {
+	traceCall: WalnutTraceCall;
+	steps: Step[];
+	contracts: Record<Address, DebugCallContract>;
+	txHash: string;
+	sourcifyContracts: Contract[];
+	contractCallsMap: Record<string, ContractCall>;
+	functionCallsMap: Record<string, FunctionCall>;
+}) =>
+	buildDebuggerInfo({
+		steps,
+		contracts,
+		sourcifyContracts,
+		contractCallsMap,
+		functionCallsMap
+	});
 
 export default debugCallResponseToTransactionSimulationResult;

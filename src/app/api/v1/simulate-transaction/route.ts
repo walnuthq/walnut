@@ -224,6 +224,7 @@ export const POST = async (request: NextRequest) => {
 			status: status === 'reverted' ? 'REVERTED' : 'SUCCEEDED',
 			error: error ?? '',
 			traceCall,
+			steps,
 			contracts,
 			sourcifyContracts: allContracts,
 			//

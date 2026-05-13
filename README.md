@@ -77,10 +77,17 @@ Docker images and deployment guides will be available soon. In the meantime, ple
 This project depends on [SolDB](https://github.com/walnuthq/soldb). Install it using:
 
 ```bash
-pip install git+https://github.com/walnuthq/soldb.git
+cargo install --git https://github.com/walnuthq/soldb.git --branch main --bin soldb --locked soldb-cli
 ```
 
-> **Note:** SolDB is currently in beta and doesn't have a PyPI package yet.
+For local development with a sibling SolDB checkout:
+
+```bash
+cd ../soldb
+cargo build -p soldb-cli
+cd ../walnut
+echo 'SOLDB_BIN="../soldb/target/debug/soldb"' >> .env.local
+```
 
 ---
 
@@ -98,6 +105,7 @@ Edit `.env.local` and set the following variables for your EVM network:
 NEXT_PUBLIC_RPC_URL="RPC_URL_WITH_DEBUG_ENDPOINTS_SUPPORT"
 NEXT_PUBLIC_NETWORK_NAME="OP Sepolia"
 NEXT_PUBLIC_CHAIN_ID="11155420"
+SOLDB_BIN="soldb"
 ```
 
 > Your node RPC URL **must** support `debug_traceTransaction` and `debug_traceCall` endpoints. These are usually not available on public nodes, so use a dedicated node RPC URL.

@@ -1,6 +1,7 @@
 import { promisify } from 'node:util';
 import { execFile as execFileCb } from 'node:child_process';
 import {
+	rawTraceLogToTraceLog,
 	type RawWalnutTraceCall,
 	type WalnutTraceCall,
 	type RawDebugCallResponse,
@@ -32,6 +33,8 @@ import {
 import type { AuthType } from '@/lib/types';
 
 const execFile = promisify(execFileCb);
+const SOLDB_BIN = process.env.SOLDB_BIN || 'soldb';
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as Address;
 
 /**
  * Determines appropriate HTTP status code based on error message content
@@ -57,27 +60,65 @@ const determineStatusCode = (message: string): number => {
 	return 500;
 };
 
-const rawWalnutTraceCallToWalnutTraceCall = (
-	rawWalnutTraceCall: RawWalnutTraceCall
-): WalnutTraceCall => ({
-	...rawWalnutTraceCall,
-	// FIXME soldb returns output as a string without 0x prefix
-	output: rawWalnutTraceCall.output
-		? rawWalnutTraceCall.output.startsWith('0x')
-			? rawWalnutTraceCall.output
-			: `0x${rawWalnutTraceCall.output}`
-		: '0x',
-	isRevertedFrame: rawWalnutTraceCall.isRevertedFrame ?? false,
-	logs: rawWalnutTraceCall.logs ?? [],
-	calls: rawWalnutTraceCall.calls?.map(rawWalnutTraceCallToWalnutTraceCall) ?? []
-});
+const normalizeSoldbStatus = (status: string | undefined): 'success' | 'reverted' =>
+	status?.toLowerCase() === 'reverted' ? 'reverted' : 'success';
 
-const rawDebugCallResponseToDebugCallResponse = (
+const normalizeHexOutput = (output: string | undefined | null): Hex => {
+	if (!output) return '0x';
+	return output.startsWith('0x') ? (output as Hex) : (`0x${output}` as Hex);
+};
+
+const rawWalnutTraceCallToWalnutTraceCall = (
+	rawWalnutTraceCall: RawWalnutTraceCall,
+	fallbackCallId = 0
+): WalnutTraceCall => {
+	const callId =
+		typeof rawWalnutTraceCall.callId === 'number' ? rawWalnutTraceCall.callId : fallbackCallId;
+	const calls =
+		rawWalnutTraceCall.calls?.map((call, index) =>
+			rawWalnutTraceCallToWalnutTraceCall(call, call.callId ?? callId + index + 1)
+		) ?? [];
+	const childrenCallIds = rawWalnutTraceCall.childrenCallIds ?? calls.map((call) => call.callId);
+
+	return {
+		...rawWalnutTraceCall,
+		callId,
+		parentCallId: rawWalnutTraceCall.parentCallId ?? null,
+		childrenCallIds,
+		from: (rawWalnutTraceCall.from ?? ZERO_ADDRESS) as Address,
+		to: (rawWalnutTraceCall.to ?? rawWalnutTraceCall.from ?? ZERO_ADDRESS) as Address,
+		output: normalizeHexOutput(rawWalnutTraceCall.output),
+		isRevertedFrame: rawWalnutTraceCall.isRevertedFrame ?? false,
+		logs: rawWalnutTraceCall.logs?.map(rawTraceLogToTraceLog) ?? [],
+		calls
+	};
+};
+
+const normalizeSoldbSteps = (
+	steps: RawDebugCallResponse['steps'],
+	defaultTraceCallIndex: number
+) =>
+	(steps ?? []).map((step, index) => ({
+		...step,
+		step: step.step ?? index,
+		pc: Number(step.pc ?? 0),
+		traceCallIndex:
+			typeof step.traceCallIndex === 'number' ? step.traceCallIndex : defaultTraceCallIndex
+	}));
+
+export const rawDebugCallResponseToDebugCallResponse = (
 	rawDebugCallResponse: RawDebugCallResponse
-): DebugCallResponse => ({
-	...rawDebugCallResponse,
-	traceCall: rawWalnutTraceCallToWalnutTraceCall(rawDebugCallResponse.traceCall)
-});
+): DebugCallResponse => {
+	const traceCall = rawWalnutTraceCallToWalnutTraceCall(rawDebugCallResponse.traceCall, 0);
+	return {
+		...rawDebugCallResponse,
+		status: normalizeSoldbStatus(rawDebugCallResponse.status),
+		error: rawDebugCallResponse.error ?? undefined,
+		traceCall,
+		steps: normalizeSoldbSteps(rawDebugCallResponse.steps, traceCall.callId),
+		contracts: rawDebugCallResponse.contracts ?? {}
+	};
+};
 
 const soldb = async ({
 	command,
@@ -134,19 +175,10 @@ const soldb = async ({
 		args.push('--value', formattedValue);
 	}
 
-	const fullCommand = [
-		'soldb',
-		...args,
-		...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
-		'--rpc',
-		rpcUrl,
-		'--json'
-	];
-
 	// Log the command in a readable format
 	if (command === 'simulate') {
 		console.log('=== SOLDB COMMAND ===');
-		console.log('soldb simulate', to);
+		console.log(`${SOLDB_BIN} simulate`, to);
 		console.log('  --raw-data', calldata);
 		console.log('  --from', from);
 		if (blockNumber) console.log('  --block', blockNumber.toString());
@@ -172,7 +204,7 @@ const soldb = async ({
 
 	try {
 		const { stdout } = await execFile(
-			'soldb',
+			SOLDB_BIN,
 			[
 				...args,
 				...(ethdebugDirs?.flatMap((dir) => ['--ethdebug-dir', dir]) ?? []),
@@ -328,13 +360,13 @@ export const soldbListEvents = async ({
 		});
 	}
 
-	console.log('Executing soldb command:', ['soldb', ...args].join(' '));
+	console.log('Executing soldb command:', [SOLDB_BIN, ...args].join(' '));
 	if (cwd) {
 		console.log('Working directory:', cwd);
 	}
 
 	try {
-		const { stdout } = await execFile('soldb', args, {
+		const { stdout } = await execFile(SOLDB_BIN, args, {
 			cwd: cwd || process.cwd(),
 			maxBuffer: 50 * 1024 * 1024 // 50MB buffer
 		});

@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { ContractCallEvent, DecodedItem } from '@/lib/simulation/types';
 import { processTransactionRequest } from '@/app/api/v1/utils/transaction-processing';
 import { getSupportedNetworks } from '@/lib/get-supported-networks';
 import { getRpcUrlForChainOptimized } from '@/lib/public-network-utils';
-
-const execAsync = promisify(exec);
+import { soldbListEvents } from '@/app/api/v1/soldb';
 
 interface SoldbEventData {
 	index: number;
@@ -134,39 +131,13 @@ export const GET = async (
 			}
 		}
 
-		// Build soldb list-events command with ethdebug-dir parameters
-		let command = `soldb list-events ${tx_hash} --json-events`;
-
-		// Add ethdebug-dir parameters if available
-		if (ethdebugDirs && ethdebugDirs.length > 0) {
-			ethdebugDirs.forEach((dir) => {
-				command += ` --ethdebug-dir ${dir}`;
-			});
-		}
-
-		// Add RPC URL if available
-		if (rpcUrl) {
-			command += ` --rpc ${rpcUrl}`;
-		}
-
-		// Log the command being executed (similar to simulate and trace)
-		console.log('Executing soldb command:', command);
-		if (cwd) {
-			console.log('Working directory:', cwd);
-		}
-
 		try {
-			const { stdout, stderr } = await execAsync(command, {
-				timeout: 30000, // 30 second timeout
-				cwd: cwd || process.cwd()
+			const soldbResponse: SoldbEventsResponse = await soldbListEvents({
+				txHash: tx_hash,
+				rpcUrl,
+				ethdebugDirs,
+				cwd
 			});
-
-			if (stderr) {
-				console.error('soldb stderr:', stderr);
-			}
-
-			// Parse the JSON output
-			const soldbResponse: SoldbEventsResponse = JSON.parse(stdout);
 
 			// Transform soldb events to ContractCallEvent format
 			const contractCallEvents: ContractCallEvent[] = soldbResponse.events.map((event, index) =>
@@ -182,32 +153,13 @@ export const GET = async (
 		} catch (execError: any) {
 			console.error('soldb execution error:', execError);
 
-			// Handle specific error cases
-			if (execError.code === 'ENOENT') {
-				return NextResponse.json(
-					{
-						error:
-							'soldb command not found. Please ensure soldb is installed and available in PATH.'
-					},
-					{ status: 500 }
-				);
-			}
-
-			// Try to parse error message from stderr
-			let errorMessage = 'Failed to fetch events';
-			if (execError.stderr) {
-				// Look for the "soldb: error:" part and everything after it
-				const errorMatch = execError.stderr.match(/(soldb: error: .+)/);
-				if (errorMatch) {
-					errorMessage = errorMatch[1];
-				}
-			}
-
 			return NextResponse.json(
 				{
-					error: errorMessage
+					error: execError.userMessage || execError.message || 'Failed to fetch events',
+					...(execError.details && { details: execError.details }),
+					...(execError.code && { code: execError.code })
 				},
-				{ status: 500 }
+				{ status: execError.statusCode || 500 }
 			);
 		}
 	} catch (error: any) {
